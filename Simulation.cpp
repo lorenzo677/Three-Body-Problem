@@ -1,5 +1,6 @@
 #include <iostream>
 #include <cmath>
+#include "integrators.h"
 
 #define DIM 3
 #define G 6.67408e-11
@@ -20,6 +21,9 @@ int main(){
     // Definition of constants (be careful of Unit Measurements)
     float mass_1, mass_2, mass_3;                       // masses
     float x0_1[DIM], x0_2[DIM], x0_3[DIM];              // initial positions
+
+
+
 
     return 0;
 }
