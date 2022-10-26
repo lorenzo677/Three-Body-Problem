@@ -23,3 +23,17 @@ float RK4(float x0, float y0, float x, float h, float (*func)(float, float)){
     }
     return y;
 }
+
+
+float EULER(float x0, float y, float x, float h, float (*func)(float, float)){
+
+    float temp = -0;
+    // Iterating till the point at which we
+    // need approximation
+    while (x0 < x) {
+        temp = y;
+        y = y + h * func(x0, y);
+        x0 = x0 + h;
+    }
+    return y;
+}
