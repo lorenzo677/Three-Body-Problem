@@ -1,6 +1,5 @@
 #include <iostream>
 
-
 void compute_vector_cm(float mass_1, float mass_2, float mass_3, float vector_1[3], float vector_2[3], float vector_3[3]) 
 {   
     float vector_cm[3];
@@ -9,12 +8,13 @@ void compute_vector_cm(float mass_1, float mass_2, float mass_3, float vector_1[
     }
 }
 
-
 int main()
 {
     // Definition of constants (be careful of Unit Measurements)
-    int n = 3; 
-    float mass_1, mass_2, mass_3;
-    float G = 6.67408e-11; 
+    int n_bodies = 3;                   // number of bodies
+    float mass_1, mass_2, mass_3;       // masses
+    float x0_1, x0_2, x0_3;             // initial positions
+    const int G = 6.67408e-11;          // gravitational constant
 
+    return 0;
 }
