@@ -6,7 +6,7 @@
 #define DIM 3
 #define G 6.67408e-11
 #define N_BODIES 3
-#define N_POINTS 1500
+#define N_STEPS 1500
 
 std::array<float, 3> compute_vector_cm(float mass_1, float mass_2, float mass_3, float *vector_1, float *vector_2, float *vector_3){   
     std::array<float, 3> vector_cm;
@@ -20,10 +20,51 @@ float distance(float pos_1[DIM], float pos_2[DIM]){
     return sqrt(pow(pos_1[0]-pos_2[0], 2) + pow(pos_1[1]-pos_2[1], 2) + pow(pos_1[2]-pos_2[2], 2));
 }
 
+float acceleration(float mass_1, float mass_2, float pos_1, float pos_2, float pos_3){
+    //compute the acceleration along one axis of the body 3
+    return G * (mass_1 / pow(pos_3-pos_1, 2) + mass_2 / pow(pos_3-pos_2, 2));
+}
+
 int main(){
     // Definition of constants (be careful of Unit Measurements)
-    float mass_1 = 2e30, mass_2 = 3e30, mass_3 = 1e31;                       // masses
+    float mass_1 = 2e28, mass_2 = 3e30, mass_3 = 1e31;                       // masses
     float x0_1[DIM], x0_2[DIM], x0_3[DIM];                                  // initial positions
+    float v0_1[DIM], v0_2[DIM], v0_3[DIM];                                  // initial velocity
+    float h = 1;
+
+    float time[N_STEPS], x_1[DIM][N_STEPS], x_2[DIM][N_STEPS], x_3[DIM][N_STEPS], v_1[DIM][N_STEPS], v_2[DIM][N_STEPS], v_3[DIM][N_STEPS];
+
+    for (int i=0;i<N_STEPS; i++){time[i]=1.0 * h;}
+
+    x_1[0][0] = x0_1[0];
+    x_2[0][0] = x0_2[0];
+    x_3[0][0] = x0_3[0];
+    v_1[0][0] = v0_1[0];
+    v_2[0][0] = v0_2[0];
+    v_3[0][0] = v0_3[0];
+    x_1[1][0] = x0_1[1];
+    x_3[1][0] = x0_2[1];
+    v_1[1][0] = x0_3[1];
+    v_2[1][0] = v0_1[1];
+    x_2[1][0] = v0_2[1];
+    v_3[1][0] = v0_3[1];
+    x_1[2][0] = x0_1[2];
+    x_2[2][0] = x0_2[2];
+    x_3[2][0] = x0_3[2];
+    v_1[2][0] = v0_1[2];
+    v_2[2][0] = v0_2[2];
+    v_3[2][0] = v0_3[2];
+
+    for(int j=0; j<DIM; j++){
+        for(int i=0; i<N_STEPS; i++){
+           v_1[j][i+1] = RK4(time[i], v_1[j][i], h, gravity, mass_2, mass_3, x_2[j][i], x_3[j][i]); // probabilmente sbagliatto
+        }
+    }
+  
+
+
+
+
 
     //qua sotto per vedere se funziona compute_vector_cm
     float a[3] = {3.0, 2.0, 3.4};
