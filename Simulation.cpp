@@ -1,12 +1,13 @@
 #include <iostream>
 #include <cmath>
 #include <array>
+#include <fstream>
 #include "integrators.h"
 
 #define DIM 3
-#define G 6.67408e-11
+#define G  10//6.67408e-11
 #define N_BODIES 3
-#define N_STEPS 1500
+#define N_STEPS 70000
 
 std::array<float, 3> compute_vector_cm(float mass_1, float mass_2, float mass_3, float *vector_1, float *vector_2, float *vector_3){   
     std::array<float, 3> vector_cm;
@@ -24,17 +25,15 @@ float distance(float pos_1[DIM], float pos_2[DIM]){
 
 float acceleration(float mass_1, float mass_2, float pos_1, float pos_2, float pos_3){ 
     //compute the acceleration along one axis of the body 3
-    return G * (mass_1 / pow(pos_3-pos_1, 2) + mass_2 / pow(pos_3-pos_2, 2));
+    return -1 * G * (mass_1 * (pos_3-pos_1) / pow(abs(pos_3-pos_1), 3) - G* mass_2 * (pos_3-pos_2) / pow(abs(pos_3-pos_2), 3));
 }
-
-
 
 int main(){
     // Definition of constants (be careful of Unit Measurements)
-    float mass_1 = 2e28, mass_2 = 3e30, mass_3 = 1e31;                       // masses
-    float x0_1[DIM], x0_2[DIM], x0_3[DIM];                                  // initial positions
-    float v0_1[DIM], v0_2[DIM], v0_3[DIM];                                  // initial velocity
-    float h = 1;
+    float mass_1 = 10, mass_2 = 20, mass_3 = 30;                       // masses
+    float x0_1[DIM] = {-10, 10, -11}, x0_2[DIM] = {0, 0, 0}, x0_3[DIM] = {10, 10, 12};                                  // initial positions
+    float v0_1[DIM] = {-3, 0, 0}, v0_2[DIM] = {0, 0, 0}, v0_3[DIM] = {3, 0, 0};                                 // initial velocity
+    double h = 0.00001;
 
     float time[N_STEPS], x_1[DIM][N_STEPS], x_2[DIM][N_STEPS], x_3[DIM][N_STEPS], v_1[DIM][N_STEPS], v_2[DIM][N_STEPS], v_3[DIM][N_STEPS], a_1[DIM][N_STEPS], a_2[DIM][N_STEPS], a_3[DIM][N_STEPS];
           
@@ -67,7 +66,7 @@ int main(){
         }
     }
 */
-
+std::cout<<x_1[0][0]<<std::endl;
 
 
 
@@ -87,21 +86,26 @@ for(int j=0; j<DIM; j++){
     x_2[j][i + 1] = x_2[j][i] + v_2[j][i] * h;
     x_3[j][i + 1] = x_3[j][i] + v_3[j][i] * h;
 
-}
+    }
 }
 
     // diamo delle condizioni iniziali e stampiamo l'array x_1
     // TODO
-
-
-    //qua sotto per vedere se funziona compute_vector_cm
-    float a[3] = {3.0, 2.0, 3.4};
-    float b[3] = {2.0, 2.0, 40.4};
-    float c[3] = {2.0, 1.0, 4.4};
-    std::array<float, 3> cm;
-    cm = compute_vector_cm(4.0, 5.4, 6.2, a, b, c);
-
-    std::cout<<cm[0]<<'\t'<<cm[1]<<'\t'<<cm[2]<<std::endl;
+    std::ofstream output_file_A("positions_A.csv");
+    std::ofstream output_file_B("positions_B.csv");
+    std::ofstream output_file_C("positions_C.csv");
+    output_file_A<<"x;y;z"<<std::endl;
+    output_file_B<<"x;y;z"<<std::endl;
+    output_file_C<<"x;y;z"<<std::endl;
+    
+    for(int i = 0; i<N_STEPS; i++){
+        output_file_A << x_1[0][i] << ";" << x_1[1][i] << ";" << x_1[2][i]<< std::endl;
+        output_file_B << x_2[0][i] << ";" << x_1[1][i] << ";" << x_1[2][i]<< std::endl;
+        output_file_C << x_3[0][i] << ";" << x_1[1][i] << ";" << x_1[2][i]<< std::endl;
+    }    
+    output_file_A.close();
+    output_file_B.close(); 
+    output_file_C.close();
 
     return 0;
 }
