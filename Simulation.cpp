@@ -7,7 +7,7 @@
 #define DIM 3
 #define G  10//6.67408e-11
 #define N_BODIES 3
-#define N_STEPS 70000
+#define N_STEPS 30000
 
 std::array<float, 3> compute_vector_cm(float mass_1, float mass_2, float mass_3, float *vector_1, float *vector_2, float *vector_3){   
     std::array<float, 3> vector_cm;
@@ -30,12 +30,12 @@ float acceleration(float mass_1, float mass_2, float pos_1, float pos_2, float p
 
 int main(){
     // Definition of constants (be careful of Unit Measurements)
-    float mass_1 = 10, mass_2 = 20, mass_3 = 30;                       // masses
-    float x0_1[DIM] = {-10, 10, -11}, x0_2[DIM] = {0, 0, 0}, x0_3[DIM] = {10, 10, 12};                                  // initial positions
-    float v0_1[DIM] = {-3, 0, 0}, v0_2[DIM] = {0, 0, 0}, v0_3[DIM] = {3, 0, 0};                                 // initial velocity
+    double mass_1 = 10, mass_2 = 20, mass_3 = 30;                       // masses
+    double x0_1[DIM] = {-10, 10, -11}, x0_2[DIM] = {0, 0, 0}, x0_3[DIM] = {10, 10, 12};                                  // initial positions
+    double v0_1[DIM] = {-3, 0, 0}, v0_2[DIM] = {0, 0, 0}, v0_3[DIM] = {3, 0, 0};                                 // initial velocity
     double h = 0.00001;
 
-    float time[N_STEPS], x_1[DIM][N_STEPS], x_2[DIM][N_STEPS], x_3[DIM][N_STEPS], v_1[DIM][N_STEPS], v_2[DIM][N_STEPS], v_3[DIM][N_STEPS], a_1[DIM][N_STEPS], a_2[DIM][N_STEPS], a_3[DIM][N_STEPS];
+    double time[N_STEPS], x_1[DIM][N_STEPS], x_2[DIM][N_STEPS], x_3[DIM][N_STEPS], v_1[DIM][N_STEPS], v_2[DIM][N_STEPS], v_3[DIM][N_STEPS], a_1[DIM][N_STEPS], a_2[DIM][N_STEPS], a_3[DIM][N_STEPS];
           
 
     for (int i=0;i<N_STEPS; i++){time[i]= i * h;}
@@ -72,7 +72,7 @@ std::cout<<x_1[0][0]<<std::endl;
 
 //Function for the Euler method (contrasta con quella presente sull'header)
 for(int j=0; j<DIM; j++){
-    for (int i=0; i<N_STEPS; i++) {
+    for (int i=0; i<N_STEPS; i++){
     
     a_1[j][i] = acceleration(mass_2, mass_3, x_2[j][i], x_3[j][i], x_1[j][i]);
     a_2[j][i] = acceleration(mass_1, mass_3, x_1[j][i], x_3[j][i], x_2[j][i]);
@@ -85,10 +85,15 @@ for(int j=0; j<DIM; j++){
     x_1[j][i + 1] = x_1[j][i] + v_1[j][i] * h;
     x_2[j][i + 1] = x_2[j][i] + v_2[j][i] * h;
     x_3[j][i + 1] = x_3[j][i] + v_3[j][i] * h;
-
+    if (j==0 and i==0){
+        std::cout<<x_1[j][j+1]<<"="<<x_1[j][i]<<" + "<< v_1[j][i] <<"*"<< h<<std::endl;
     }
+    }
+    std::cout<<x_1[0][0]<<std::endl;
 }
+    //std::cout<<x_1[0][0]<<std::endl; // dovrebbe essere -10
 
+    //std::cout<<x_1[0][1]<<std::endl;
     // diamo delle condizioni iniziali e stampiamo l'array x_1
     // TODO
     std::ofstream output_file_A("positions_A.csv");
