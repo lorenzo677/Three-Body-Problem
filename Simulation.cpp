@@ -21,17 +21,17 @@ float distance(float pos_1[DIM], float pos_2[DIM]){
     return sqrt(pow(pos_1[0]-pos_2[0], 2) + pow(pos_1[1]-pos_2[1], 2) + pow(pos_1[2]-pos_2[2], 2));
 }
 
-// Funzioni per le accelerazioni //
+// Funzione per l'accelerazione //
 
 float acceleration(float mass_1, float mass_2, float pos_1, float pos_2, float pos_3){ 
     //compute the acceleration along one axis of the body 3
-    return -1 * G * (mass_1 * (pos_3-pos_1) / pow(abs(pos_3-pos_1), 3) - G* mass_2 * (pos_3-pos_2) / pow(abs(pos_3-pos_2), 3));
+    return -1 * G * (mass_1 * (pos_3-pos_1) / pow(abs(pos_3-pos_1), 3) - G * mass_2 * (pos_3-pos_2) / pow(abs(pos_3-pos_2), 3));
 }
 
 int main(){
-    // Definition of constants (be careful of Unit Measurements)
+    // BE CAREFUL: If starting position of the body on one axis is the same, acceleration will be to inf.
     double mass_1 = 10, mass_2 = 20, mass_3 = 30;                       // masses
-    double x0_1[DIM-1] = {-10, 10, -11}, x0_2[DIM-1] = {0.5, 0.5, 0.5}, x0_3[DIM-1] = {10, 10, 12};                                  // initial positions
+    double x0_1[DIM-1] = {-10, 10, -11}, x0_2[DIM-1] = {0.5, 0.5, 0.5}, x0_3[DIM-1] = {10, 14, 12};                                  // initial positions
     double v0_1[DIM-1] = {-3, 0.1, 0.1}, v0_2[DIM-1] = {0.1, 0.1, 0.1}, v0_3[DIM-1] = {3, 0.1, 0.1};                                 // initial velocity
     double h = 0.001;
 
@@ -88,12 +88,13 @@ for(int j=0; j<DIM-1; j++){
     x_1[j][i + 1] = x_1[j][i] + v_1[j][i] * h;
     x_2[j][i + 1] = x_2[j][i] + v_2[j][i] * h;
     x_3[j][i + 1] = x_3[j][i] + v_3[j][i] * h;
+    
     if (j==1 and i==1){ // l'array inizia a sporcarsi per j=1 e i=1
 
         std::cout<<"I valori utilizzati per calcolare l'accelerazione valgono "<<x_2[j][i]<<", "<<x_3[j][i]<<", "<<x_1[j][i]<<std::endl;
-        std::cout<<"L'accelerazione utilizzata per calcolare la velocità vale "<<a_2[j][i-1]<<std::endl;
-        std::cout<<"La velocità utilizzata per calcolare la posizione vale "<<v_2[j][i]<<std::endl;
-        std::cout<<"La posizione vale "<<x_2[j][i+1]<<std::endl;
+        std::cout<<"L'accelerazione utilizzata per calcolare la velocità vale "<<a_3[j][i-1]<<std::endl;
+        std::cout<<"La velocità utilizzata per calcolare la posizione vale "<<v_3[j][i]<<std::endl;
+        std::cout<<"La posizione vale "<<x_3[j][i+1]<<std::endl;
         std::cout<<"\n";
 
     }
@@ -102,11 +103,12 @@ for(int j=0; j<DIM-1; j++){
 }
 
 // Alla ricerca del bug perduto
-std::cout<<"Considero la posizione del corpo B nei primi step:\n"; //non coincidono con quelli su postions_B.csv!
-std::cout<<"x, "<<"y, "<<" z"<<std::endl;
-std::cout<<x_2[0][0]<<", "<<x_2[1][0]<<", "<<x_2[2][0]<<std::endl;
-std::cout<<x_2[0][1]<<", "<<x_2[1][1]<<", "<<x_2[2][1]<<std::endl;
-std::cout<<x_2[0][2]<<", "<<x_2[1][2]<<", "<<x_2[2][2]<<std::endl;
+std::cout<<"Considero l'accelerazione del corpo 3 nei primi step:\n"; //Il problema è a_3 sull'asse y.
+std::cout<<"x, "<<"y, "<<"z"<<std::endl;
+std::cout<<a_3[0][0]<<", "<<a_3[1][0]<<", "<<a_3[2][0]<<std::endl;
+std::cout<<a_3[0][1]<<", "<<a_3[1][1]<<", "<<a_3[2][1]<<std::endl;
+std::cout<<a_3[0][2]<<", "<<a_3[1][2]<<", "<<a_3[2][2]<<std::endl;
+
 
 
     std::ofstream output_file_A("positions_A.csv");
