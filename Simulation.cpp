@@ -4,10 +4,10 @@
 #include <fstream>
 #include "integrators.h"
 
-#define DIM 3
+#define DIM 4
 #define G  10//6.67408e-11
 #define N_BODIES 3
-#define N_STEPS 30000
+#define N_STEPS 10000
 
 std::array<float, 3> compute_vector_cm(float mass_1, float mass_2, float mass_3, float *vector_1, float *vector_2, float *vector_3){   
     std::array<float, 3> vector_cm;
@@ -31,9 +31,9 @@ float acceleration(float mass_1, float mass_2, float pos_1, float pos_2, float p
 int main(){
     // Definition of constants (be careful of Unit Measurements)
     double mass_1 = 10, mass_2 = 20, mass_3 = 30;                       // masses
-    double x0_1[DIM] = {-10, 10, -11}, x0_2[DIM] = {0, 0, 0}, x0_3[DIM] = {10, 10, 12};                                  // initial positions
-    double v0_1[DIM] = {-3, 0, 0}, v0_2[DIM] = {0, 0, 0}, v0_3[DIM] = {3, 0, 0};                                 // initial velocity
-    double h = 0.00001;
+    double x0_1[DIM-1] = {-10, 10, -11}, x0_2[DIM-1] = {0, 0, 0}, x0_3[DIM-1] = {10, 10, 12};                                  // initial positions
+    double v0_1[DIM-1] = {-3, 0, 0}, v0_2[DIM-1] = {0, 0, 0}, v0_3[DIM-1] = {3, 0, 0};                                 // initial velocity
+    double h = 0.001;
 
     double time[N_STEPS], x_1[DIM][N_STEPS], x_2[DIM][N_STEPS], x_3[DIM][N_STEPS], v_1[DIM][N_STEPS], v_2[DIM][N_STEPS], v_3[DIM][N_STEPS], a_1[DIM][N_STEPS], a_2[DIM][N_STEPS], a_3[DIM][N_STEPS];
           
@@ -71,8 +71,8 @@ std::cout<<x_1[0][0]<<std::endl;
 
 
 //Function for the Euler method (contrasta con quella presente sull'header)
-for(int j=0; j<DIM; j++){
-    for (int i=0; i<N_STEPS; i++){
+for(int j=0; j<DIM-1; j++){
+    for (int i=0; i<N_STEPS-1; i++){
     
     a_1[j][i] = acceleration(mass_2, mass_3, x_2[j][i], x_3[j][i], x_1[j][i]);
     a_2[j][i] = acceleration(mass_1, mass_3, x_1[j][i], x_3[j][i], x_2[j][i]);
@@ -103,7 +103,7 @@ for(int j=0; j<DIM; j++){
     output_file_B<<"x;y;z"<<std::endl;
     output_file_C<<"x;y;z"<<std::endl;
     
-    for(int i = 0; i<N_STEPS; i++){
+    for(int i = 0; i<N_STEPS-1; i++){
         output_file_A << x_1[0][i] << ";" << x_1[1][i] << ";" << x_1[2][i]<< std::endl;
         output_file_B << x_2[0][i] << ";" << x_1[1][i] << ";" << x_1[2][i]<< std::endl;
         output_file_C << x_3[0][i] << ";" << x_1[1][i] << ";" << x_1[2][i]<< std::endl;
