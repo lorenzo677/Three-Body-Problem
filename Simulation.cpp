@@ -4,10 +4,10 @@
 #include <fstream>
 #include "integrators.h"
 
-#define DIM 4
-#define G  10//6.67408e-11
-#define N_BODIES 3
-#define N_STEPS 1000
+static constexpr int DIM = 4;
+static constexpr double G = 10;
+static constexpr int N_BODIES = 3;
+static constexpr int N_STEPS = 1000;
 
 std::array<float, 3> compute_vector_cm(float mass_1, float mass_2, float mass_3, float *vector_1, float *vector_2, float *vector_3){   
     std::array<float, 3> vector_cm;
@@ -17,26 +17,40 @@ std::array<float, 3> compute_vector_cm(float mass_1, float mass_2, float mass_3,
     return vector_cm; 
 }
 
-float distance(float pos_1[DIM], float pos_2[DIM]){
+double distance(double pos_1[DIM], double pos_2[DIM]){
     return sqrt(pow(pos_1[0]-pos_2[0], 2) + pow(pos_1[1]-pos_2[1], 2) + pow(pos_1[2]-pos_2[2], 2));
 }
 
 // Funzione per l'accelerazione //
 
-float acceleration(float mass_1, float mass_2, float pos_1, float pos_2, float pos_3){ 
+double acceleration(float mass_1, float mass_2, float pos_1, float pos_2, float pos_3){ 
     //compute the acceleration along one axis of the body 3
-    return -1 * G * (mass_1 * (pos_3-pos_1) / pow(abs(pos_3-pos_1), 3) + mass_2 * (pos_3-pos_2) / pow(abs(pos_3-pos_2), 3));
+    return -1 * G * (mass_1 * (pos_3-pos_1) / pow(std::abs(pos_3-pos_1), 3) + mass_2 * (pos_3-pos_2) / pow(std::abs(pos_3-pos_2), 3));
 }
 
 int main(){
     // BE CAREFUL: If starting position of the body on one axis is the same, acceleration will be to inf.
-    double mass_1 = 10, mass_2 = 20, mass_3 = 30;                       // masses
-    double x0_1[DIM-1] = {-10, 10, -11}, x0_2[DIM-1] = {0, 0, 0}, x0_3[DIM-1] = {10, 14, 12};                                  // initial positions
-    double v0_1[DIM-1] = {-3, 0, 0}, v0_2[DIM-1] = {0, 0, 0}, v0_3[DIM-1] = {3, 0, 0};                                 // initial velocity
+    double mass_1 = 10;
+    double mass_2 = 20;
+    double mass_3 = 30;                       
+    double x0_1[DIM-1] = {-10, 10, -11};
+    double x0_2[DIM-1] = {0, 0, 0};
+    double x0_3[DIM-1] = {10, 14, 12};                                  
+    double v0_1[DIM-1] = {-3, 0, 0};
+    double v0_2[DIM-1] = {0, 0, 0};
+    double v0_3[DIM-1] = {3, 0, 0};                                 
     double h = 0.0005;
 
-    double time[N_STEPS], x_1[DIM][N_STEPS], x_2[DIM][N_STEPS], x_3[DIM][N_STEPS], v_1[DIM][N_STEPS], v_2[DIM][N_STEPS], v_3[DIM][N_STEPS], a_1[DIM][N_STEPS], a_2[DIM][N_STEPS], a_3[DIM][N_STEPS];
-          
+    double time[N_STEPS];
+    double x_1[DIM][N_STEPS];
+    double x_2[DIM][N_STEPS];
+    double x_3[DIM][N_STEPS];
+    double v_1[DIM][N_STEPS];
+    double v_2[DIM][N_STEPS];
+    double v_3[DIM][N_STEPS];
+    double a_1[DIM][N_STEPS];
+    double a_2[DIM][N_STEPS];
+    double a_3[DIM][N_STEPS];
 
     for (int i=0;i<N_STEPS; i++){time[i]= i * h;}
 
@@ -120,10 +134,15 @@ for (int i=0; i<N_STEPS-1; i++){
     output_file_B<<"x;y;z"<<std::endl;
     output_file_C<<"x;y;z"<<std::endl;
     
+    // for(int i = 0; i<N_STEPS-1; i++){
+    //     output_file_A << x_1[0][i] << ";" << x_1[1][i] << ";" << x_1[2][i]<< std::endl;
+    //     output_file_B << x_2[0][i] << ";" << x_2[1][i] << ";" << x_2[2][i]<< std::endl;
+    //     output_file_C << x_3[0][i] << ";" << x_3[1][i] << ";" << x_3[2][i]<< std::endl;
+    // }    
     for(int i = 0; i<N_STEPS-1; i++){
-        output_file_A << x_1[0][i] << ";" << x_1[1][i] << ";" << x_1[2][i]<< std::endl;
-        output_file_B << x_2[0][i] << ";" << x_2[1][i] << ";" << x_2[2][i]<< std::endl;
-        output_file_C << x_3[0][i] << ";" << x_3[1][i] << ";" << x_3[2][i]<< std::endl;
+        output_file_A << a_1[0][i] << ";" << a_1[1][i] << ";" << a_1[2][i]<< std::endl;
+        output_file_B << a_2[0][i] << ";" << a_2[1][i] << ";" << a_2[2][i]<< std::endl;
+        output_file_C << a_3[0][i] << ";" << a_3[1][i] << ";" << a_3[2][i]<< std::endl;
     }    
     output_file_A.close();
     output_file_B.close(); 
