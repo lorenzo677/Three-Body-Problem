@@ -7,10 +7,10 @@
 static constexpr int DIM = 4;
 static constexpr double G = 10;
 static constexpr int N_BODIES = 3;
-static constexpr int N_STEPS = 1000;
+static constexpr int N_STEPS = 25000;
 
-std::array<float, 3> compute_vector_cm(float mass_1, float mass_2, float mass_3, float *vector_1, float *vector_2, float *vector_3){   
-    std::array<float, 3> vector_cm;
+std::array<double, 3> compute_vector_cm(double mass_1, double mass_2, double mass_3, double *vector_1, double *vector_2, double *vector_3){   
+    std::array<double, 3> vector_cm;
     for (int i = 0; i < 3; i++) {   
         vector_cm[i] = ( mass_1 * vector_1[i] + mass_2 * vector_2[i] + mass_3 * vector_3[i] ) / (mass_1 + mass_2 + mass_3);
     }
@@ -25,23 +25,24 @@ double distance(double pos_1[DIM], double pos_2[DIM]){
 
 double acceleration(float mass_1, float mass_2, float pos_1, float pos_2, float pos_3){ 
     //compute the acceleration along one axis of the body 3
-    return -1 * G * (mass_1 * (pos_3-pos_1) / pow(std::abs(pos_3-pos_1), 3) + mass_2 * (pos_3-pos_2) / pow(std::abs(pos_3-pos_2), 3));
+    return (-1 * G * (mass_1 * (pos_3-pos_1) / pow(std::abs(pos_3-pos_1), 3) + mass_2 * (pos_3-pos_2) / pow(std::abs(pos_3-pos_2), 3)));
 }
 
 int main(){
     // BE CAREFUL: If starting position of the body on one axis is the same, acceleration will be to inf.
     double mass_1 = 10;
     double mass_2 = 20;
-    double mass_3 = 30;                       
-    double x0_1[DIM-1] = {-10, 10, -11};
-    double x0_2[DIM-1] = {0, 0, 0};
-    double x0_3[DIM-1] = {10, 14, 12};                                  
-    double v0_1[DIM-1] = {-3, 0, 0};
-    double v0_2[DIM-1] = {0, 0, 0};
-    double v0_3[DIM-1] = {3, 0, 0};                                 
-    double h = 0.0005;
+    double mass_3 = 30;    
+    double h = 0.005;
 
-    double time[N_STEPS];
+    std::array<double, DIM-1> x0_1 = {-10, 10, -11};
+    std::array<double, DIM-1> x0_2 = {0, 0, 0};
+    std::array<double, DIM-1> x0_3 = {10, 14, 12};                                  
+    std::array<double, DIM-1> v0_1 = {-3, 0, 0};
+    std::array<double, DIM-1> v0_2 = {0, 0, 0};
+    std::array<double, DIM-1> v0_3 = {3, 0, 0};
+    std::array<double, N_STEPS> time;
+    
     double x_1[DIM][N_STEPS];
     double x_2[DIM][N_STEPS];
     double x_3[DIM][N_STEPS];
@@ -134,16 +135,16 @@ for (int i=0; i<N_STEPS-1; i++){
     output_file_B<<"x;y;z"<<std::endl;
     output_file_C<<"x;y;z"<<std::endl;
     
-    // for(int i = 0; i<N_STEPS-1; i++){
-    //     output_file_A << x_1[0][i] << ";" << x_1[1][i] << ";" << x_1[2][i]<< std::endl;
-    //     output_file_B << x_2[0][i] << ";" << x_2[1][i] << ";" << x_2[2][i]<< std::endl;
-    //     output_file_C << x_3[0][i] << ";" << x_3[1][i] << ";" << x_3[2][i]<< std::endl;
-    // }    
     for(int i = 0; i<N_STEPS-1; i++){
-        output_file_A << a_1[0][i] << ";" << a_1[1][i] << ";" << a_1[2][i]<< std::endl;
-        output_file_B << a_2[0][i] << ";" << a_2[1][i] << ";" << a_2[2][i]<< std::endl;
-        output_file_C << a_3[0][i] << ";" << a_3[1][i] << ";" << a_3[2][i]<< std::endl;
+        output_file_A << x_1[0][i] << ";" << x_1[1][i] << ";" << x_1[2][i]<< std::endl;
+        output_file_B << x_2[0][i] << ";" << x_2[1][i] << ";" << x_2[2][i]<< std::endl;
+        output_file_C << x_3[0][i] << ";" << x_3[1][i] << ";" << x_3[2][i]<< std::endl;
     }    
+    // for(int i = 0; i<N_STEPS-1; i++){
+    //     output_file_A << a_1[0][i] << ";" << a_1[1][i] << ";" << a_1[2][i]<< std::endl;
+    //     output_file_B << a_2[0][i] << ";" << a_2[1][i] << ";" << a_2[2][i]<< std::endl;
+    //     output_file_C << a_3[0][i] << ";" << a_3[1][i] << ";" << a_3[2][i]<< std::endl;
+    // }    
     output_file_A.close();
     output_file_B.close(); 
     output_file_C.close();
