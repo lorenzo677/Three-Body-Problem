@@ -7,7 +7,7 @@
 #define DIM 4
 #define G  10//6.67408e-11
 #define N_BODIES 3
-#define N_STEPS 20000
+#define N_STEPS 1000
 
 std::array<float, 3> compute_vector_cm(float mass_1, float mass_2, float mass_3, float *vector_1, float *vector_2, float *vector_3){   
     std::array<float, 3> vector_cm;
