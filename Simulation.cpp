@@ -168,12 +168,14 @@ int main(){
 */
 
 
+
+
 //Function for the Euler method (contrasta con quella presente sull'header)
 
-for (int i=0; i<N_STEPS-1; i++){
-    for(int j=0; j<DIM-1; j++){
-    a_1[j][i] = acceleration(mass_2, mass_3, x_2[j][i], x_3[j][i], x_1[j][i]);
-    a_2[j][i] = acceleration(mass_1, mass_3, x_1[j][i], x_3[j][i], x_2[j][i], x_1[j+1][i], x_1[j+2][i], x_1[j+1][i]);
+    for (int i=0; i<N_STEPS-1; i++){
+        for(int j=0; j<DIM-1; j++){
+    a_1[j][i] = acceleration(mass_2, mass_3, x_2[j][i], x_3[j][i], x_1[j][i], x_2[j+1][i], x_3[j+1][i], x_1[j+1][i], x_2[j+2][i], x_3[j+2][i], x_1[j+2][i]);
+    a_2[j][i] = acceleration(mass_1, mass_3, x_1[j][i], x_3[j][i], x_2[j][i], x_1[j+1][i], x_3[j+1][i], x_2[j+1][i], x_1[j+2][i], x_3[j+2][i], x_2[j+2][i]);
     a_3[j][i] = acceleration(mass_1, mass_2, x_1[j][i], x_2[j][i], x_3[j][i], x_1[j+1][i], x_2[j+1][i], x_3[j+1][i], x_1[j+2][i], x_2[j+2][i], x_3[j+2][i]);
     
     v_1[j][i + 1] = v_1[j][i] + a_1[j][i] * h;
@@ -197,17 +199,13 @@ for (int i=0; i<N_STEPS-1; i++){
 }
 
     // Alla ricerca del bug perduto
-    std::cout<<"Considero la velocita del corpo 3 nei primi step:\n"; //Il problema è a_3 sull'asse y.
+    std::cout<<"Considero la poszione del corpo 3 nei primi step:\n"; //Il problema è a_3 sull'asse y.
     std::cout<<"x, "<<"y, "<<"z"<<std::endl;
-    std::cout<<a_3[0][0]<<", "<<a_3[1][0]<<", "<<a_3[2][0]<<std::endl;
-    std::cout<<a_3[0][1]<<", "<<a_3[1][1]<<", "<<a_3[2][1]<<std::endl;
-    std::cout<<a_3[0][2]<<", "<<a_3[1][2]<<", "<<a_3[2][2]<<std::endl;
-    std::cout<<a_3[0][3]<<", "<<a_3[1][3]<<", "<<a_3[2][3]<<std::endl;
-    std::cout<<a_3[0][4]<<", "<<a_3[1][4]<<", "<<a_3[2][4]<<std::endl;
-    std::cout<<a_3[0][5]<<", "<<a_3[1][5]<<", "<<a_3[2][5]<<std::endl;
-    for (int i=50;i<300;i++){
-        std::cout<<a_3[0][i]<<", "<<a_3[1][i]<<", "<<a_3[2][i]<<std::endl;
-    }
+    std::cout<<x_1[0][0]<<", "<<x_1[1][0]<<", "<<x_1[2][0]<<std::endl;
+    std::cout<<x_1[0][1]<<", "<<x_1[1][1]<<", "<<x_1[2][1]<<std::endl;
+    std::cout<<x_1[0][2]<<", "<<x_1[1][2]<<", "<<x_1[2][2]<<std::endl;
+
+
     
 
     std::ofstream output_file_A("positions_A.csv");
@@ -231,8 +229,9 @@ for (int i=0; i<N_STEPS-1; i++){
     output_file_B.close(); 
     output_file_C.close();
 
-    
-    FILE* pipe = popen("conda activate ml\n python plotting.py", "w");
+ /*
+   FILE* pipe = popen("conda activate ml\n python plotting.py", "w");
     pclose(pipe);
     return 0;
+*/       
 }
