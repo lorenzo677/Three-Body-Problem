@@ -7,7 +7,7 @@
 static constexpr int DIM = 4;
 static constexpr double G = 10;
 static constexpr int N_BODIES = 3;
-static constexpr int N_STEPS = 25000;
+static constexpr int N_STEPS = 5000;
 
 std::array<double, 3> compute_vector_cm(double mass_1, double mass_2, double mass_3, double *vector_1, double *vector_2, double *vector_3){   
     std::array<double, 3> vector_cm;
@@ -26,21 +26,28 @@ double distance(double pos_1[DIM], double pos_2[DIM]){
 double acceleration(float mass_1, float mass_2, float pos_1, float pos_2, float pos_3){ 
     //compute the acceleration along one axis of the body 3
     return (-1 * G * (mass_1 * (pos_3-pos_1) / pow(std::abs(pos_3-pos_1), 3) + mass_2 * (pos_3-pos_2) / pow(std::abs(pos_3-pos_2), 3)));
+
 }
 
 int main(){
     // BE CAREFUL: If starting position of the body on one axis is the same, acceleration will be to inf.
     double mass_1 = 10;
-    double mass_2 = 20;
-    double mass_3 = 30;    
-    double h = 0.005;
+    double mass_2 = 10;
+    double mass_3 = 10;    
+    double h = 0.001;
 
-    std::array<double, DIM-1> x0_1 = {-10, 10, -11};
+    // std::array<double, DIM-1> x0_1 = {-10, 10, -11};
+    // std::array<double, DIM-1> x0_2 = {0, 0, 0};
+    // std::array<double, DIM-1> x0_3 = {10, 14, 12};                                  
+    // std::array<double, DIM-1> v0_1 = {-3, 0, 0};
+    // std::array<double, DIM-1> v0_2 = {0, 0, 0};
+    // std::array<double, DIM-1> v0_3 = {0, 0, 0};
+    std::array<double, DIM-1> x0_1 = {-20, 20, 0};
     std::array<double, DIM-1> x0_2 = {0, 0, 0};
-    std::array<double, DIM-1> x0_3 = {10, 14, 12};                                  
-    std::array<double, DIM-1> v0_1 = {-3, 0, 0};
+    std::array<double, DIM-1> x0_3 = {20, -20, 0};                                  
+    std::array<double, DIM-1> v0_1 = {10, 10, 0};
     std::array<double, DIM-1> v0_2 = {0, 0, 0};
-    std::array<double, DIM-1> v0_3 = {3, 0, 0};
+    std::array<double, DIM-1> v0_3 = {-10, -10, 0};
     std::array<double, N_STEPS> time;
     
     double x_1[DIM][N_STEPS];
@@ -93,7 +100,7 @@ int main(){
 for (int i=0; i<N_STEPS-1; i++){
     for(int j=0; j<DIM-1; j++){
     a_1[j][i] = acceleration(mass_2, mass_3, x_2[j][i], x_3[j][i], x_1[j][i]);
-    a_2[j][i] = acceleration(mass_1, mass_3, x_1[j][i], x_3[j][i], x_2[j][i]);
+    a_2[j][i] = acceleration(mass_1, mass_3, x_3[j][i], x_1[j][i], x_2[j][i]);
     a_3[j][i] = acceleration(mass_1, mass_2, x_1[j][i], x_2[j][i], x_3[j][i]);
     
     v_1[j][i + 1] = v_1[j][i] + a_1[j][i] * h;
@@ -114,19 +121,18 @@ for (int i=0; i<N_STEPS-1; i++){
 
     }
     }
-    
 }
 
     // Alla ricerca del bug perduto
     std::cout<<"Considero la velocita del corpo 3 nei primi step:\n"; //Il problema è a_3 sull'asse y.
     std::cout<<"x, "<<"y, "<<"z"<<std::endl;
-    std::cout<<v_3[0][0]<<", "<<v_3[1][0]<<", "<<v_3[2][0]<<std::endl;
-    std::cout<<v_3[0][1]<<", "<<v_3[1][1]<<", "<<v_3[2][1]<<std::endl;
-    std::cout<<v_3[0][2]<<", "<<v_3[1][2]<<", "<<v_3[2][2]<<std::endl;
-    std::cout<<v_3[0][3]<<", "<<v_3[1][3]<<", "<<v_3[2][3]<<std::endl;
-    std::cout<<v_3[0][4]<<", "<<v_3[1][4]<<", "<<v_3[2][4]<<std::endl;
-    std::cout<<v_3[0][5]<<", "<<v_3[1][5]<<", "<<v_3[2][5]<<std::endl;
-    std::cout<<v_3[0][25]<<", "<<v_3[1][25]<<", "<<v_3[2][25]<<std::endl;
+    std::cout<<a_3[0][0]<<", "<<a_3[1][0]<<", "<<a_3[2][0]<<std::endl;
+    std::cout<<a_3[0][1]<<", "<<a_3[1][1]<<", "<<a_3[2][1]<<std::endl;
+    std::cout<<a_3[0][2]<<", "<<a_3[1][2]<<", "<<a_3[2][2]<<std::endl;
+    std::cout<<a_3[0][3]<<", "<<a_3[1][3]<<", "<<a_3[2][3]<<std::endl;
+    std::cout<<a_3[0][4]<<", "<<a_3[1][4]<<", "<<a_3[2][4]<<std::endl;
+    std::cout<<a_3[0][5]<<", "<<a_3[1][5]<<", "<<a_3[2][5]<<std::endl;
+    std::cout<<a_3[0][25]<<", "<<a_3[1][25]<<", "<<a_3[2][25]<<std::endl;
 
     std::ofstream output_file_A("positions_A.csv");
     std::ofstream output_file_B("positions_B.csv");
@@ -149,5 +155,8 @@ for (int i=0; i<N_STEPS-1; i++){
     output_file_B.close(); 
     output_file_C.close();
 
+    
+    FILE* pipe = popen("conda activate ml\n python plotting.py", "w");
+    pclose(pipe);
     return 0;
 }
