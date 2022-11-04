@@ -9,6 +9,62 @@ static constexpr double G = 10;
 static constexpr int N_BODIES = 3;
 static constexpr int N_STEPS = 5000;
 
+class Planet{
+private:
+    double m;
+    double x;
+    double y;
+    double z;
+    double v_x;
+    double v_y;
+    double v_z;
+    double a_x;
+    double a_y;
+    double a_z;
+    double energy;
+public:
+    Planet () {m=0; x=0; y=0; z=0, v_x=0; v_y=0; v_z=0;}
+		void setPlanet(double mass, double x_position, double y_position, double z_position, double x_velocity, double y_velocity, double z_velocity){
+			m = mass;
+			x = x_position;
+			y = y_position;
+            z = z_position;
+			v_x = x_velocity;
+            v_y = y_velocity;
+            v_z = z_velocity;
+		}
+		double getPositionX(void){
+			return x;
+		}
+		double getPositionY(void){
+			return y;
+		}
+        double getPositionZ(void){
+			return z;
+		}
+        double getMass(void){
+            return m;
+        }
+        double getVelocityX(void){
+            return v_x;
+        }
+        double getVelocityY(void){
+            return v_y;
+        }
+        double getVelocityZ(void){
+            return v_z;
+        }
+        double getAccelX(void){
+            return a_x;
+        }
+        double getAccelY(void){
+            return a_y;
+        }
+        double getAccelZ(void){
+            return a_z;
+        }
+};
+
 std::array<double, 3> compute_vector_cm(double mass_1, double mass_2, double mass_3, double *vector_1, double *vector_2, double *vector_3){   
     std::array<double, 3> vector_cm;
     for (int i = 0; i < 3; i++) {   
@@ -23,13 +79,30 @@ double distance(double pos_1[DIM], double pos_2[DIM]){
 
 // Funzione per l'accelerazione //
 
-double acceleration(float mass_1, float mass_2, float pos_1, float pos_2, float pos_3){ 
+double acceleration_class(Planet A, Planet B, Planet C){
+    //compute the acceleration along one axis of the body C
+    double mass_A = A.getMass();
+    double mass_B = A.getMass();
+    double posx_A = A.getPositionX(); 
+    double posx_B = B.getPositionX(); 
+    double posx_C = C.getPositionX(); 
+    double posy_A = A.getPositionY(); 
+    double posy_B = B.getPositionY(); 
+    double posy_C = C.getPositionY(); 
+    double posz_A = A.getPositionZ(); 
+    double posz_B = B.getPositionZ(); 
+    double posz_C = C.getPositionZ();
+    return (-1 * G * (mass_A * (posx_C-posx_A) / pow(sqrt(pow(posx_C-posx_A,2)+pow(posy_C-posy_A,2)+pow(posz_C-posz_A,2)), 3) + mass_B * (posx_C-posx_B) / pow(sqrt(pow(posx_C-posx_B,2)+pow(posy_C-posy_B,2)+pow(posz_C-posz_B,2)), 3)));
+}
+
+double acceleration(double mass_1, double mass_2, double posx_1, double posx_2, double posx_3, double posy_1, double posy_2, double posy_3, double posz_1, double posz_2, double posz_3){ 
     //compute the acceleration along one axis of the body 3
-    return (-1 * G * (mass_1 * (pos_3-pos_1) / pow(std::abs(pos_3-pos_1), 3) + mass_2 * (pos_3-pos_2) / pow(std::abs(pos_3-pos_2), 3)));
+    return (-1 * G * (mass_1 * (posx_3-posx_1) / pow(sqrt(pow(posx_3-posx_1,2)+pow(posy_3-posy_1,2)+pow(posz_3-posz_1,2)), 3) + mass_2 * (posx_3-posx_2) / pow(sqrt(pow(posx_3-posx_2,2)+pow(posy_3-posy_2,2)+pow(posz_3-posz_2,2)), 3)));
 
 }
 
 int main(){
+    
     // BE CAREFUL: If starting position of the body on one axis is the same, acceleration will be to inf.
     double mass_1 = 10;
     double mass_2 = 10;
@@ -100,8 +173,8 @@ int main(){
 for (int i=0; i<N_STEPS-1; i++){
     for(int j=0; j<DIM-1; j++){
     a_1[j][i] = acceleration(mass_2, mass_3, x_2[j][i], x_3[j][i], x_1[j][i]);
-    a_2[j][i] = acceleration(mass_1, mass_3, x_3[j][i], x_1[j][i], x_2[j][i]);
-    a_3[j][i] = acceleration(mass_1, mass_2, x_1[j][i], x_2[j][i], x_3[j][i]);
+    a_2[j][i] = acceleration(mass_1, mass_3, x_1[j][i], x_3[j][i], x_2[j][i], x_1[j+1][i], x_1[j+2][i], x_1[j+1][i]);
+    a_3[j][i] = acceleration(mass_1, mass_2, x_1[j][i], x_2[j][i], x_3[j][i], x_1[j+1][i], x_2[j+1][i], x_3[j+1][i], x_1[j+2][i], x_2[j+2][i], x_3[j+2][i]);
     
     v_1[j][i + 1] = v_1[j][i] + a_1[j][i] * h;
 	v_2[j][i + 1] = v_2[j][i] + a_2[j][i] * h;
@@ -132,7 +205,10 @@ for (int i=0; i<N_STEPS-1; i++){
     std::cout<<a_3[0][3]<<", "<<a_3[1][3]<<", "<<a_3[2][3]<<std::endl;
     std::cout<<a_3[0][4]<<", "<<a_3[1][4]<<", "<<a_3[2][4]<<std::endl;
     std::cout<<a_3[0][5]<<", "<<a_3[1][5]<<", "<<a_3[2][5]<<std::endl;
-    std::cout<<a_3[0][25]<<", "<<a_3[1][25]<<", "<<a_3[2][25]<<std::endl;
+    for (int i=50;i<300;i++){
+        std::cout<<a_3[0][i]<<", "<<a_3[1][i]<<", "<<a_3[2][i]<<std::endl;
+    }
+    
 
     std::ofstream output_file_A("positions_A.csv");
     std::ofstream output_file_B("positions_B.csv");
