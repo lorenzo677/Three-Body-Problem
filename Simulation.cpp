@@ -103,24 +103,30 @@ double acceleration(double mass_1, double mass_2, double posx_1, double posx_2, 
 
 int main(){
     
-    // BE CAREFUL: If starting position of the body on one axis is the same, acceleration will be to inf.
-    double mass_1 = 10;
-    double mass_2 = 10;
-    double mass_3 = 10;    
+   
     double h = 0.001;
 
-    // std::array<double, DIM-1> x0_1 = {-10, 10, -11};
-    // std::array<double, DIM-1> x0_2 = {0, 0, 0};
-    // std::array<double, DIM-1> x0_3 = {10, 14, 12};                                  
-    // std::array<double, DIM-1> v0_1 = {-3, 0, 0};
-    // std::array<double, DIM-1> v0_2 = {0, 0, 0};
-    // std::array<double, DIM-1> v0_3 = {0, 0, 0};
-    std::array<double, DIM-1> x0_1 = {-20, 20, 0};
-    std::array<double, DIM-1> x0_2 = {0, 0, 0};
-    std::array<double, DIM-1> x0_3 = {20, -20, 0};                                  
-    std::array<double, DIM-1> v0_1 = {10, 10, 0};
-    std::array<double, DIM-1> v0_2 = {0, 0, 0};
-    std::array<double, DIM-1> v0_3 = {-10, -10, 0};
+    Planet A;
+    Planet B;
+    Planet C;
+    // BE CAREFUL: If starting position of the body on one axis is the same, acceleration will be to inf.
+    
+    A.setPlanet(10, -10, 10, -11, -3, 0, 0);   // corpi allineati sull'asse delle x
+    B.setPlanet(10, 0, 0, 0, 0, 0, 0);
+    C.setPlanet(10, 10, 14, 12, 0, 0, 0);
+
+    A.setPlanet(10, -20, 20, 0, 10, 10, 0.1);   // corpi allineati sulla bisettrice 2 e 3 con velocita perpendicolare
+    B.setPlanet(10, 0, 0, 0, 0, 0, 1);
+    C.setPlanet(10, 20, -20, 0.3, -10, -10, 0);
+
+    // -------------  temporaneamente  -------------
+    
+    double mass_1 = A.getMass();
+    double mass_2 = B.getMass();
+    double mass_3 = C.getMass();    
+
+    // -------------  ---------------  -------------
+
     std::array<double, N_STEPS> time;
     
     double x_1[DIM][N_STEPS];
@@ -133,31 +139,31 @@ int main(){
     double a_2[DIM][N_STEPS];
     double a_3[DIM][N_STEPS];
 
-    for (int i=0;i<N_STEPS; i++){time[i]= i * h;}
+    for (int i=0;i<N_STEPS-1; i++){time[i]= i * h;}
 
-    x_1[0][0] = x0_1[0];
-    x_2[0][0] = x0_2[0];
-    x_3[0][0] = x0_3[0];
+    x_1[0][0] = A.getPositionX();
+    x_2[0][0] = B.getPositionX();
+    x_3[0][0] = C.getPositionX();
 
-    v_1[0][0] = v0_1[0];
-    v_2[0][0] = v0_2[0];
-    v_3[0][0] = v0_3[0];
+    v_1[0][0] = A.getVelocityX();
+    v_2[0][0] = B.getVelocityX();
+    v_3[0][0] = C.getVelocityX();
 
-    x_1[1][0] = x0_1[1];
-    x_2[1][0] = x0_2[1];
-    x_3[1][0] = x0_3[1];
+    x_1[1][0] = A.getPositionY();
+    x_2[1][0] = B.getPositionY();
+    x_3[1][0] = C.getPositionY();
 
-    v_1[1][0] = v0_1[1];
-    v_2[1][0] = v0_2[1];
-    v_3[1][0] = v0_3[1];
+    v_1[1][0] = A.getVelocityY();
+    v_2[1][0] = B.getVelocityY();
+    v_3[1][0] = C.getVelocityY();
 
-    x_1[2][0] = x0_1[2];
-    x_2[2][0] = x0_2[2];
-    x_3[2][0] = x0_3[2];
+    x_1[2][0] = A.getPositionZ();
+    x_2[2][0] = B.getPositionZ();
+    x_3[2][0] = C.getPositionZ();
 
-    v_1[2][0] = v0_1[2];
-    v_2[2][0] = v0_2[2];
-    v_3[2][0] = v0_3[2];
+    v_1[2][0] = A.getVelocityZ();
+    v_2[2][0] = B.getVelocityZ();
+    v_3[2][0] = C.getVelocityZ();
 
 /*
    for(int j=0; j<DIM; j++){
@@ -174,27 +180,26 @@ int main(){
 
     for (int i=0; i<N_STEPS-1; i++){
         for(int j=0; j<DIM-1; j++){
-    a_1[j][i] = acceleration(mass_2, mass_3, x_2[j][i], x_3[j][i], x_1[j][i], x_2[j+1][i], x_3[j+1][i], x_1[j+1][i], x_2[j+2][i], x_3[j+2][i], x_1[j+2][i]);
-    a_2[j][i] = acceleration(mass_1, mass_3, x_1[j][i], x_3[j][i], x_2[j][i], x_1[j+1][i], x_3[j+1][i], x_2[j+1][i], x_1[j+2][i], x_3[j+2][i], x_2[j+2][i]);
-    a_3[j][i] = acceleration(mass_1, mass_2, x_1[j][i], x_2[j][i], x_3[j][i], x_1[j+1][i], x_2[j+1][i], x_3[j+1][i], x_1[j+2][i], x_2[j+2][i], x_3[j+2][i]);
-    
-    v_1[j][i + 1] = v_1[j][i] + a_1[j][i] * h;
-	v_2[j][i + 1] = v_2[j][i] + a_2[j][i] * h;
-	v_3[j][i + 1] = v_3[j][i] + a_3[j][i] * h;
-    
-    x_1[j][i + 1] = x_1[j][i] + v_1[j][i] * h;
-    x_2[j][i + 1] = x_2[j][i] + v_2[j][i] * h;
-    x_3[j][i + 1] = x_3[j][i] + v_3[j][i] * h;
-    
-    if (j==0 and i==1){ // l'array inizia a sporcarsi per j=1 e i=1
-        std::cout<<v_3[j][i-1]<<'+'<< a_3[j][i]<< '*'<< h;
-        std::cout<<"I valori utilizzati per calcolare l'accelerazione valgono "<<x_2[j][i]<<", "<<x_3[j][i]<<", "<<x_1[j][i]<<std::endl;
-        std::cout<<"L'accelerazione utilizzata per calcolare la velocità vale "<<a_3[j][i-1]<<std::endl;
-        std::cout<<"La velocità utilizzata per calcolare la posizione vale "<<v_3[j][i]<<std::endl;
-        std::cout<<"La posizione vale "<<x_3[j][i+1]<<std::endl;
-        std::cout<<"\n";
-
-    }
+            a_1[j][i] = acceleration(mass_2, mass_3, x_2[j][i], x_3[j][i], x_1[j][i], x_2[j+1][i], x_3[j+1][i], x_1[j+1][i], x_2[j+2][i], x_3[j+2][i], x_1[j+2][i]);
+            a_2[j][i] = acceleration(mass_1, mass_3, x_1[j][i], x_3[j][i], x_2[j][i], x_1[j+1][i], x_3[j+1][i], x_2[j+1][i], x_1[j+2][i], x_3[j+2][i], x_2[j+2][i]);
+            a_3[j][i] = acceleration(mass_1, mass_2, x_1[j][i], x_2[j][i], x_3[j][i], x_1[j+1][i], x_2[j+1][i], x_3[j+1][i], x_1[j+2][i], x_2[j+2][i], x_3[j+2][i]);
+            
+            v_1[j][i + 1] = v_1[j][i] + a_1[j][i] * h;
+            v_2[j][i + 1] = v_2[j][i] + a_2[j][i] * h;
+            v_3[j][i + 1] = v_3[j][i] + a_3[j][i] * h;
+            
+            x_1[j][i + 1] = x_1[j][i] + v_1[j][i] * h;
+            x_2[j][i + 1] = x_2[j][i] + v_2[j][i] * h;
+            x_3[j][i + 1] = x_3[j][i] + v_3[j][i] * h;
+            
+        if (j==0 and i==1){ // l'array inizia a sporcarsi per j=1 e i=1
+            std::cout<<v_3[j][i-1]<<'+'<< a_3[j][i]<< '*'<< h;
+            std::cout<<"I valori utilizzati per calcolare l'accelerazione valgono "<<x_2[j][i]<<", "<<x_3[j][i]<<", "<<x_1[j][i]<<std::endl;
+            std::cout<<"L'accelerazione utilizzata per calcolare la velocità vale "<<a_3[j][i-1]<<std::endl;
+            std::cout<<"La velocità utilizzata per calcolare la posizione vale "<<v_3[j][i]<<std::endl;
+            std::cout<<"La posizione vale "<<x_3[j][i+1]<<std::endl<<std::endl;
+        }
+        std::cout<<"i = " <<i<<"\tj="<<j<<std::endl;
     }
 }
 
