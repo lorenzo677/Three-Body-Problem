@@ -9,6 +9,10 @@ static constexpr double G = 10;
 static constexpr int N_BODIES = 3;
 static constexpr int N_STEPS = 80000;
 
+double distance(std::array<double, 3> r1, std::array<double, 3> r2){
+    return sqrt(pow(r1[0]-r2[0],2)+pow(r1[1]-r2[1],2)+pow(r1[2]-r2[2],2));
+}
+
 class Planet{
 
 public:
@@ -19,16 +23,15 @@ public:
     std::array <double, 3> a;
     double energy;
     
-    Planet () {m = 0; x = {0, 0, 0}; v = {0, 0, 0}; a = {0, 0, 0};};
-		void setPlanet(double mass, double x_position, double y_position, double z_position, double x_velocity, double y_velocity, double z_velocity){
-			m = mass;
+    Planet (double mass, double x_position, double y_position, double z_position, double x_velocity, double y_velocity, double z_velocity) {
+        m = mass;
 			x[0] = x_position;
 			x[1] = y_position;
             x[2] = z_position;
 			v[0] = x_velocity;
             v[1] = y_velocity;
             v[2] = z_velocity;
-		}
+        };
 		double getPositionX(void){
 			return x[0];
 		}
@@ -59,6 +62,13 @@ public:
         double getAccelZ(void){
             return a[2];
         }
+        double getEnergy(void){
+            return energy;
+        }
+        void computeEnergy(Planet planet1, Planet planet2){
+            
+            energy = 0.5 * m * (pow(v[0],2)+pow(v[1],2)+pow(v[2],2)) - G * m * planet1.m / distance(x, planet1.x) - G * m * planet2.m / distance(x, planet2.x);
+        }
 };
 
 std::array<double, 3> compute_vector_cm(double mass_1, double mass_2, double mass_3, double *vector_1, double *vector_2, double *vector_3){   
@@ -69,13 +79,12 @@ std::array<double, 3> compute_vector_cm(double mass_1, double mass_2, double mas
     return vector_cm; 
 }
 
-double distance(double pos_1[DIM], double pos_2[DIM]){
-    return sqrt(pow(pos_1[0]-pos_2[0], 2) + pow(pos_1[1]-pos_2[1], 2) + pow(pos_1[2]-pos_2[2], 2));
-}
+// double distance(Planet planet1, Planet planet2){
+//     return sqrt(pow(planet1.x[0]-planet2.x[0],2)+pow(planet1.x[1]-planet2.x[1],2)+pow(planet1.x[2]-planet2.x[2],2));
+// }
 
-// Funzione per l'accelerazione //
 
-double acceleration_class(Planet A, Planet B, Planet C, int axe){
+double acceleration(Planet A, Planet B, Planet C, int axe){
     //compute the acceleration along one axis of the body C
     double mass_A = A.getMass();
     double mass_B = A.getMass();
@@ -97,25 +106,16 @@ double acceleration_class(Planet A, Planet B, Planet C, int axe){
     }
 }
 
-double acceleration(double mass_1, double mass_2, double posx_1, double posx_2, double posx_3, double posy_1, double posy_2, double posy_3, double posz_1, double posz_2, double posz_3){ 
-    //compute the acceleration along one axis of the body 3
-    return (-1 * G * (mass_1 * (posx_3-posx_1) / pow(sqrt(pow(posx_3-posx_1,2)+pow(posy_3-posy_1,2)+pow(posz_3-posz_1,2)), 3) + mass_2 * (posx_3-posx_2) / pow(sqrt(pow(posx_3-posx_2,2)+pow(posy_3-posy_2,2)+pow(posz_3-posz_2,2)), 3)));
-
-}
-
 int main(){
     
    
     double h = 0.001;
 
-    Planet A;
-    Planet B;
-    Planet C;
+    Planet A(10, -10, 10, -11, -3, 0, 0);   // corpi allineati sull'asse delle x
+    Planet B(10, 0, 0, 0, 0, 0, 0);
+    Planet C(10, 10, 14, 12, 0, 0, 0);
     // BE CAREFUL: If starting position of the body on one axis is the same, acceleration will be to inf.
     
-    A.setPlanet(10, -10, 10, -11, -3, 0, 0);   // corpi allineati sull'asse delle x
-    B.setPlanet(10, 0, 0, 0, 0, 0, 0);
-    C.setPlanet(10, 10, 14, 12, 0, 0, 0);
 
     // A.setPlanet(10, -20, 20, 0, 10, 10, 0.1);   // corpi allineati sulla bisettrice 2 e 3 con velocita perpendicolare
     // B.setPlanet(10, 0, 0, 0, 0, 0, 1);
@@ -181,20 +181,16 @@ int main(){
 
 
 
-
-//Function for the Euler method (contrasta con quella presente sull'header)
+//Function for the Euler method
 
     for (int i=0; i<N_STEPS-1; i++){
         for(int j=0; j<DIM-1; j++){
 
 
-            A.a[j] = acceleration_class(B, C, A, j);
-            B.a[j] = acceleration_class(A, C, B, j);
-            C.a[j] = acceleration_class(B, A, C, j);
-            // a_A[j][i] = acceleration(mass_B, mass_C, x_B[j][i], x_C[j][i], x_A[j][i], x_B[j+1][i], x_C[j+1][i], x_A[j+1][i], x_B[j+2][i], x_C[j+2][i], x_A[j+2][i]);
-            // a_B[j][i] = acceleration(mass_A, mass_C, x_A[j][i], x_C[j][i], x_B[j][i], x_A[j+1][i], x_C[j+1][i], x_B[j+1][i], x_A[j+2][i], x_C[j+2][i], x_B[j+2][i]);
-            // a_C[j][i] = acceleration(mass_A, mass_B, x_A[j][i], x_B[j][i], x_C[j][i], x_A[j+1][i], x_B[j+1][i], x_C[j+1][i], x_A[j+2][i], x_B[j+2][i], x_C[j+2][i]);
-            
+            A.a[j] = acceleration(B, C, A, j);
+            B.a[j] = acceleration(A, C, B, j);
+            C.a[j] = acceleration(B, A, C, j);
+
             A.v[j] += A.a[j] * h;
             B.v[j] += B.a[j] * h;
             C.v[j] += C.a[j] * h;
@@ -206,30 +202,56 @@ int main(){
             A.x[j] = x_A[j][i + 1];
             B.x[j] = x_B[j][i + 1];
             C.x[j] = x_C[j][i + 1];
+            
+            A.computeEnergy(B, C);
+            B.computeEnergy(A, C);
+            C.computeEnergy(B, A);
+            
 
-            
-            
-        // if (j==0 and i==1){ // l'array inizia a sporcarsi per j=1 e i=1
-        //     std::cout<<v_C[j][i-1]<<'+'<< a_C[j][i]<< '*'<< h;
-        //     std::cout<<"I valori utilizzati per calcolare l'accelerazione valgono "<<x_B[j][i]<<", "<<x_3[j][i]<<", "<<x_1[j][i]<<std::endl;
-        //     std::cout<<"L'accelerazione utilizzata per calcolare la velocità vale "<<a_3[j][i-1]<<std::endl;
-        //     std::cout<<"La velocità utilizzata per calcolare la posizione vale "<<v_3[j][i]<<std::endl;
-        //     std::cout<<"La posizione vale "<<x_3[j][i+1]<<std::endl<<std::endl;
-        // }
-        std::cout<<"i = " <<i<<"\tj="<<j<<std::endl;
+        std::cout<<A.energy +B.energy+C.energy<<std::endl;
     }
 }
 
-    // Alla ricerca del bug perduto
-    std::cout<<"Considero la poszione del corpo 3 nei primi step:\n"; //Il problema è a_3 sull'asse y.
-    std::cout<<"x, "<<"y, "<<"z"<<std::endl;
-    std::cout<<x_A[0][0]<<", "<<x_A[1][0]<<", "<<x_A[2][0]<<std::endl;
-    std::cout<<x_A[0][1]<<", "<<x_A[1][1]<<", "<<x_A[2][1]<<std::endl;
-    std::cout<<x_A[0][2]<<", "<<x_A[1][2]<<", "<<x_A[2][2]<<std::endl;
+// ---------------------------------------------------------------------------------------------
+// RUNGE KUTTA 4
+
+// Integro accelerazione su asse x
 
 
-    
+float function_to_integrate(float x0, float y0, float m1, float m2, float p1, float p2){
+    return (-1 * G * (m1 * (x0-posx_A) / pow(sqrt(pow(x0-posx_A,2)+pow(posy_C-posy_A,2)+pow(posz_C-posz_A,2)), 3) + m2 * (x0-posx_B) / pow(sqrt(pow(posx_C-posx_B,2)+pow(posy_C-posy_B,2)+pow(posz_C-posz_B,2)), 3)));
 
+}
+
+
+float RK4(float x0, float y0, float h, float (*func)(float, float, float, float, float, float, float), float m1, float m2, float p1, float p2){
+    // Finds value of y for a given x using step size h
+    // and initial value y0 at x0.
+    float k1, k2, k3, k4;
+
+    k1 = h * func(x0, y0, m1, m2, p1, p2, x0);
+    k2 = h * func(x0 + 0.5 * h, y0 + 0.5 * k1, m1, m2, p1, p2, x0);
+    k3 = h * func(x0 + 0.5 * h, y0 + 0.5 * k2, m1, m2, p1, p2, x0);
+    k4 = h * func(x0 + h, y0 + k3, m1, m2, p1, p2, x0);
+  
+    // Update next value of y
+    y0 = y0 + (1.0 / 6.0) * (k1 + 2 * k2 + 2 * k3 + k4);;
+  
+    // Update next value of x
+    x0 = x0 + h;
+
+    return y0;
+}
+
+int prova; // velocità del corpo A 
+prova = RK4(A.a[0], A.v[0], h, float (*func)(float, float, float, float, float, float, float), A.m, B.m, B.x[0], C.x[0]){
+
+
+
+
+//----------------------------------------------------------------
+
+// Print data on .csv
     std::ofstream output_file_A("positions_A.csv");
     std::ofstream output_file_B("positions_B.csv");
     std::ofstream output_file_C("positions_C.csv");
