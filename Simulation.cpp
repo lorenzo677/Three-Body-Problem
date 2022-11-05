@@ -7,7 +7,7 @@
 static constexpr int DIM = 4;
 static constexpr double G = 10;
 static constexpr int N_BODIES = 3;
-static constexpr int N_STEPS = 50000;
+static constexpr int N_STEPS = 80000;
 
 class Planet{
 
@@ -106,7 +106,7 @@ double acceleration(double mass_1, double mass_2, double posx_1, double posx_2, 
 int main(){
     
    
-    double h = 0.01;
+    double h = 0.001;
 
     Planet A;
     Planet B;
@@ -117,9 +117,9 @@ int main(){
     B.setPlanet(10, 0, 0, 0, 0, 0, 0);
     C.setPlanet(10, 10, 14, 12, 0, 0, 0);
 
-    A.setPlanet(10, -20, 20, 0, 10, 10, 0.1);   // corpi allineati sulla bisettrice 2 e 3 con velocita perpendicolare
-    B.setPlanet(10, 0, 0, 0, 0, 0, 1);
-    C.setPlanet(10, 20, -20, 0.3, -10, -10, 0);
+    // A.setPlanet(10, -20, 20, 0, 10, 10, 0.1);   // corpi allineati sulla bisettrice 2 e 3 con velocita perpendicolare
+    // B.setPlanet(10, 0, 0, 0, 0, 0, 1);
+    // C.setPlanet(10, 20, -20, 0.3, -10, -10, 0);
 
     std::array<double, N_STEPS> time;
     
@@ -194,6 +194,11 @@ int main(){
             // a_A[j][i] = acceleration(mass_B, mass_C, x_B[j][i], x_C[j][i], x_A[j][i], x_B[j+1][i], x_C[j+1][i], x_A[j+1][i], x_B[j+2][i], x_C[j+2][i], x_A[j+2][i]);
             // a_B[j][i] = acceleration(mass_A, mass_C, x_A[j][i], x_C[j][i], x_B[j][i], x_A[j+1][i], x_C[j+1][i], x_B[j+1][i], x_A[j+2][i], x_C[j+2][i], x_B[j+2][i]);
             // a_C[j][i] = acceleration(mass_A, mass_B, x_A[j][i], x_B[j][i], x_C[j][i], x_A[j+1][i], x_B[j+1][i], x_C[j+1][i], x_A[j+2][i], x_B[j+2][i], x_C[j+2][i]);
+            
+            A.v[j] += A.a[j] * h;
+            B.v[j] += B.a[j] * h;
+            C.v[j] += C.a[j] * h;
+
             x_A[j][i + 1] = x_A[j][i] + A.v[j] * h;
             x_B[j][i + 1] = x_B[j][i] + B.v[j] * h;
             x_C[j][i + 1] = x_C[j][i] + C.v[j] * h;
@@ -202,9 +207,6 @@ int main(){
             B.x[j] = x_B[j][i + 1];
             C.x[j] = x_C[j][i + 1];
 
-            A.v[j] += A.a[j] * h;
-            B.v[j] += B.a[j] * h;
-            C.v[j] += C.a[j] * h;
             
             
         // if (j==0 and i==1){ // l'array inizia a sporcarsi per j=1 e i=1
