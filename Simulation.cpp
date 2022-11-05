@@ -7,61 +7,57 @@
 static constexpr int DIM = 4;
 static constexpr double G = 10;
 static constexpr int N_BODIES = 3;
-static constexpr int N_STEPS = 5000;
+static constexpr int N_STEPS = 50000;
 
 class Planet{
-private:
-    double m;
-    double x;
-    double y;
-    double z;
-    double v_x;
-    double v_y;
-    double v_z;
-    double a_x;
-    double a_y;
-    double a_z;
-    double energy;
+
 public:
-    Planet () {m=0; x=0; y=0; z=0, v_x=0; v_y=0; v_z=0;}
+
+    double m;
+    std::array <double, 3> x;
+    std::array <double, 3> v;
+    std::array <double, 3> a;
+    double energy;
+    
+    Planet () {m = 0; x = {0, 0, 0}; v = {0, 0, 0}; a = {0, 0, 0};};
 		void setPlanet(double mass, double x_position, double y_position, double z_position, double x_velocity, double y_velocity, double z_velocity){
 			m = mass;
-			x = x_position;
-			y = y_position;
-            z = z_position;
-			v_x = x_velocity;
-            v_y = y_velocity;
-            v_z = z_velocity;
+			x[0] = x_position;
+			x[1] = y_position;
+            x[2] = z_position;
+			v[0] = x_velocity;
+            v[1] = y_velocity;
+            v[2] = z_velocity;
 		}
 		double getPositionX(void){
-			return x;
+			return x[0];
 		}
 		double getPositionY(void){
-			return y;
+			return x[1];
 		}
         double getPositionZ(void){
-			return z;
+			return x[2];
 		}
         double getMass(void){
             return m;
         }
         double getVelocityX(void){
-            return v_x;
+            return v[0];
         }
         double getVelocityY(void){
-            return v_y;
+            return v[1];
         }
         double getVelocityZ(void){
-            return v_z;
+            return v[2];
         }
         double getAccelX(void){
-            return a_x;
+            return a[0];
         }
         double getAccelY(void){
-            return a_y;
+            return a[1];
         }
         double getAccelZ(void){
-            return a_z;
+            return a[2];
         }
 };
 
@@ -79,7 +75,7 @@ double distance(double pos_1[DIM], double pos_2[DIM]){
 
 // Funzione per l'accelerazione //
 
-double acceleration_class(Planet A, Planet B, Planet C){
+double acceleration_class(Planet A, Planet B, Planet C, int axe){
     //compute the acceleration along one axis of the body C
     double mass_A = A.getMass();
     double mass_B = A.getMass();
@@ -92,7 +88,13 @@ double acceleration_class(Planet A, Planet B, Planet C){
     double posz_A = A.getPositionZ(); 
     double posz_B = B.getPositionZ(); 
     double posz_C = C.getPositionZ();
-    return (-1 * G * (mass_A * (posx_C-posx_A) / pow(sqrt(pow(posx_C-posx_A,2)+pow(posy_C-posy_A,2)+pow(posz_C-posz_A,2)), 3) + mass_B * (posx_C-posx_B) / pow(sqrt(pow(posx_C-posx_B,2)+pow(posy_C-posy_B,2)+pow(posz_C-posz_B,2)), 3)));
+    if (axe == 0)
+        return (-1 * G * (mass_A * (posx_C-posx_A) / pow(sqrt(pow(posx_C-posx_A,2)+pow(posy_C-posy_A,2)+pow(posz_C-posz_A,2)), 3) + mass_B * (posx_C-posx_B) / pow(sqrt(pow(posx_C-posx_B,2)+pow(posy_C-posy_B,2)+pow(posz_C-posz_B,2)), 3)));
+    else if (axe == 1){
+        return (-1 * G * (mass_A * (posy_C-posy_A) / pow(sqrt(pow(posx_C-posx_A,2)+pow(posy_C-posy_A,2)+pow(posz_C-posz_A,2)), 3) + mass_B * (posy_C-posy_B) / pow(sqrt(pow(posx_C-posx_B,2)+pow(posy_C-posy_B,2)+pow(posz_C-posz_B,2)), 3)));
+    }else if (axe == 2){
+        return (-1 * G * (mass_A * (posz_C-posz_A) / pow(sqrt(pow(posx_C-posx_A,2)+pow(posy_C-posy_A,2)+pow(posz_C-posz_A,2)), 3) + mass_B * (posz_C-posz_B) / pow(sqrt(pow(posx_C-posx_B,2)+pow(posy_C-posy_B,2)+pow(posz_C-posz_B,2)), 3)));
+    }
 }
 
 double acceleration(double mass_1, double mass_2, double posx_1, double posx_2, double posx_3, double posy_1, double posy_2, double posy_3, double posz_1, double posz_2, double posz_3){ 
@@ -104,7 +106,7 @@ double acceleration(double mass_1, double mass_2, double posx_1, double posx_2, 
 int main(){
     
    
-    double h = 0.001;
+    double h = 0.01;
 
     Planet A;
     Planet B;
@@ -119,51 +121,55 @@ int main(){
     B.setPlanet(10, 0, 0, 0, 0, 0, 1);
     C.setPlanet(10, 20, -20, 0.3, -10, -10, 0);
 
-    // -------------  temporaneamente  -------------
-    
-    double mass_1 = A.getMass();
-    double mass_2 = B.getMass();
-    double mass_3 = C.getMass();    
-
-    // -------------  ---------------  -------------
-
     std::array<double, N_STEPS> time;
     
-    double x_1[DIM][N_STEPS];
-    double x_2[DIM][N_STEPS];
-    double x_3[DIM][N_STEPS];
-    double v_1[DIM][N_STEPS];
-    double v_2[DIM][N_STEPS];
-    double v_3[DIM][N_STEPS];
-    double a_1[DIM][N_STEPS];
-    double a_2[DIM][N_STEPS];
-    double a_3[DIM][N_STEPS];
+    double x_A[DIM][N_STEPS];
+    double x_B[DIM][N_STEPS];
+    double x_C[DIM][N_STEPS];
+    double vx_A;
+    double vy_A;
+    double vz_A;
+    double vx_B;
+    double vy_B;
+    double vz_B;
+    double vx_C;
+    double vy_C;
+    double vz_C;
+    // double v_A[DIM][N_STEPS];
+    // double v_B[DIM][N_STEPS];
+    // double v_C[DIM][N_STEPS];
+    // double a_A[DIM][N_STEPS];
+    // double a_B[DIM][N_STEPS];
+    // double a_C[DIM][N_STEPS];
 
-    for (int i=0;i<N_STEPS-1; i++){time[i]= i * h;}
+    double mass_A = A.getMass();
+    double mass_B = B.getMass();
+    double mass_C = C.getMass();
+    // for (int i=0;i<N_STEPS-1; i++){time[i]= i * h;}
 
-    x_1[0][0] = A.getPositionX();
-    x_2[0][0] = B.getPositionX();
-    x_3[0][0] = C.getPositionX();
+    x_A[0][0] = A.getPositionX();
+    x_B[0][0] = B.getPositionX();
+    x_C[0][0] = C.getPositionX();
 
-    v_1[0][0] = A.getVelocityX();
-    v_2[0][0] = B.getVelocityX();
-    v_3[0][0] = C.getVelocityX();
+    vx_A = A.getVelocityX();
+    vx_B = B.getVelocityX();
+    vx_C = C.getVelocityX();
 
-    x_1[1][0] = A.getPositionY();
-    x_2[1][0] = B.getPositionY();
-    x_3[1][0] = C.getPositionY();
+    x_A[1][0] = A.getPositionY();
+    x_B[1][0] = B.getPositionY();
+    x_C[1][0] = C.getPositionY();
 
-    v_1[1][0] = A.getVelocityY();
-    v_2[1][0] = B.getVelocityY();
-    v_3[1][0] = C.getVelocityY();
+    vy_A = A.getVelocityY();
+    vy_B = B.getVelocityY();
+    vy_C = C.getVelocityY();
 
-    x_1[2][0] = A.getPositionZ();
-    x_2[2][0] = B.getPositionZ();
-    x_3[2][0] = C.getPositionZ();
+    x_A[2][0] = A.getPositionZ();
+    x_B[2][0] = B.getPositionZ();
+    x_C[2][0] = C.getPositionZ();
 
-    v_1[2][0] = A.getVelocityZ();
-    v_2[2][0] = B.getVelocityZ();
-    v_3[2][0] = C.getVelocityZ();
+    vz_A = A.getVelocityZ();
+    vz_B = B.getVelocityZ();
+    vz_C = C.getVelocityZ();
 
 /*
    for(int j=0; j<DIM; j++){
@@ -180,25 +186,34 @@ int main(){
 
     for (int i=0; i<N_STEPS-1; i++){
         for(int j=0; j<DIM-1; j++){
-            a_1[j][i] = acceleration(mass_2, mass_3, x_2[j][i], x_3[j][i], x_1[j][i], x_2[j+1][i], x_3[j+1][i], x_1[j+1][i], x_2[j+2][i], x_3[j+2][i], x_1[j+2][i]);
-            a_2[j][i] = acceleration(mass_1, mass_3, x_1[j][i], x_3[j][i], x_2[j][i], x_1[j+1][i], x_3[j+1][i], x_2[j+1][i], x_1[j+2][i], x_3[j+2][i], x_2[j+2][i]);
-            a_3[j][i] = acceleration(mass_1, mass_2, x_1[j][i], x_2[j][i], x_3[j][i], x_1[j+1][i], x_2[j+1][i], x_3[j+1][i], x_1[j+2][i], x_2[j+2][i], x_3[j+2][i]);
+
+
+            A.a[j] = acceleration_class(B, C, A, j);
+            B.a[j] = acceleration_class(A, C, B, j);
+            C.a[j] = acceleration_class(B, A, C, j);
+            // a_A[j][i] = acceleration(mass_B, mass_C, x_B[j][i], x_C[j][i], x_A[j][i], x_B[j+1][i], x_C[j+1][i], x_A[j+1][i], x_B[j+2][i], x_C[j+2][i], x_A[j+2][i]);
+            // a_B[j][i] = acceleration(mass_A, mass_C, x_A[j][i], x_C[j][i], x_B[j][i], x_A[j+1][i], x_C[j+1][i], x_B[j+1][i], x_A[j+2][i], x_C[j+2][i], x_B[j+2][i]);
+            // a_C[j][i] = acceleration(mass_A, mass_B, x_A[j][i], x_B[j][i], x_C[j][i], x_A[j+1][i], x_B[j+1][i], x_C[j+1][i], x_A[j+2][i], x_B[j+2][i], x_C[j+2][i]);
+            x_A[j][i + 1] = x_A[j][i] + A.v[j] * h;
+            x_B[j][i + 1] = x_B[j][i] + B.v[j] * h;
+            x_C[j][i + 1] = x_C[j][i] + C.v[j] * h;
             
-            v_1[j][i + 1] = v_1[j][i] + a_1[j][i] * h;
-            v_2[j][i + 1] = v_2[j][i] + a_2[j][i] * h;
-            v_3[j][i + 1] = v_3[j][i] + a_3[j][i] * h;
+            A.x[j] = x_A[j][i + 1];
+            B.x[j] = x_B[j][i + 1];
+            C.x[j] = x_C[j][i + 1];
+
+            A.v[j] += A.a[j] * h;
+            B.v[j] += B.a[j] * h;
+            C.v[j] += C.a[j] * h;
             
-            x_1[j][i + 1] = x_1[j][i] + v_1[j][i] * h;
-            x_2[j][i + 1] = x_2[j][i] + v_2[j][i] * h;
-            x_3[j][i + 1] = x_3[j][i] + v_3[j][i] * h;
             
-        if (j==0 and i==1){ // l'array inizia a sporcarsi per j=1 e i=1
-            std::cout<<v_3[j][i-1]<<'+'<< a_3[j][i]<< '*'<< h;
-            std::cout<<"I valori utilizzati per calcolare l'accelerazione valgono "<<x_2[j][i]<<", "<<x_3[j][i]<<", "<<x_1[j][i]<<std::endl;
-            std::cout<<"L'accelerazione utilizzata per calcolare la velocità vale "<<a_3[j][i-1]<<std::endl;
-            std::cout<<"La velocità utilizzata per calcolare la posizione vale "<<v_3[j][i]<<std::endl;
-            std::cout<<"La posizione vale "<<x_3[j][i+1]<<std::endl<<std::endl;
-        }
+        // if (j==0 and i==1){ // l'array inizia a sporcarsi per j=1 e i=1
+        //     std::cout<<v_C[j][i-1]<<'+'<< a_C[j][i]<< '*'<< h;
+        //     std::cout<<"I valori utilizzati per calcolare l'accelerazione valgono "<<x_B[j][i]<<", "<<x_3[j][i]<<", "<<x_1[j][i]<<std::endl;
+        //     std::cout<<"L'accelerazione utilizzata per calcolare la velocità vale "<<a_3[j][i-1]<<std::endl;
+        //     std::cout<<"La velocità utilizzata per calcolare la posizione vale "<<v_3[j][i]<<std::endl;
+        //     std::cout<<"La posizione vale "<<x_3[j][i+1]<<std::endl<<std::endl;
+        // }
         std::cout<<"i = " <<i<<"\tj="<<j<<std::endl;
     }
 }
@@ -206,9 +221,9 @@ int main(){
     // Alla ricerca del bug perduto
     std::cout<<"Considero la poszione del corpo 3 nei primi step:\n"; //Il problema è a_3 sull'asse y.
     std::cout<<"x, "<<"y, "<<"z"<<std::endl;
-    std::cout<<x_1[0][0]<<", "<<x_1[1][0]<<", "<<x_1[2][0]<<std::endl;
-    std::cout<<x_1[0][1]<<", "<<x_1[1][1]<<", "<<x_1[2][1]<<std::endl;
-    std::cout<<x_1[0][2]<<", "<<x_1[1][2]<<", "<<x_1[2][2]<<std::endl;
+    std::cout<<x_A[0][0]<<", "<<x_A[1][0]<<", "<<x_A[2][0]<<std::endl;
+    std::cout<<x_A[0][1]<<", "<<x_A[1][1]<<", "<<x_A[2][1]<<std::endl;
+    std::cout<<x_A[0][2]<<", "<<x_A[1][2]<<", "<<x_A[2][2]<<std::endl;
 
 
     
@@ -221,9 +236,9 @@ int main(){
     output_file_C<<"x;y;z"<<std::endl;
     
     for(int i = 0; i<N_STEPS-1; i++){
-        output_file_A << x_1[0][i] << ";" << x_1[1][i] << ";" << x_1[2][i]<< std::endl;
-        output_file_B << x_2[0][i] << ";" << x_2[1][i] << ";" << x_2[2][i]<< std::endl;
-        output_file_C << x_3[0][i] << ";" << x_3[1][i] << ";" << x_3[2][i]<< std::endl;
+        output_file_A << x_A[0][i] << ";" << x_A[1][i] << ";" << x_A[2][i]<< std::endl;
+        output_file_B << x_B[0][i] << ";" << x_B[1][i] << ";" << x_B[2][i]<< std::endl;
+        output_file_C << x_C[0][i] << ";" << x_C[1][i] << ";" << x_C[2][i]<< std::endl;
     }    
     // for(int i = 0; i<N_STEPS-1; i++){
     //     output_file_A << a_1[0][i] << ";" << a_1[1][i] << ";" << a_1[2][i]<< std::endl;
@@ -234,9 +249,9 @@ int main(){
     output_file_B.close(); 
     output_file_C.close();
 
- /*
-   FILE* pipe = popen("conda activate ml\n python plotting.py", "w");
-    pclose(pipe);
-    return 0;
-*/       
+ 
+ //   FILE* pipe = popen("conda activate ml\n python plotting.py", "w");
+ //   pclose(pipe);
+   return 0;
+      
 }
