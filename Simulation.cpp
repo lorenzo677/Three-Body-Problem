@@ -105,11 +105,24 @@ double acceleration(Planet A, Planet B, Planet C, int axe){
         return (-1 * G * (mass_A * (posz_C-posz_A) / pow(sqrt(pow(posx_C-posx_A,2)+pow(posy_C-posy_A,2)+pow(posz_C-posz_A,2)), 3) + mass_B * (posz_C-posz_B) / pow(sqrt(pow(posx_C-posx_B,2)+pow(posy_C-posy_B,2)+pow(posz_C-posz_B,2)), 3)));
     }
 }
+double F(double x, double v, double t, Planet A, Planet B, Planet C ){
+    double mass_A = A.getMass();
+    double mass_B = A.getMass();
+    double posx_A = A.getPositionX(); 
+    double posx_B = B.getPositionX(); 
+    double posx_C = C.getPositionX(); 
+    double posy_A = A.getPositionY(); 
+    double posy_B = B.getPositionY(); 
+    double posy_C = C.getPositionY(); 
+    double posz_A = A.getPositionZ(); 
+    double posz_B = B.getPositionZ(); 
+    double posz_C = C.getPositionZ();
+    return (-1 * G * (mass_A * (x-posx_A) / pow(sqrt(pow(x-posx_A,2)+pow(posy_C-posy_A,2)+pow(posz_C-posz_A,2)), 3) + mass_B * (x-posx_B) / pow(sqrt(pow(x-posx_B,2)+pow(posy_C-posy_B,2)+pow(posz_C-posz_B,2)), 3)));
+}
 
 int main(){
     
-   
-    double h = 0.001;
+    double h = 0.01;
 
     Planet A(10, -10, 10, -11, -3, 0, 0);   // corpi allineati sull'asse delle x
     Planet B(10, 0, 0, 0, 0, 0, 0);
@@ -171,80 +184,157 @@ int main(){
     vz_B = B.getVelocityZ();
     vz_C = C.getVelocityZ();
 
-/*
-   for(int j=0; j<DIM; j++){
-        for(int i=0; i<N_STEPS; i++){
-           v_1[j][i+1] = RK4(time[i], v_1[j][i], h, acceleration, mass_2, mass_3, x_2[j][i], x_3[j][i]); // probabilmente sbagliatto
+    /*
+    for(int j=0; j<DIM; j++){
+            for(int i=0; i<N_STEPS; i++){
+            v_1[j][i+1] = RK4(time[i], v_1[j][i], h, acceleration, mass_2, mass_3, x_2[j][i], x_3[j][i]); // probabilmente sbagliatto
+            }
+        }
+    */
+
+
+
+    //Function for the Euler method
+
+    // for (int i=0; i<N_STEPS-1; i++){
+    //     for(int j=0; j<DIM-1; j++){
+
+
+    //         A.a[j] = acceleration(B, C, A, j);
+    //         B.a[j] = acceleration(A, C, B, j);
+    //         C.a[j] = acceleration(B, A, C, j);
+
+    //         A.v[j] += A.a[j] * h;
+    //         B.v[j] += B.a[j] * h;
+    //         C.v[j] += C.a[j] * h;
+
+    //         x_A[j][i + 1] = x_A[j][i] + A.v[j] * h;
+    //         x_B[j][i + 1] = x_B[j][i] + B.v[j] * h;
+    //         x_C[j][i + 1] = x_C[j][i] + C.v[j] * h;
+            
+    //         A.x[j] = x_A[j][i + 1];
+    //         B.x[j] = x_B[j][i + 1];
+    //         C.x[j] = x_C[j][i + 1];
+            
+    //         A.computeEnergy(B, C);
+    //         B.computeEnergy(A, C);
+    //         C.computeEnergy(B, A);
+            
+
+    //     std::cout<<A.energy +B.energy+C.energy<<std::endl;
+    //     }
+    // }
+
+
+    // ---------------------------------------------------------------------------------------------
+    // RUNGE KUTTA 4
+
+    // Integro accelerazione su asse x
+    // x'' = -G(...)
+    // viene trasformato in
+    // x' = v
+    // v' = -G(...)
+
+    // double function_to_integrate(double x0, double y0, double m1, double m2, double p1, double p2){
+    //     return (-1 * G * (m1 * (x0-posx_A) / pow(sqrt(pow(x0-posx_A,2)+pow(posy_C-posy_A,2)+pow(posz_C-posz_A,2)), 3) + m2 * (x0-posx_B) / pow(sqrt(pow(posx_C-posx_B,2)+pow(posy_C-posy_B,2)+pow(posz_C-posz_B,2)), 3)));
+    // }
+    double m1;
+    double k1;
+    double m2;
+    double k2;
+    double m3;
+    double k3;
+    double m4;
+    double k4;
+    std::array<double,3> vA = A.v; //condizione iniziale velocita
+    std::array<double,3> xA = A.x;
+    std::array<double,3> vB = B.v; //condizione iniziale velocita
+    std::array<double,3> xB = B.x;
+    std::array<double,3> vC = C.v; //condizione iniziale velocita
+    std::array<double,3> xC = C.x;
+    double t;
+    
+    // x' = v
+    // v' = -G(...)
+
+    for(int i=0; i<N_STEPS-1;i++){
+        for(int j=0;j<DIM-1;j++){
+            // body A
+            m1 = h*xA[j];
+            k1 = h*F(xA[j], vA[j], t, A, B, C);  
+
+            m2 = h*(vA[j] + 0.5*k1);
+            k2 = h*F(xA[j]+0.5*m1, vA[j]+0.5*k1, t+0.5*h, A, B, C);
+
+            m3 = h*(vA[j] + 0.5*k2);
+            k3 = h*F(xA[j]+0.5*m2, vA[j]+0.5*k2, t+0.5*h, A, B, C);
+
+            m4 = h*(vA[j] + k3);
+            k4 = h*F(xA[j]+m3, vA[j]+k3, t+h, A, B, C);
+
+            xA[j] += (m1 + 2*m2 + 2*m3 + m4)/6;
+            vA[j] += (k1 + 2*k2 + 2*k3 + k4)/6;
+            x_A[j][i] = xA[j];
+            A.x[j] = xA[j];
+            
+            // body B
+            m1 = h*vB[j];
+            k1 = h*F(xB[j], vB[j], t, A, B, C);  //(x, v, t)
+
+            m2 = h*(vB[j] + 0.5*k1);
+            k2 = h*F(xB[j]+0.5*m1, vB[j]+0.5*k1, t+0.5*h, A, B, C);
+
+            m3 = h*(vB[j] + 0.5*k2);
+            k3 = h*F(xB[j]+0.5*m2, vB[j]+0.5*k2, t+0.5*h, A, B, C);
+
+            m4 = h*(vB[j] + k3);
+            k4 = h*F(xB[j]+m3, vB[j]+k3, t+h, A, B, C);
+
+            xB[j] += (m1 + 2*m2 + 2*m3 + m4)/6;
+            vB[j] += (k1 + 2*k2 + 2*k3 + k4)/6;
+            x_B[j][i] = xB[j];
+            B.x[j] = xB[j];
+            // body C
+            m1 = h*vC[j];
+            k1 = h*F(xC[j], vC[j], t, A, B, C);  //(x, v, t)
+
+            m2 = h*(vC[j] + 0.5*k1);
+            k2 = h*F(xC[j]+0.5*m1, vC[j]+0.5*k1, t+0.5*h, A, B, C);
+
+            m3 = h*(vC[j] + 0.5*k2);
+            k3 = h*F(xC[j]+0.5*m2, vC[j]+0.5*k2, t+0.5*h, A, B, C);
+
+            m4 = h*(vC[j] + k3);
+            k4 = h*F(xC[j]+m3, vC[j]+k3, t+h, A, B, C);
+
+            xC[j] += (m1 + 2*m2 + 2*m3 + m4)/6;
+            vC[j] += (k1 + 2*k2 + 2*k3 + k4)/6;
+            x_C[j][i] = xC[j];
+            C.x[j] = xC[j];
         }
     }
-*/
 
+    // double RK4(double x0, double y0, double h, double (*func)(double, double, double, double, double, double, double), double m1, double m2, double p1, double p2){
+    //     // Finds value of y for a given x using step size h
+    //     // and initial value y0 at x0.
+    //     double k1, k2, k3, k4;
 
+    //     k1 = h * func(x0, y0, m1, m2, p1, p2, x0);
+    //     k2 = h * func(x0 + 0.5 * h, y0 + 0.5 * k1, m1, m2, p1, p2, x0);
+    //     k3 = h * func(x0 + 0.5 * h, y0 + 0.5 * k2, m1, m2, p1, p2, x0);
+    //     k4 = h * func(x0 + h, y0 + k3, m1, m2, p1, p2, x0);
+    
+    //     // Update next value of y
+    //     y0 = y0 + (1.0 / 6.0) * (k1 + 2 * k2 + 2 * k3 + k4);;
+    
+    //     // Update next value of x
+    //     x0 = x0 + h;
 
-//Function for the Euler method
+//     return y0;
+// }
 
-    for (int i=0; i<N_STEPS-1; i++){
-        for(int j=0; j<DIM-1; j++){
-
-
-            A.a[j] = acceleration(B, C, A, j);
-            B.a[j] = acceleration(A, C, B, j);
-            C.a[j] = acceleration(B, A, C, j);
-
-            A.v[j] += A.a[j] * h;
-            B.v[j] += B.a[j] * h;
-            C.v[j] += C.a[j] * h;
-
-            x_A[j][i + 1] = x_A[j][i] + A.v[j] * h;
-            x_B[j][i + 1] = x_B[j][i] + B.v[j] * h;
-            x_C[j][i + 1] = x_C[j][i] + C.v[j] * h;
-            
-            A.x[j] = x_A[j][i + 1];
-            B.x[j] = x_B[j][i + 1];
-            C.x[j] = x_C[j][i + 1];
-            
-            A.computeEnergy(B, C);
-            B.computeEnergy(A, C);
-            C.computeEnergy(B, A);
-            
-
-        std::cout<<A.energy +B.energy+C.energy<<std::endl;
-    }
-}
-
-// ---------------------------------------------------------------------------------------------
-// RUNGE KUTTA 4
-
-// Integro accelerazione su asse x
-
-
-float function_to_integrate(float x0, float y0, float m1, float m2, float p1, float p2){
-    return (-1 * G * (m1 * (x0-posx_A) / pow(sqrt(pow(x0-posx_A,2)+pow(posy_C-posy_A,2)+pow(posz_C-posz_A,2)), 3) + m2 * (x0-posx_B) / pow(sqrt(pow(posx_C-posx_B,2)+pow(posy_C-posy_B,2)+pow(posz_C-posz_B,2)), 3)));
-
-}
-
-
-float RK4(float x0, float y0, float h, float (*func)(float, float, float, float, float, float, float), float m1, float m2, float p1, float p2){
-    // Finds value of y for a given x using step size h
-    // and initial value y0 at x0.
-    float k1, k2, k3, k4;
-
-    k1 = h * func(x0, y0, m1, m2, p1, p2, x0);
-    k2 = h * func(x0 + 0.5 * h, y0 + 0.5 * k1, m1, m2, p1, p2, x0);
-    k3 = h * func(x0 + 0.5 * h, y0 + 0.5 * k2, m1, m2, p1, p2, x0);
-    k4 = h * func(x0 + h, y0 + k3, m1, m2, p1, p2, x0);
-  
-    // Update next value of y
-    y0 = y0 + (1.0 / 6.0) * (k1 + 2 * k2 + 2 * k3 + k4);;
-  
-    // Update next value of x
-    x0 = x0 + h;
-
-    return y0;
-}
-
-int prova; // velocità del corpo A 
-prova = RK4(A.a[0], A.v[0], h, float (*func)(float, float, float, float, float, float, float), A.m, B.m, B.x[0], C.x[0]){
+// int prova; // velocità del corpo A 
+// prova = RK4(A.a[0], A.v[0], h, double (*func)(double, double, double, double, double, double, double), A.m, B.m, B.x[0], C.x[0]){
 
 
 
