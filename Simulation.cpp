@@ -105,9 +105,12 @@ double acceleration(Planet A, Planet B, Planet C, int axe){
         return (-1 * G * (mass_A * (posz_C-posz_A) / pow(sqrt(pow(posx_C-posx_A,2)+pow(posy_C-posy_A,2)+pow(posz_C-posz_A,2)), 3) + mass_B * (posz_C-posz_B) / pow(sqrt(pow(posx_C-posx_B,2)+pow(posy_C-posy_B,2)+pow(posz_C-posz_B,2)), 3)));
     }
 }
-double F(double x, double v, double t, Planet A, Planet B, Planet C ){
+double Fi(double x, double v, double t, Planet A, Planet B, Planet C, int j ){
+    return x;
+}
+double F(double x, double v, double t, Planet A, Planet B, Planet C, int j ){
     double mass_A = A.getMass();
-    double mass_B = A.getMass();
+    double mass_B = B.getMass();
     double posx_A = A.getPositionX(); 
     double posx_B = B.getPositionX(); 
     double posx_C = C.getPositionX(); 
@@ -117,22 +120,31 @@ double F(double x, double v, double t, Planet A, Planet B, Planet C ){
     double posz_A = A.getPositionZ(); 
     double posz_B = B.getPositionZ(); 
     double posz_C = C.getPositionZ();
-    return (-1 * G * (mass_A * (x-posx_A) / pow(sqrt(pow(x-posx_A,2)+pow(posy_C-posy_A,2)+pow(posz_C-posz_A,2)), 3) + mass_B * (x-posx_B) / pow(sqrt(pow(x-posx_B,2)+pow(posy_C-posy_B,2)+pow(posz_C-posz_B,2)), 3)));
+
+    if (j == 0){
+        return (-1 * G * (mass_A * (x-posx_A) / pow(sqrt(pow(x-posx_A,2)+pow(posy_C-posy_A,2)+pow(posz_C-posz_A,2)), 3) + mass_B * (x-posx_B) / pow(sqrt(pow(x-posx_B,2)+pow(posy_C-posy_B,2)+pow(posz_C-posz_B,2)), 3)));
+    }else if (j == 1) {
+        return (-1 * G * (mass_A * (x-posy_A) / pow(sqrt(pow(posx_C-posx_A,2)+pow(x-posy_A,2)+pow(posz_C-posz_A,2)), 3) + mass_B * (x-posy_B) / pow(sqrt(pow(posx_C-posx_B,2)+pow(x-posy_B,2)+pow(posz_C-posz_B,2)), 3)));
+    }else if (j == 2) {
+        return (-1 * G * (mass_A * (x-posz_A) / pow(sqrt(pow(posx_C-posx_A,2)+pow(posy_C-posy_A,2)+pow(x-posz_A,2)), 3) + mass_B * (x-posz_B) / pow(sqrt(pow(posx_C-posx_B,2)+pow(posy_C-posy_B,2)+pow(x-posz_B,2)), 3)));
+    }
 }
 
 int main(){
     
-    double h = 0.01;
+    double h = 0.001;
 
     Planet A(10, -10, 10, -11, -3, 0, 0);   // corpi allineati sull'asse delle x
     Planet B(10, 0, 0, 0, 0, 0, 0);
     Planet C(10, 10, 14, 12, 0, 0, 0);
+    // Planet A(10, -20, 20, 0, 10, 10, 0.1);   // corpi allineati sulla bisettrice 2 e 3 con velocita perpendicolare
+    // Planet B(10, 0, 0, 0, 0, 0, 1);
+    // Planet C(10, 20, -20, 0.3, -10, -10, 0);
     // BE CAREFUL: If starting position of the body on one axis is the same, acceleration will be to inf.
-    
+    // Planet A(10, -10, 10, -20, 0, 0, 0);   // corpi allineati sull'asse delle x
+    // Planet B(10, 0, 0, 0, 10, 0, 0);
+    // Planet C(10, 10, -10, -20, 0, 0, 0);
 
-    // A.setPlanet(10, -20, 20, 0, 10, 10, 0.1);   // corpi allineati sulla bisettrice 2 e 3 con velocita perpendicolare
-    // B.setPlanet(10, 0, 0, 0, 0, 0, 1);
-    // C.setPlanet(10, 20, -20, 0.3, -10, -10, 0);
 
     std::array<double, N_STEPS> time;
     
@@ -158,7 +170,7 @@ int main(){
     double mass_A = A.getMass();
     double mass_B = B.getMass();
     double mass_C = C.getMass();
-    // for (int i=0;i<N_STEPS-1; i++){time[i]= i * h;}
+    for (int i=0;i<N_STEPS-1; i++){time[i]= i * h;}
 
     x_A[0][0] = A.getPositionX();
     x_B[0][0] = B.getPositionX();
@@ -195,9 +207,10 @@ int main(){
 
 
     //Function for the Euler method
-
+    // std::cout<<"Posizione x primo pianeta Euler Method"<<std::endl;
+    
     // for (int i=0; i<N_STEPS-1; i++){
-    //     for(int j=0; j<DIM-1; j++){
+    //      for(int j=0; j<DIM-1; j++){
 
 
     //         A.a[j] = acceleration(B, C, A, j);
@@ -220,9 +233,9 @@ int main(){
     //         B.computeEnergy(A, C);
     //         C.computeEnergy(B, A);
             
-
-    //     std::cout<<A.energy +B.energy+C.energy<<std::endl;
-    //     }
+    //     } 
+        
+    //     std::cout<<A.x[0]<<std::endl;
     // }
 
 
@@ -256,61 +269,66 @@ int main(){
     
     // x' = v
     // v' = -G(...)
-
-    for(int i=0; i<N_STEPS-1;i++){
-        for(int j=0;j<DIM-1;j++){
+    
+    for(int i=0; i<N_STEPS-1; i++){
+        for(int j=0; j<DIM-1; j++){
             // body A
-            m1 = h*xA[j];
-            k1 = h*F(xA[j], vA[j], t, A, B, C);  
+            m1 = h*vA[j];
+            k1 = h*F(xA[j], vA[j], t, C, B, A, j);  
 
             m2 = h*(vA[j] + 0.5*k1);
-            k2 = h*F(xA[j]+0.5*m1, vA[j]+0.5*k1, t+0.5*h, A, B, C);
+            k2 = h*F(xA[j]+0.5*m1, vA[j]+0.5*k1, t+0.5*h, C, B, A, j);
 
             m3 = h*(vA[j] + 0.5*k2);
-            k3 = h*F(xA[j]+0.5*m2, vA[j]+0.5*k2, t+0.5*h, A, B, C);
+            k3 = h*F(xA[j]+0.5*m2, vA[j]+0.5*k2, t+0.5*h, C, B, A, j);
 
             m4 = h*(vA[j] + k3);
-            k4 = h*F(xA[j]+m3, vA[j]+k3, t+h, A, B, C);
+            k4 = h*F(xA[j]+m3, vA[j]+k3, t+h, C, B, A, j);
 
             xA[j] += (m1 + 2*m2 + 2*m3 + m4)/6;
             vA[j] += (k1 + 2*k2 + 2*k3 + k4)/6;
-            x_A[j][i] = xA[j];
-            A.x[j] = xA[j];
-            
+
             // body B
             m1 = h*vB[j];
-            k1 = h*F(xB[j], vB[j], t, A, B, C);  //(x, v, t)
+            k1 = h*F(xB[j], vB[j], t, A, C, B, j);  //(x, v, t)
 
             m2 = h*(vB[j] + 0.5*k1);
-            k2 = h*F(xB[j]+0.5*m1, vB[j]+0.5*k1, t+0.5*h, A, B, C);
+            k2 = h*F(xB[j]+0.5*m1, vB[j]+0.5*k1, t+0.5*h, A, C, B, j);
 
             m3 = h*(vB[j] + 0.5*k2);
-            k3 = h*F(xB[j]+0.5*m2, vB[j]+0.5*k2, t+0.5*h, A, B, C);
+            k3 = h*F(xB[j]+0.5*m2, vB[j]+0.5*k2, t+0.5*h, A, C, B, j);
 
             m4 = h*(vB[j] + k3);
-            k4 = h*F(xB[j]+m3, vB[j]+k3, t+h, A, B, C);
+            k4 = h*F(xB[j]+m3, vB[j]+k3, t+h, A, C, B, j);
 
             xB[j] += (m1 + 2*m2 + 2*m3 + m4)/6;
             vB[j] += (k1 + 2*k2 + 2*k3 + k4)/6;
-            x_B[j][i] = xB[j];
-            B.x[j] = xB[j];
+            
             // body C
             m1 = h*vC[j];
-            k1 = h*F(xC[j], vC[j], t, A, B, C);  //(x, v, t)
+            k1 = h*F(xC[j], vC[j], t, A, B, C, j);  //(x, v, t)
 
             m2 = h*(vC[j] + 0.5*k1);
-            k2 = h*F(xC[j]+0.5*m1, vC[j]+0.5*k1, t+0.5*h, A, B, C);
+            k2 = h*F(xC[j]+0.5*m1, vC[j]+0.5*k1, t+0.5*h, A, B, C, j);
 
             m3 = h*(vC[j] + 0.5*k2);
-            k3 = h*F(xC[j]+0.5*m2, vC[j]+0.5*k2, t+0.5*h, A, B, C);
+            k3 = h*F(xC[j]+0.5*m2, vC[j]+0.5*k2, t+0.5*h, A, B, C, j);
 
             m4 = h*(vC[j] + k3);
-            k4 = h*F(xC[j]+m3, vC[j]+k3, t+h, A, B, C);
+            k4 = h*F(xC[j]+m3, vC[j]+k3, t+h, A, B, C, j);
 
             xC[j] += (m1 + 2*m2 + 2*m3 + m4)/6;
             vC[j] += (k1 + 2*k2 + 2*k3 + k4)/6;
-            x_C[j][i] = xC[j];
-            C.x[j] = xC[j];
+            
+        }
+        //std::cout<<A.x[0]<<std::endl;
+        for(int j=0; j<DIM-1;j++){
+        x_A[j][i+1] = xA[j];
+        x_B[j][i+1] = xB[j];
+        x_C[j][i+1] = xC[j];            
+        A.x[j] = xA[j];
+        B.x[j] = xB[j];
+        C.x[j] = xC[j];
         }
     }
 
@@ -345,7 +363,7 @@ int main(){
     std::ofstream output_file_A("positions_A.csv");
     std::ofstream output_file_B("positions_B.csv");
     std::ofstream output_file_C("positions_C.csv");
-    output_file_A<<"x;y;z"<<std::endl;
+    output_file_A<<"x;y;z;t"<<std::endl;
     output_file_B<<"x;y;z"<<std::endl;
     output_file_C<<"x;y;z"<<std::endl;
     
@@ -355,9 +373,7 @@ int main(){
         output_file_C << x_C[0][i] << ";" << x_C[1][i] << ";" << x_C[2][i]<< std::endl;
     }    
     // for(int i = 0; i<N_STEPS-1; i++){
-    //     output_file_A << a_1[0][i] << ";" << a_1[1][i] << ";" << a_1[2][i]<< std::endl;
-    //     output_file_B << a_2[0][i] << ";" << a_2[1][i] << ";" << a_2[2][i]<< std::endl;
-    //     output_file_C << a_3[0][i] << ";" << a_3[1][i] << ";" << a_3[2][i]<< std::endl;
+    //     output_file_A << x_A[0][i] << ";" << x_A[1][i]<< ";" << x_A[2][i]<<";"<< time[i]<<std::endl;
     // }    
     output_file_A.close();
     output_file_B.close(); 
