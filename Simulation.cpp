@@ -130,6 +130,39 @@ double F(double x, double v, double t, Planet A, Planet B, Planet C, int j ){
         return (-1 * G * (mass_A * (x-posz_A) / pow(sqrt(pow(posx_C-posx_A,2)+pow(posy_C-posy_A,2)+pow(x-posz_A,2)), 3) + mass_B * (x-posz_B) / pow(sqrt(pow(posx_C-posx_B,2)+pow(posy_C-posy_B,2)+pow(x-posz_B,2)), 3)));
     }
 }
+typedef std::vector< double > state_type;
+void ode(const state_type &x , state_type &dxdt , const double t,  Planet A, Planet B, Planet C, int j){
+
+        double mass_A = A.getMass();
+        double mass_B = B.getMass();
+        
+        double posx_A = A.getPositionX(); 
+        double posx_B = B.getPositionX(); 
+        double posx_C = C.getPositionX(); 
+        double posy_A = A.getPositionY(); 
+        double posy_B = B.getPositionY(); 
+        double posy_C = C.getPositionY(); 
+        double posz_A = A.getPositionZ(); 
+        double posz_B = B.getPositionZ(); 
+        double posz_C = C.getPositionZ();
+
+        if (j == 0){
+            dxdt[0] = x[3]; /* x' = Vx */
+            dxdt[1] = (-1 * G * (mass_A * (x[0]-posx_A) / pow(sqrt(pow(x[0]-posx_A,2)+pow(posy_C-posy_A,2)+pow(posz_C-posz_A,2)), 3) + mass_B * (x[0]-posx_B) / pow(sqrt(pow(x[0]-posx_B,2)+pow(posy_C-posy_B,2)+pow(posz_C-posz_B,2)), 3))); /* v' = -G(..) */
+        }else if (j == 1) {
+            dxdt[0] = x[4];
+            dxdt[1] = (-1 * G * (mass_A * (x[1]-posy_A) / pow(sqrt(pow(posx_C-posx_A,2)+pow(x-posy_A,2)+pow(posz_C-posz_A,2)), 3) + mass_B * (x[1]-posy_B) / pow(sqrt(pow(posx_C-posx_B,2)+pow(x[1]-posy_B,2)+pow(posz_C-posz_B,2)), 3)));
+        }else if (j == 2) {
+            dxdt[0] = x[5];
+            dxdt[1] = (-1 * G * (mass_A * (x[2]-posz_A) / pow(sqrt(pow(posx_C-posx_A,2)+pow(posy_C-posy_A,2)+pow(x-posz_A,2)), 3) + mass_B * (x[2]-posz_B) / pow(sqrt(pow(posx_C-posx_B,2)+pow(posy_C-posy_B,2)+pow(x[2]-posz_B,2)), 3)));
+        }
+    }
+ 
+    
+    // Prints time and state when called (during integration)
+    void my_observer( const state_type &x, const double t ){
+        std::cout  << t << "   " << x[0] << std::endl;   
+    }
 
 int main(){
     
@@ -233,44 +266,11 @@ int main(){
 
     // ---------------------------------------------------------------------------------------------
     // RUNGE KUTTA 4: Boost Library
-    typedef std::vector< double > state_type;
    
-
-    void ode(const state_type &x , state_type &dxdt , const double t,  Planet A, Planet B, Planet C, int j){
-
-        double mass_A = A.getMass();
-        double mass_B = B.getMass();
-        
-        double posx_A = A.getPositionX(); 
-        double posx_B = B.getPositionX(); 
-        double posx_C = C.getPositionX(); 
-        double posy_A = A.getPositionY(); 
-        double posy_B = B.getPositionY(); 
-        double posy_C = C.getPositionY(); 
-        double posz_A = A.getPositionZ(); 
-        double posz_B = B.getPositionZ(); 
-        double posz_C = C.getPositionZ();
-
-        if (j == 0){
-            dxdt[0] = x[3] /* x' = Vx */
-            dxdt[1] = (-1 * G * (mass_A * (x[0]-posx_A) / pow(sqrt(pow(x[0]-posx_A,2)+pow(posy_C-posy_A,2)+pow(posz_C-posz_A,2)), 3) + mass_B * (x[0]-posx_B) / pow(sqrt(pow(x[0]-posx_B,2)+pow(posy_C-posy_B,2)+pow(posz_C-posz_B,2)), 3))); /* v' = -G(..) */
-        }else if (j == 1) {
-            dxdt[0] = x[4]
-            dxdt[1] = (-1 * G * (mass_A * (x[1]-posy_A) / pow(sqrt(pow(posx_C-posx_A,2)+pow(x-posy_A,2)+pow(posz_C-posz_A,2)), 3) + mass_B * (x[1]-posy_B) / pow(sqrt(pow(posx_C-posx_B,2)+pow(x[1]-posy_B,2)+pow(posz_C-posz_B,2)), 3)));
-        }else if (j == 2) {
-            dxdt[0] = x[5]
-            dxdt[1] = (-1 * G * (mass_A * (x[2]-posz_A) / pow(sqrt(pow(posx_C-posx_A,2)+pow(posy_C-posy_A,2)+pow(x-posz_A,2)), 3) + mass_B * (x[2]-posz_B) / pow(sqrt(pow(posx_C-posx_B,2)+pow(posy_C-posy_B,2)+pow(x[2]-posz_B,2)), 3)));
-        }
-    }
- 
-    
-    // Prints time and state when called (during integration)
-    void my_observer( const state_type &x, const double t )
-     {    std::cout  << t << "   " << x[0] << std::endl;   }
     
     // Integration parameters
     double t0 = 0.0;
-    double t1 = N_STEPS * h
+    double t1 = N_STEPS * h;
     state_type x0(2 * N_BODIES); // Vector containing initial conditions: (x0, y0, z0, Vx0, Vy0, Vz0)
 
 
@@ -285,7 +285,7 @@ int main(){
 
     integrate_const( runge_kutta4<state_type>(), ode(j = 0), x0, t0, t1, h, my_observer);
 
-    std::cout<<"ciao!"std::endl;
+    std::cout<<"ciao!"<<std::endl;
  
 
     /*
