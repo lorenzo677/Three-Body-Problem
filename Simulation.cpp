@@ -1,3 +1,10 @@
+/*
+3D Three-Body-Problem simulation.
+Created on November 2022.
+
+@authors: Lorenzo Barsotti & Keivan Amini
+*/
+
 #include <iostream>
 #include <cmath>
 #include <array>
@@ -7,7 +14,7 @@
 static constexpr int DIM = 4;
 static constexpr double G = 10;
 static constexpr int N_BODIES = 3;
-static constexpr int N_STEPS = 80000;
+static constexpr int N_STEPS = 5000;
 
 double distance(std::array<double, 3> r1, std::array<double, 3> r2){
     return sqrt(pow(r1[0]-r2[0],2)+pow(r1[1]-r2[1],2)+pow(r1[2]-r2[2],2));
@@ -71,23 +78,11 @@ public:
         }
 };
 
-std::array<double, 3> compute_vector_cm(double mass_1, double mass_2, double mass_3, double *vector_1, double *vector_2, double *vector_3){   
-    std::array<double, 3> vector_cm;
-    for (int i = 0; i < 3; i++) {   
-        vector_cm[i] = ( mass_1 * vector_1[i] + mass_2 * vector_2[i] + mass_3 * vector_3[i] ) / (mass_1 + mass_2 + mass_3);
-    }
-    return vector_cm; 
-}
-
-// double distance(Planet planet1, Planet planet2){
-//     return sqrt(pow(planet1.x[0]-planet2.x[0],2)+pow(planet1.x[1]-planet2.x[1],2)+pow(planet1.x[2]-planet2.x[2],2));
-// }
-
 
 double acceleration(Planet A, Planet B, Planet C, int axe){
-    //compute the acceleration along one axis of the body C
+    // Compute the acceleration of the body C, specifying the axis.
     double mass_A = A.getMass();
-    double mass_B = A.getMass();
+    double mass_B = B.getMass();
     double posx_A = A.getPositionX(); 
     double posx_B = B.getPositionX(); 
     double posx_C = C.getPositionX(); 
@@ -105,10 +100,13 @@ double acceleration(Planet A, Planet B, Planet C, int axe){
         return (-1 * G * (mass_A * (posz_C-posz_A) / pow(sqrt(pow(posx_C-posx_A,2)+pow(posy_C-posy_A,2)+pow(posz_C-posz_A,2)), 3) + mass_B * (posz_C-posz_B) / pow(sqrt(pow(posx_C-posx_B,2)+pow(posy_C-posy_B,2)+pow(posz_C-posz_B,2)), 3)));
     }
 }
+
 double Fi(double x, double v, double t, Planet A, Planet B, Planet C, int j ){
     return x;
 }
+
 double F(double x, double v, double t, Planet A, Planet B, Planet C, int j ){
+    // Function to integrate via Runge-Kutta.
     double mass_A = A.getMass();
     double mass_B = B.getMass();
     double posx_A = A.getPositionX(); 
@@ -196,15 +194,6 @@ int main(){
     vz_B = B.getVelocityZ();
     vz_C = C.getVelocityZ();
 
-    /*
-    for(int j=0; j<DIM; j++){
-            for(int i=0; i<N_STEPS; i++){
-            v_1[j][i+1] = RK4(time[i], v_1[j][i], h, acceleration, mass_2, mass_3, x_2[j][i], x_3[j][i]); // probabilmente sbagliatto
-            }
-        }
-    */
-
-
 
     //Function for the Euler method
     // std::cout<<"Posizione x primo pianeta Euler Method"<<std::endl;
@@ -248,9 +237,6 @@ int main(){
     // x' = v
     // v' = -G(...)
 
-    // double function_to_integrate(double x0, double y0, double m1, double m2, double p1, double p2){
-    //     return (-1 * G * (m1 * (x0-posx_A) / pow(sqrt(pow(x0-posx_A,2)+pow(posy_C-posy_A,2)+pow(posz_C-posz_A,2)), 3) + m2 * (x0-posx_B) / pow(sqrt(pow(posx_C-posx_B,2)+pow(posy_C-posy_B,2)+pow(posz_C-posz_B,2)), 3)));
-    // }
     double m1;
     double k1;
     double m2;
@@ -259,6 +245,7 @@ int main(){
     double k3;
     double m4;
     double k4;
+
     std::array<double,3> vA = A.v; //condizione iniziale velocita
     std::array<double,3> xA = A.x;
     std::array<double,3> vB = B.v; //condizione iniziale velocita
@@ -267,9 +254,7 @@ int main(){
     std::array<double,3> xC = C.x;
     double t;
     
-    // x' = v
-    // v' = -G(...)
-    
+
     for(int i=0; i<N_STEPS-1; i++){
         for(int j=0; j<DIM-1; j++){
             // body A
@@ -332,31 +317,6 @@ int main(){
         }
     }
 
-    // double RK4(double x0, double y0, double h, double (*func)(double, double, double, double, double, double, double), double m1, double m2, double p1, double p2){
-    //     // Finds value of y for a given x using step size h
-    //     // and initial value y0 at x0.
-    //     double k1, k2, k3, k4;
-
-    //     k1 = h * func(x0, y0, m1, m2, p1, p2, x0);
-    //     k2 = h * func(x0 + 0.5 * h, y0 + 0.5 * k1, m1, m2, p1, p2, x0);
-    //     k3 = h * func(x0 + 0.5 * h, y0 + 0.5 * k2, m1, m2, p1, p2, x0);
-    //     k4 = h * func(x0 + h, y0 + k3, m1, m2, p1, p2, x0);
-    
-    //     // Update next value of y
-    //     y0 = y0 + (1.0 / 6.0) * (k1 + 2 * k2 + 2 * k3 + k4);;
-    
-    //     // Update next value of x
-    //     x0 = x0 + h;
-
-//     return y0;
-// }
-
-// int prova; // velocità del corpo A 
-// prova = RK4(A.a[0], A.v[0], h, double (*func)(double, double, double, double, double, double, double), A.m, B.m, B.x[0], C.x[0]){
-
-
-
-
 //----------------------------------------------------------------
 
 // Print data on .csv
@@ -380,8 +340,8 @@ int main(){
     output_file_C.close();
 
  
- //   FILE* pipe = popen("conda activate ml\n python plotting.py", "w");
- //   pclose(pipe);
+    FILE* pipe = popen("conda activate ml\n python plotting.py", "w");
+    pclose(pipe);
    return 0;
       
 }
