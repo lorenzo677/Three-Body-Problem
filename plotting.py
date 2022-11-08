@@ -62,12 +62,12 @@ def animate_func(num):
     ax.set_zlabel('z')
 
 fig = plt.figure()
-plt.style.use('Solarize_Light2')
+#plt.style.use('Solarize_Light2')
 #print(plt.style.available)
 ax = plt.axes(projection='3d')
 line_ani = FuncAnimation(fig, animate_func, interval=1, frames=int(numDataPoints/200))
 #plt.savefig("animation.gif", dpi = 300)
-#plt.show()
+plt.show()
 # Saving the Animation
 f = r"animate_func.gif"
 writergif = PillowWriter(fps=20)
