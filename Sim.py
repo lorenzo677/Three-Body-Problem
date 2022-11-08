@@ -72,9 +72,9 @@ def F(x, v, t, A, B, C, j ):
 
 h = 0.11
 
-A = Planet(10, (-10, 10, -11), (-3, 0, 0))  
+A = Planet(10, (-10, 10, -11), (-3, 0, -0.4))  
 B = Planet(10, (0, 0, 0), (0, 0, 0))
-C = Planet(10, (10, 14, 12), (0, 0, 0))
+C = Planet(10, (10, 14, 12), (0, 0, 0.2))
 
 time = np.arange(0,N_STEPS*h, N_STEPS)
 
@@ -118,6 +118,19 @@ for i in range(N_STEPS):
     C.positionx = positionsCx[1]
     C.positiony = positionsCy[1]
     C.positionz = positionsCz[1]
+
+    A.velocityx = velocityAx[1]
+    A.velocityy = velocityAy[1]
+    A.velocityz = velocityAz[1]
+
+    B.velocityx = velocityBx[1]
+    B.velocityy = velocityBy[1]
+    B.velocityz = velocityBz[1]
+
+    C.velocityx = velocityCx[1]
+    C.velocityy = velocityCy[1]
+    C.velocityz = velocityCz[1]
+
     output_file_A.write( f"{A.positionx}; {A.positiony}; {A.positionz}; {h*i}\n")
     output_file_B.write( f"{B.positionx}; {B.positiony}; {B.positionz}; {h*i}\n")
     output_file_C.write( f"{C.positionx}; {C.positiony}; {C.positionz}; {h*i}\n")
