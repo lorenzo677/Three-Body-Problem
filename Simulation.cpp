@@ -10,14 +10,12 @@ Created on November 2022.
 #include <array>
 #include <fstream>
 #include "integrators.h"
-#include <boost/numeric/odeint.hpp>
 
- using namespace boost::numeric::odeint;
 
 static constexpr int DIM = 4;
 static constexpr double G = 10;
 static constexpr int N_BODIES = 3;
-static constexpr int N_STEPS = 5000;
+static constexpr int N_STEPS = 80000;
 
 double distance(std::array<double, 3> r1, std::array<double, 3> r2){
     return sqrt(pow(r1[0]-r2[0],2)+pow(r1[1]-r2[1],2)+pow(r1[2]-r2[2],2));
@@ -81,7 +79,6 @@ public:
         }
 };
 
-
 double acceleration(Planet A, Planet B, Planet C, int axe){
     // Compute the acceleration of the body C, specifying the axis.
     double mass_A = A.getMass();
@@ -130,39 +127,6 @@ double F(double x, double v, double t, Planet A, Planet B, Planet C, int j ){
         return (-1 * G * (mass_A * (x-posz_A) / pow(sqrt(pow(posx_C-posx_A,2)+pow(posy_C-posy_A,2)+pow(x-posz_A,2)), 3) + mass_B * (x-posz_B) / pow(sqrt(pow(posx_C-posx_B,2)+pow(posy_C-posy_B,2)+pow(x-posz_B,2)), 3)));
     }
 }
-typedef std::vector< double > state_type;
-void ode(const state_type &x , state_type &dxdt , const double t,  Planet A, Planet B, Planet C, int j){
-
-        double mass_A = A.getMass();
-        double mass_B = B.getMass();
-        
-        double posx_A = A.getPositionX(); 
-        double posx_B = B.getPositionX(); 
-        double posx_C = C.getPositionX(); 
-        double posy_A = A.getPositionY(); 
-        double posy_B = B.getPositionY(); 
-        double posy_C = C.getPositionY(); 
-        double posz_A = A.getPositionZ(); 
-        double posz_B = B.getPositionZ(); 
-        double posz_C = C.getPositionZ();
-
-        if (j == 0){
-            dxdt[0] = x[3]; /* x' = Vx */
-            dxdt[1] = (-1 * G * (mass_A * (x[0]-posx_A) / pow(sqrt(pow(x[0]-posx_A,2)+pow(posy_C-posy_A,2)+pow(posz_C-posz_A,2)), 3) + mass_B * (x[0]-posx_B) / pow(sqrt(pow(x[0]-posx_B,2)+pow(posy_C-posy_B,2)+pow(posz_C-posz_B,2)), 3))); /* v' = -G(..) */
-        }else if (j == 1) {
-            dxdt[0] = x[4];
-            dxdt[1] = (-1 * G * (mass_A * (x[1]-posy_A) / pow(sqrt(pow(posx_C-posx_A,2)+pow(x-posy_A,2)+pow(posz_C-posz_A,2)), 3) + mass_B * (x[1]-posy_B) / pow(sqrt(pow(posx_C-posx_B,2)+pow(x[1]-posy_B,2)+pow(posz_C-posz_B,2)), 3)));
-        }else if (j == 2) {
-            dxdt[0] = x[5];
-            dxdt[1] = (-1 * G * (mass_A * (x[2]-posz_A) / pow(sqrt(pow(posx_C-posx_A,2)+pow(posy_C-posy_A,2)+pow(x-posz_A,2)), 3) + mass_B * (x[2]-posz_B) / pow(sqrt(pow(posx_C-posx_B,2)+pow(posy_C-posy_B,2)+pow(x[2]-posz_B,2)), 3)));
-        }
-    }
- 
-    
-    // Prints time and state when called (during integration)
-    void my_observer( const state_type &x, const double t ){
-        std::cout  << t << "   " << x[0] << std::endl;   
-    }
 
 int main(){
     
@@ -230,9 +194,11 @@ int main(){
     vz_B = B.getVelocityZ();
     vz_C = C.getVelocityZ();
 
+    std::ofstream file_energy("Total_energy_euler.csv");
 
+    
     //Function for the Euler method
-    // std::cout<<"Posizione x primo pianeta Euler Method"<<std::endl;
+    // std::cout<<"Energia totale pianeti Euler Method"<<std::endl;
     
     // for (int i=0; i<N_STEPS-1; i++){
     //      for(int j=0; j<DIM-1; j++){
@@ -260,124 +226,276 @@ int main(){
             
     //     } 
         
-    //     std::cout<<A.x[0]<<std::endl;
+    //     file_energy<<A.energy+B.energy+C.energy<<std::endl;
     // }
 
 
-    // ---------------------------------------------------------------------------------------------
-    // RUNGE KUTTA 4: Boost Library
-   
-    
-    // Integration parameters
-    double t0 = 0.0;
-    double t1 = N_STEPS * h;
-    state_type x0(2 * N_BODIES); // Vector containing initial conditions: (x0, y0, z0, Vx0, Vy0, Vz0)
-
-
-    // Run integrator: provo a ricavare la soluzione sull'asse x del primo pianeta
-
-        x0[0] = A.getPositionX();
-        x0[1] = A.getPositionY();
-        x0[2] = A.getPositionZ();
-        x0[3] = A.getVelocityX();
-        x0[4] = A.getVelocityY();
-        x0[5] = A.getVelocityZ();
-
-    integrate_const( runge_kutta4<state_type>(), ode(j = 0), x0, t0, t1, h, my_observer);
-
-    std::cout<<"ciao!"<<std::endl;
- 
-
-    /*
-    // ---------------------------------------------------------------------------------------------
-    // RUNGE KUTTA 4: manuale
+    // RUNGE KUTTA 4
     // Integro accelerazione su asse x
     // x'' = -G(...)
     // viene trasformato in
     // x' = v
     // v' = -G(...)
 
-    double m1;
-    double k1;
-    double m2;
-    double k2;
-    double m3;
-    double k3;
-    double m4;
-    double k4;
+    // double m1;
+    // double k1;
+    // double m2;
+    // double k2;
+    // double m3;
+    // double k3;
+    // double m4;
+    // double k4;
 
-    std::array<double,3> vA = A.v; //condizione iniziale velocita
-    std::array<double,3> xA = A.x;
-    std::array<double,3> vB = B.v; //condizione iniziale velocita
-    std::array<double,3> xB = B.x;
-    std::array<double,3> vC = C.v; //condizione iniziale velocita
-    std::array<double,3> xC = C.x;
-    double t;
+    // std::array<double,3> vA = A.v; //condizione iniziale velocita
+    // std::array<double,3> xA = A.x;
+    // std::array<double,3> vB = B.v; //condizione iniziale velocita
+    // std::array<double,3> xB = B.x;
+    // std::array<double,3> vC = C.v; //condizione iniziale velocita
+    // std::array<double,3> xC = C.x;
+    // double t;
     
+    // for(int i=0; i<N_STEPS-1; i++){
+    //     for(int j=0; j<DIM-1; j++){
+    //         // body A
+    //         m1 = h*vA[j];
+    //         k1 = h*F(xA[j], vA[j], t, C, B, A, j);  
 
-    for(int i=0; i<N_STEPS-1; i++){
-        for(int j=0; j<DIM-1; j++){
-            // body A
-            m1 = h*vA[j];
-            k1 = h*F(xA[j], vA[j], t, C, B, A, j);  
+    //         m2 = h*(vA[j] + 0.5*k1);
+    //         k2 = h*F(xA[j]+0.5*m1, vA[j]+0.5*k1, t+0.5*h, C, B, A, j);
 
-            m2 = h*(vA[j] + 0.5*k1);
-            k2 = h*F(xA[j]+0.5*m1, vA[j]+0.5*k1, t+0.5*h, C, B, A, j);
+    //         m3 = h*(vA[j] + 0.5*k2);
+    //         k3 = h*F(xA[j]+0.5*m2, vA[j]+0.5*k2, t+0.5*h, C, B, A, j);
 
-            m3 = h*(vA[j] + 0.5*k2);
-            k3 = h*F(xA[j]+0.5*m2, vA[j]+0.5*k2, t+0.5*h, C, B, A, j);
+    //         m4 = h*(vA[j] + k3);
+    //         k4 = h*F(xA[j]+m3, vA[j]+k3, t+h, C, B, A, j);
 
-            m4 = h*(vA[j] + k3);
-            k4 = h*F(xA[j]+m3, vA[j]+k3, t+h, C, B, A, j);
+    //         xA[j] += (m1 + 2*m2 + 2*m3 + m4)/6;
+    //         vA[j] += (k1 + 2*k2 + 2*k3 + k4)/6;
+    //     }
 
-            xA[j] += (m1 + 2*m2 + 2*m3 + m4)/6;
-            vA[j] += (k1 + 2*k2 + 2*k3 + k4)/6;
+    //     for(int j=0; j<DIM-1; j++){
+    //         // body B
+    //         m1 = h*vB[j];
+    //         k1 = h*F(xB[j], vB[j], t, A, C, B, j);  //(x, v, t)
 
-            // body B
-            m1 = h*vB[j];
-            k1 = h*F(xB[j], vB[j], t, A, C, B, j);  //(x, v, t)
+    //         m2 = h*(vB[j] + 0.5*k1);
+    //         k2 = h*F(xB[j]+0.5*m1, vB[j]+0.5*k1, t+0.5*h, A, C, B, j);
 
-            m2 = h*(vB[j] + 0.5*k1);
-            k2 = h*F(xB[j]+0.5*m1, vB[j]+0.5*k1, t+0.5*h, A, C, B, j);
+    //         m3 = h*(vB[j] + 0.5*k2);
+    //         k3 = h*F(xB[j]+0.5*m2, vB[j]+0.5*k2, t+0.5*h, A, C, B, j);
 
-            m3 = h*(vB[j] + 0.5*k2);
-            k3 = h*F(xB[j]+0.5*m2, vB[j]+0.5*k2, t+0.5*h, A, C, B, j);
+    //         m4 = h*(vB[j] + k3);
+    //         k4 = h*F(xB[j]+m3, vB[j]+k3, t+h, A, C, B, j);
 
-            m4 = h*(vB[j] + k3);
-            k4 = h*F(xB[j]+m3, vB[j]+k3, t+h, A, C, B, j);
+    //         xB[j] += (m1 + 2*m2 + 2*m3 + m4)/6;
+    //         vB[j] += (k1 + 2*k2 + 2*k3 + k4)/6;
+    //     }
 
-            xB[j] += (m1 + 2*m2 + 2*m3 + m4)/6;
-            vB[j] += (k1 + 2*k2 + 2*k3 + k4)/6;
+    //     for(int j=0; j<DIM-1; j++){   
+    //         // body C
+    //         m1 = h*vC[j];
+    //         k1 = h*F(xC[j], vC[j], t, A, B, C, j);  //(x, v, t)
+
+    //         m2 = h*(vC[j] + 0.5*k1);
+    //         k2 = h*F(xC[j]+0.5*m1, vC[j]+0.5*k1, t+0.5*h, A, B, C, j);
+
+    //         m3 = h*(vC[j] + 0.5*k2);
+    //         k3 = h*F(xC[j]+0.5*m2, vC[j]+0.5*k2, t+0.5*h, A, B, C, j);
+
+    //         m4 = h*(vC[j] + k3);
+    //         k4 = h*F(xC[j]+m3, vC[j]+k3, t+h, A, B, C, j);
+
+    //         xC[j] += (m1 + 2*m2 + 2*m3 + m4)/6;
+    //         vC[j] += (k1 + 2*k2 + 2*k3 + k4)/6;
             
-            // body C
-            m1 = h*vC[j];
-            k1 = h*F(xC[j], vC[j], t, A, B, C, j);  //(x, v, t)
+    //     }
 
-            m2 = h*(vC[j] + 0.5*k1);
-            k2 = h*F(xC[j]+0.5*m1, vC[j]+0.5*k1, t+0.5*h, A, B, C, j);
+         
+    //     //std::cout<<A.x[0]<<std::endl;
+    //     for(int j=0; j<DIM-1;j++){
+    //         x_A[j][i+1] = xA[j];
+    //         x_B[j][i+1] = xB[j];
+    //         x_C[j][i+1] = xC[j];            
+    //         A.x[j] = xA[j];
+    //         B.x[j] = xB[j];
+    //         C.x[j] = xC[j];
+    //     }
+    //         A.computeEnergy(B, C);
+    //          B.computeEnergy(A, C);
+    //          C.computeEnergy(B, A);
+    //     file_energy<<A.energy+B.energy+C.energy<<std::endl;
+    // }
 
-            m3 = h*(vC[j] + 0.5*k2);
-            k3 = h*F(xC[j]+0.5*m2, vC[j]+0.5*k2, t+0.5*h, A, B, C, j);
 
-            m4 = h*(vC[j] + k3);
-            k4 = h*F(xC[j]+m3, vC[j]+k3, t+h, A, B, C, j);
 
-            xC[j] += (m1 + 2*m2 + 2*m3 + m4)/6;
-            vC[j] += (k1 + 2*k2 + 2*k3 + k4)/6;
+
+
+// VERLET
+x_A[0][1] = x_A[0][0] + A.v[0]*h;
+x_A[1][1] = x_A[1][0] + A.v[1]*h;
+x_A[2][1] = x_A[2][0] + A.v[2]*h;
+x_B[0][1] = x_B[0][0] + B.v[0]*h;
+x_B[1][1] = x_B[1][0] + B.v[1]*h;
+x_B[2][1] = x_B[2][0] + B.v[2]*h;
+x_C[0][1] = x_C[0][0] + C.v[0]*h;
+x_C[1][1] = x_C[1][0] + C.v[1]*h;
+x_C[2][1] = x_C[2][0] + C.v[2]*h;
+
+A.x[0]= x_A[0][1];
+A.x[1]= x_A[1][1];
+A.x[2]= x_A[2][1];
+
+B.x[0]=x_B[0][1];
+B.x[1]=x_B[1][1];
+B.x[2]=x_B[2][1];
+
+C.x[0]=x_C[0][1];
+C.x[1]=x_C[1][1];
+C.x[2]=x_C[2][1];
+
+std::cout<<x_A[0][0]<<std::endl;
+std::cout<<x_A[0][1]<<std::endl;
+ for (int i=1; i<N_STEPS-1; i++){
+         for(int j=0; j<DIM-1; j++){
+
+            A.a[j] = acceleration(B, C, A, j);
+            B.a[j] = acceleration(A, C, B, j);
+            C.a[j] = acceleration(B, A, C, j);
+
+            file_energy<<A.a[j]<<std::endl;
             
+            x_A[j][i + 1] = 2 * x_A[j][i] - x_A[j][i-1] + A.a[j] * h * h;
+            x_B[j][i + 1] = 2 * x_B[j][i] - x_B[j][i-1] + B.a[j] * h * h;
+            x_C[j][i + 1] = 2 * x_C[j][i] - x_C[j][i-1] + C.a[j] * h * h;
+            if(j==0 and i==1){
+            std::cout<<x_A[j][i + 1] <<"= 2 * " <<x_A[j][i] << "-"<< x_A[j][i-1]<< "+"<< A.a[j] <<"*"<< h <<"*"<< h<<std::endl;
+            }
+        }      
+        for (int j = 0; j < DIM-1; j++){
+           
+            A.x[j] = x_A[j][i + 1];
+            B.x[j] = x_B[j][i + 1];
+            C.x[j] = x_C[j][i + 1];
+            
+            A.computeEnergy(B, C);
+            B.computeEnergy(A, C);
+            C.computeEnergy(B, A);
         }
-        //std::cout<<A.x[0]<<std::endl;
-        for(int j=0; j<DIM-1;j++){
-        x_A[j][i+1] = xA[j];
-        x_B[j][i+1] = xB[j];
-        x_C[j][i+1] = xC[j];            
-        A.x[j] = xA[j];
-        B.x[j] = xB[j];
-        C.x[j] = xC[j];
-        }
+        
+        
+        //file_energy<<A.energy+B.energy+C.energy<<std::endl;
     }
 
-*/
+
+
+
+
+
+    file_energy.close();
+// RK4 LUTZ
+
+//     std::array<double, 3> m1A;
+//     std::array<double, 3> k1A;
+//     std::array<double, 3> m2A;
+//     std::array<double, 3> k2A;
+//     std::array<double, 3> m3A;
+//     std::array<double, 3> k3A;
+//     std::array<double, 3> m4A;
+//     std::array<double, 3> k4A;
+
+//     std::array<double, 3> m1B;
+//     std::array<double, 3> k1B;
+//     std::array<double, 3> m2B;
+//     std::array<double, 3> k2B;
+//     std::array<double, 3> m3B;
+//     std::array<double, 3> k3B;
+//     std::array<double, 3> m4B;
+//     std::array<double, 3> k4B;
+    
+//     std::array<double, 3> m1C;
+//     std::array<double, 3> k1C;
+//     std::array<double, 3> m2C;
+//     std::array<double, 3> k2C;
+//     std::array<double, 3> m3C;
+//     std::array<double, 3> k3C;
+//     std::array<double, 3> m4C;
+//     std::array<double, 3> k4C;
+
+//     std::array<double,3> vA = A.v; //condizione iniziale velocita
+//     std::array<double,3> xA = A.x;
+//     std::array<double,3> vB = B.v; //condizione iniziale velocita
+//     std::array<double,3> xB = B.x;
+//     std::array<double,3> vC = C.v; //condizione iniziale velocita
+//     std::array<double,3> xC = C.x;
+
+// double t;
+
+// for(int i =0;i<N_STEPS-1;i++){
+//     for(int j=0; j<DIM-1; j++){
+//             // body A
+//             m1A[j] = h*vA[j];
+//             k1A[j] = h*F(xA[j], vA[j], t, C, B, A, j);  
+
+//             m2A[j] = h*(vA[j] + 0.5*k1A[j]);
+//             k2A[j] = h*F(xA[j]+0.5*m1A[j], vA[j]+0.5*k1A[j], t+0.5*h, C, B, A, j);
+
+//             m3A[j] = h*(vA[j] + 0.5*k2A[j]);
+//             k3A[j] = h*F(xA[j]+0.5*m2A[j], vA[j]+0.5*k2A[j], t+0.5*h, C, B, A, j);
+
+//             m4A[j] = h*(vA[j] + k3A[j]);
+//             k4A[j] = h*F(xA[j]+m3A[j], vA[j]+k3A[j], t+h, C, B, A, j);
+
+//             xA[j] += (m1A[j] + 2*m2A[j] + 2*m3A[j] + m4A[j])/6;
+//             vA[j] += (k1A[j] + 2*k2A[j] + 2*k3A[j] + k4A[j])/6;
+        
+//             // body B
+//             m1B[j] = h*vB[j];
+//             k1B[j] = h*F(xB[j], vB[j], t, A, C, B, j);  //(x, v, t)
+
+//             m2B[j] = h*(vB[j] + 0.5*k1B[j]);
+//             k2B[j] = h*F(xB[j]+0.5*m1B[j], vB[j]+0.5*k1B[j], t+0.5*h, A, C, B, j);
+
+//             m3B[j] = h*(vB[j] + 0.5*k2B[j]);
+//             k3B[j] = h*F(xB[j]+0.5*m2B[j], vB[j]+0.5*k2B[j], t+0.5*h, A, C, B, j);
+
+//             m4B[j] = h*(vB[j] + k3B[j]);
+//             k4B[j] = h*F(xB[j]+m3B[j], vB[j]+k3B[j], t+h, A, C, B, j);
+
+//             xB[j] += (m1B[j] + 2*m2B[j] + 2*m3B[j] + m4B[j])/6;
+//             vB[j] += (k1B[j] + 2*k2B[j] + 2*k3B[j] + k4B[j])/6;
+
+//             // body C
+//             m1C[j] = h*vC[j];
+//             k1C[j] = h*F(xC[j], vC[j], t, A, B, C, j);  //(x, v, t)
+
+//             m2C[j] = h*(vC[j] + 0.5*k1C[j]);
+//             k2C[j] = h*F(xC[j]+0.5*m1C[j], vC[j]+0.5*k1C[j], t+0.5*h, A, B, C, j);
+
+//             m3C[j] = h*(vC[j] + 0.5*k2C[j]);
+//             k3C[j] = h*F(xC[j]+0.5*m2C[j], vC[j]+0.5*k2C[j], t+0.5*h, A, B, C, j);
+
+//             m4C[j] = h*(vC[j] + k3C[j]);
+//             k4C[j] = h*F(xC[j]+m3C[j], vC[j]+k3C[j], t+h, A, B, C, j);
+
+//             xC[j] += (m1C[j] + 2*m2C[j] + 2*m3C[j] + m4C[j])/6;
+//             vC[j] += (k1C[j] + 2*k2C[j] + 2*k3C[j] + k4C[j])/6;
+            
+//         }
+
+//         //std::cout<<A.x[0]<<std::endl;
+//         for(int j=0; j<DIM-1;j++){
+//             x_A[j][i+1] = xA[j];
+//             x_B[j][i+1] = xB[j];
+//             x_C[j][i+1] = xC[j];            
+//             A.x[j] = xA[j];
+//             B.x[j] = xB[j];
+//             C.x[j] = xC[j];
+//         }
+//     }
+
+
+
+
 //----------------------------------------------------------------
 
 // Print data on .csv
@@ -401,8 +519,8 @@ int main(){
     output_file_C.close();
 
  
-    FILE* pipe = popen("conda activate ml\n python plotting.py", "w");
-    pclose(pipe);
+    // FILE* pipe = popen("conda activate ml\n python plotting.py", "w");
+    // pclose(pipe);
    return 0;
       
 }
