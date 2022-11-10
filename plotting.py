@@ -23,9 +23,9 @@ dataSetC = np.array([xC, yC, zC])
 numDataPoints = len(t)
 
 def animate_func(num):
-    x = 200 #x as speed multiplier
+    x = 400 #x as speed multiplier
     num = num*x
-    if num < 79900:
+    if num < 80000:
         ax.clear()  # Clears the figure to update the line, point,   
                     # title, and axes
         # Updating Trajectory Line (num+1 due to Python indexing)
@@ -80,24 +80,32 @@ writergif = PillowWriter(fps=20)
 
 
 # %%
-plt.plot(file_positions_A.x,file_positions_A.y, '-o')
-plt.plot(file_positions_B.x,file_positions_B.y, '-o')
-plt.plot(file_positions_C.x,file_positions_C.y, '-o')
+plt.plot(file_positions_A.x,file_positions_A.y, '-o', markersize='1')
+plt.plot(file_positions_B.x,file_positions_B.y, '-o', markersize='1')
+plt.plot(file_positions_C.x,file_positions_C.y, '-o', markersize='1')
+plt.xlabel('x')
+plt.ylabel('y')
 plt.show()
 
-plt.plot(file_positions_A.z,file_positions_A.x, '-o')
-plt.plot(file_positions_B.z,file_positions_B.x, '-o')
-plt.plot(file_positions_C.z,file_positions_C.x, '-o')
+plt.plot(file_positions_A.z,file_positions_A.x, '-o', markersize='1')
+plt.plot(file_positions_B.z,file_positions_B.x, '-o', markersize='1')
+plt.plot(file_positions_C.z,file_positions_C.x, '-o', markersize='1')
+plt.xlabel('z')
+plt.ylabel('x')
 plt.show()
 
-plt.plot(file_positions_A.y,file_positions_A.z, '-o')
-plt.plot(file_positions_B.y,file_positions_B.z, '-o')
-plt.plot(file_positions_C.y,file_positions_C.z, '-o')
+plt.plot(file_positions_A.y,file_positions_A.z, '-o', markersize='1')
+plt.plot(file_positions_B.y,file_positions_B.z, '-o', markersize='1')
+plt.plot(file_positions_C.y,file_positions_C.z, '-o', markersize='1')
+plt.xlabel('y')
+plt.ylabel('z')
 plt.show()
 # %%
-plt.plot(file_positions_A.x[0:300], '-o')
-plt.plot(file_positions_B.x[0:300], '-o')
-plt.plot(file_positions_C.x[0:300], '-o')
-plt.plot()
+plt.plot(file_positions_A.x, '-o')
+plt.plot(file_positions_B.x, '-o')
+plt.plot(file_positions_C.x, '-o')
+plt.xlabel('time')
+plt.ylabel('x')
+plt.show()
 
 # %%
