@@ -4,14 +4,15 @@ from matplotlib.animation import FuncAnimation
 from matplotlib.animation import PillowWriter
 import matplotlib.pyplot as plt
 import numpy as np
+import sys
 
 #%%
 
-file_positions_A = pd.read_csv("positions_A.csv", sep=';')
-file_positions_B = pd.read_csv("positions_B.csv", sep=';')
-file_positions_C = pd.read_csv("positions_C.csv", sep=';')
+file_positions_A = pd.read_csv("positions_A_"+sys.argv[1]+".csv", sep=';')
+file_positions_B = pd.read_csv("positions_B_"+sys.argv[1]+".csv", sep=';')
+file_positions_C = pd.read_csv("positions_C_"+sys.argv[1]+".csv", sep=';')
 
-t = range(0, 80000)
+t = range(0, len(file_positions_A.x))
 
 xA, yA, zA = file_positions_A.x, file_positions_A.y,file_positions_A.z
 xB, yB, zB = file_positions_B.x, file_positions_B.y,file_positions_B.z
@@ -25,7 +26,7 @@ numDataPoints = len(t)
 def animate_func(num):
     x = 400 #x as speed multiplier
     num = num*x
-    if num < 80000:
+    if num < len(file_positions_A.x):
         ax.clear()  # Clears the figure to update the line, point,   
                     # title, and axes
         # Updating Trajectory Line (num+1 due to Python indexing)
@@ -55,13 +56,14 @@ def animate_func(num):
     ax.set_zlim3d([-40, 20])
 
     # Adding Figure Labels
-    ax.set_title('Trajectory \nTime = ' + str(np.round(t[num],    
+    ax.set_title('Trajectory - ' + sys.argv[1]+ '\nTime = ' + str(np.round(t[num],    
                  decimals=2)) + ' sec')
     ax.set_xlabel('x')
     ax.set_ylabel('y')
     ax.set_zlabel('z')
 
 fig = plt.figure()
+
 #plt.style.use('Solarize_Light2')
 #print(plt.style.available)
 ax = plt.axes(projection='3d')

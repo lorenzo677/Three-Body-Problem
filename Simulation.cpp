@@ -109,18 +109,15 @@ double acceleration(Planet A, Planet B, Planet C, int axe){
     double posz_A = A.getPositionZ(); 
     double posz_B = B.getPositionZ(); 
     double posz_C = C.getPositionZ();
-    if (axe == 0)
+    if (axe == 0){
         return (-1 * G * (mass_A * (posx_C-posx_A) / pow(sqrt(pow(posx_C-posx_A,2)+pow(posy_C-posy_A,2)+pow(posz_C-posz_A,2)), 3) + mass_B * (posx_C-posx_B) / pow(sqrt(pow(posx_C-posx_B,2)+pow(posy_C-posy_B,2)+pow(posz_C-posz_B,2)), 3)));
-    else if (axe == 1){
+    }else if (axe == 1){
         return (-1 * G * (mass_A * (posy_C-posy_A) / pow(sqrt(pow(posx_C-posx_A,2)+pow(posy_C-posy_A,2)+pow(posz_C-posz_A,2)), 3) + mass_B * (posy_C-posy_B) / pow(sqrt(pow(posx_C-posx_B,2)+pow(posy_C-posy_B,2)+pow(posz_C-posz_B,2)), 3)));
     }else if (axe == 2){
         return (-1 * G * (mass_A * (posz_C-posz_A) / pow(sqrt(pow(posx_C-posx_A,2)+pow(posy_C-posy_A,2)+pow(posz_C-posz_A,2)), 3) + mass_B * (posz_C-posz_B) / pow(sqrt(pow(posx_C-posx_B,2)+pow(posy_C-posy_B,2)+pow(posz_C-posz_B,2)), 3)));
     }
 }
 
-double Fi(double x, double v, double t, Planet A, Planet B, Planet C, int j ){
-    return x;
-}
 
 double F(double x, double v, double t, Planet A, Planet B, Planet C, int j ){
     // Function to integrate via Runge-Kutta.
@@ -160,7 +157,6 @@ int main(int argc, char** argv){
     // Planet B(10, 0, 0, 0, 10, 0, 0);
     // Planet C(10, 10, -10, -20, 0, 0, 0);
 
-    std::cout<<argv[0]<<argv[1]<<std::endl;
     std::array<double, N_STEPS> time;
     
     double x_A[DIM][N_STEPS];
@@ -359,28 +355,25 @@ int main(int argc, char** argv){
                     C.a[j] = acceleration(B, A, C, j);
                 }
                 x_A[0][1] = x_A[0][0] + A.v[0] * h + 0.5 * A.a[0] * h * h;
-                x_A[1][1] = x_A[1][0] + A.v[1] * h + 0.5 * B.a[1] * h * h;
-                x_A[2][1] = x_A[2][0] + A.v[2] * h + 0.5 * C.a[2] * h * h;
-                x_B[0][1] = x_B[0][0] + B.v[0] * h + 0.5 * A.a[0] * h * h;
+                x_A[1][1] = x_A[1][0] + A.v[1] * h + 0.5 * A.a[1] * h * h;
+                x_A[2][1] = x_A[2][0] + A.v[2] * h + 0.5 * A.a[2] * h * h;
+                x_B[0][1] = x_B[0][0] + B.v[0] * h + 0.5 * B.a[0] * h * h;
                 x_B[1][1] = x_B[1][0] + B.v[1] * h + 0.5 * B.a[1] * h * h;
-                x_B[2][1] = x_B[2][0] + B.v[2] * h + 0.5 * C.a[2] * h * h;
-                x_C[0][1] = x_C[0][0] + C.v[0] * h + 0.5 * A.a[0] * h * h;
-                x_C[1][1] = x_C[1][0] + C.v[1] * h + 0.5 * B.a[1] * h * h;
+                x_B[2][1] = x_B[2][0] + B.v[2] * h + 0.5 * B.a[2] * h * h;
+                x_C[0][1] = x_C[0][0] + C.v[0] * h + 0.5 * C.a[0] * h * h;
+                x_C[1][1] = x_C[1][0] + C.v[1] * h + 0.5 * C.a[1] * h * h;
                 x_C[2][1] = x_C[2][0] + C.v[2] * h + 0.5 * C.a[2] * h * h;
 
-                A.x[0]= x_A[0][1];
-                A.x[1]= x_A[1][1];
-                A.x[2]= x_A[2][1];
-                B.x[0]=x_B[0][1];
-                B.x[1]=x_B[1][1];
-                B.x[2]=x_B[2][1];
+                A.x[0] = x_A[0][1];
+                A.x[1] = x_A[1][1];
+                A.x[2] = x_A[2][1];
+                B.x[0] = x_B[0][1];
+                B.x[1] = x_B[1][1];
+                B.x[2] = x_B[2][1];
+                C.x[0] = x_C[0][1];
+                C.x[1] = x_C[1][1];
+                C.x[2] = x_C[2][1];
 
-                C.x[0]=x_C[0][1];
-                C.x[1]=x_C[1][1];
-                C.x[2]=x_C[2][1];
-
-                std::cout<<x_A[0][0]<<std::endl;
-                std::cout<<x_A[0][1]<<std::endl;
                 for (int i=1; i<N_STEPS-1; i++){
                     for(int j=0; j<DIM-1; j++){
 
@@ -522,15 +515,13 @@ int main(int argc, char** argv){
 //         }
 //     }
 
-
-
-
 //----------------------------------------------------------------
 
 // Print data on .csv
     std::ofstream output_file_A("positions_A_" + std::string(argv[1]) + ".csv");
     std::ofstream output_file_B("positions_B_" + std::string(argv[1]) + ".csv");
     std::ofstream output_file_C("positions_C_" + std::string(argv[1]) + ".csv");
+
     output_file_A<<"x;y;z"<<std::endl;
     output_file_B<<"x;y;z"<<std::endl;
     output_file_C<<"x;y;z"<<std::endl;
@@ -547,8 +538,12 @@ int main(int argc, char** argv){
     output_file_B.close(); 
     output_file_C.close();
 
- 
-    FILE* pipe = popen("python3.11 plotting.py", "w");
+    #ifdef _WIN32
+        std::string command ="python3 plotting.py " + std::string(argv[1]);
+    #elif __APPLE__
+        std::string command ="python3.11 plotting.py " + std::string(argv[1]);
+    #endif
+    FILE* pipe = popen(command.c_str(), "w");
     pclose(pipe);
    return 0;
       
