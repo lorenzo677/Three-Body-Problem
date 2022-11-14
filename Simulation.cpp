@@ -32,14 +32,13 @@ void Initialize(){
 static constexpr int DIM = 4;
 static constexpr double G = 10;
 static constexpr int N_BODIES = 3;
-static constexpr int N_STEPS = 80000;
+static constexpr int N_STEPS = 300000;
 
 double distance(std::array<double, 3> r1, std::array<double, 3> r2){
     return sqrt(pow(r1[0]-r2[0],2)+pow(r1[1]-r2[1],2)+pow(r1[2]-r2[2],2));
 }
 
 class Planet{
-
 public:
 
     double m;
@@ -57,41 +56,7 @@ public:
             v[1] = y_velocity;
             v[2] = z_velocity;
         };
-		double getPositionX(void){
-			return x[0];
-		}
-		double getPositionY(void){
-			return x[1];
-		}
-        double getPositionZ(void){
-			return x[2];
-		}
-        double getMass(void){
-            return m;
-        }
-        double getVelocityX(void){
-            return v[0];
-        }
-        double getVelocityY(void){
-            return v[1];
-        }
-        double getVelocityZ(void){
-            return v[2];
-        }
-        double getAccelX(void){
-            return a[0];
-        }
-        double getAccelY(void){
-            return a[1];
-        }
-        double getAccelZ(void){
-            return a[2];
-        }
-        double getEnergy(void){
-            return energy;
-        }
         void computeKineticEnergy(){
-            
             energy = 0.5 * m * (pow(v[0],2)+pow(v[1],2)+pow(v[2],2));
         }
 };
@@ -101,17 +66,17 @@ double computePotentialEnergy(Planet planet1, Planet planet2, Planet planet3){
 }
 double acceleration(Planet A, Planet B, Planet C, int axe){
     // Compute the acceleration of the body C, specifying the axis.
-    double mass_A = A.getMass();
-    double mass_B = B.getMass();
-    double posx_A = A.getPositionX(); 
-    double posx_B = B.getPositionX(); 
-    double posx_C = C.getPositionX(); 
-    double posy_A = A.getPositionY(); 
-    double posy_B = B.getPositionY(); 
-    double posy_C = C.getPositionY(); 
-    double posz_A = A.getPositionZ(); 
-    double posz_B = B.getPositionZ(); 
-    double posz_C = C.getPositionZ();
+    double mass_A = A.m;
+    double mass_B = B.m;
+    double posx_A = A.x[0]; 
+    double posx_B = B.x[0]; 
+    double posx_C = C.x[0]; 
+    double posy_A = A.x[1]; 
+    double posy_B = B.x[1]; 
+    double posy_C = C.x[1]; 
+    double posz_A = A.x[2]; 
+    double posz_B = B.x[2]; 
+    double posz_C = C.x[2];
     if (axe == 0){
         return (-1 * G * (mass_A * (posx_C-posx_A) / pow(sqrt(pow(posx_C-posx_A,2)+pow(posy_C-posy_A,2)+pow(posz_C-posz_A,2)), 3) + mass_B * (posx_C-posx_B) / pow(sqrt(pow(posx_C-posx_B,2)+pow(posy_C-posy_B,2)+pow(posz_C-posz_B,2)), 3)));
     }else if (axe == 1){
@@ -124,17 +89,17 @@ double acceleration(Planet A, Planet B, Planet C, int axe){
 
 double F(double x, double v, double t, Planet A, Planet B, Planet C, int j ){
     // Function to integrate via Runge-Kutta.
-    double mass_A = A.getMass();
-    double mass_B = B.getMass();
-    double posx_A = A.getPositionX(); 
-    double posx_B = B.getPositionX(); 
-    double posx_C = C.getPositionX(); 
-    double posy_A = A.getPositionY(); 
-    double posy_B = B.getPositionY(); 
-    double posy_C = C.getPositionY(); 
-    double posz_A = A.getPositionZ(); 
-    double posz_B = B.getPositionZ(); 
-    double posz_C = C.getPositionZ();
+     double mass_A = A.m;
+    double mass_B = B.m;
+    double posx_A = A.x[0]; 
+    double posx_B = B.x[0]; 
+    double posx_C = C.x[0]; 
+    double posy_A = A.x[1]; 
+    double posy_B = B.x[1]; 
+    double posy_C = C.x[1]; 
+    double posz_A = A.x[2]; 
+    double posz_B = B.x[2]; 
+    double posz_C = C.x[2];
 
     if (j == 0){
         return (-1 * G * (mass_A * (x-posx_A) / pow(sqrt(pow(x-posx_A,2)+pow(posy_C-posy_A,2)+pow(posz_C-posz_A,2)), 3) + mass_B * (x-posx_B) / pow(sqrt(pow(x-posx_B,2)+pow(posy_C-posy_B,2)+pow(posz_C-posz_B,2)), 3)));
@@ -162,9 +127,10 @@ int main(int argc, char** argv){
 
     std::array<double, N_STEPS> time;
     
-    double x_A[DIM][N_STEPS];
-    double x_B[DIM][N_STEPS];
-    double x_C[DIM][N_STEPS];
+    
+    double x_A[DIM][3];
+    double x_B[DIM][3];
+    double x_C[DIM][3];
     double vx_A;
     double vy_A;
     double vz_A;
@@ -174,41 +140,35 @@ int main(int argc, char** argv){
     double vx_C;
     double vy_C;
     double vz_C;
-    // double v_A[DIM][N_STEPS];
-    // double v_B[DIM][N_STEPS];
-    // double v_C[DIM][N_STEPS];
-    // double a_A[DIM][N_STEPS];
-    // double a_B[DIM][N_STEPS];
-    // double a_C[DIM][N_STEPS];
 
-    double mass_A = A.getMass();
-    double mass_B = B.getMass();
-    double mass_C = C.getMass();
+    double mass_A = A.m;
+    double mass_B = B.m;
+    double mass_C = C.m;
     for (int i=0;i<N_STEPS-1; i++){time[i]= i * h;}
 
-    x_A[0][0] = A.getPositionX();
-    x_B[0][0] = B.getPositionX();
-    x_C[0][0] = C.getPositionX();
+    x_A[0][0] = A.x[0];
+    x_B[0][0] = B.x[0];
+    x_C[0][0] = C.x[0];
+    
+    vx_A = A.v[0];
+    vx_B = B.v[0];
+    vx_C = C.v[0];
 
-    vx_A = A.getVelocityX();
-    vx_B = B.getVelocityX();
-    vx_C = C.getVelocityX();
+    x_A[1][0] = A.x[1];
+    x_B[1][0] = B.x[1];
+    x_C[1][0] = C.x[1];
 
-    x_A[1][0] = A.getPositionY();
-    x_B[1][0] = B.getPositionY();
-    x_C[1][0] = C.getPositionY();
+    vy_A = A.v[1];
+    vy_B = B.v[1];
+    vy_C = C.v[1];
 
-    vy_A = A.getVelocityY();
-    vy_B = B.getVelocityY();
-    vy_C = C.getVelocityY();
+    x_A[2][0] = A.x[2];
+    x_B[2][0] = B.x[2];
+    x_C[2][0] = C.x[2];
 
-    x_A[2][0] = A.getPositionZ();
-    x_B[2][0] = B.getPositionZ();
-    x_C[2][0] = C.getPositionZ();
-
-    vz_A = A.getVelocityZ();
-    vz_B = B.getVelocityZ();
-    vz_C = C.getVelocityZ();
+    vz_A = A.v[2];
+    vz_B = B.v[2];
+    vz_C = C.v[2];
 
     Initialize();
    
@@ -222,6 +182,23 @@ int main(int argc, char** argv){
     output_file_C<<"x;y;z"<<std::endl;
     file_energy<<"energy"<<std::endl;
 
+    double m1;
+    double k1;
+    double m2;
+    double k2;
+    double m3;
+    double k3;
+    double m4;
+    double k4;
+
+    std::array<double,3> vA = A.v; //condizione iniziale velocita
+    std::array<double,3> xA = A.x;
+    std::array<double,3> vB = B.v; //condizione iniziale velocita
+    std::array<double,3> xB = B.x;
+    std::array<double,3> vC = C.v; //condizione iniziale velocita
+    std::array<double,3> xC = C.x;
+    double t;
+
     if (argc>=2){
         switch (s_mapStringValues[argv[1]]){
             case evStringValue1: 
@@ -230,6 +207,9 @@ int main(int argc, char** argv){
                 // ==========================================================
 
                 for (int i=0; i<N_STEPS-1; i++){
+                    output_file_A << A.x[0] << ";" << A.x[1] << ";" << A.x[2]<< std::endl;
+                    output_file_B << B.x[0] << ";" << B.x[1] << ";" << B.x[2]<< std::endl;
+                    output_file_C << C.x[0] << ";" << C.x[1] << ";" << C.x[2]<< std::endl;
                     for(int j=0; j<DIM-1; j++){
 
                         A.a[j] = acceleration(B, C, A, j);
@@ -240,24 +220,22 @@ int main(int argc, char** argv){
                         B.v[j] += B.a[j] * h;
                         C.v[j] += C.a[j] * h;
 
-                        x_A[j][i + 1] = x_A[j][i] + A.v[j] * h;
-                        x_B[j][i + 1] = x_B[j][i] + B.v[j] * h;
-                        x_C[j][i + 1] = x_C[j][i] + C.v[j] * h;
+                        x_A[j][0] = x_A[j][0] + A.v[j] * h;
+                        x_B[j][0] = x_B[j][0] + B.v[j] * h;
+                        x_C[j][0] = x_C[j][0] + C.v[j] * h;
                         
                     } 
                     for (int j=0;j<DIM-1;j++){
-                        A.x[j] = x_A[j][i + 1];
-                        B.x[j] = x_B[j][i + 1];
-                        C.x[j] = x_C[j][i + 1];
+                        A.x[j] = x_A[j][0];
+                        B.x[j] = x_B[j][0];
+                        C.x[j] = x_C[j][0];
                     }
-                    output_file_A << A.x[0] << ";" << A.x[1] << ";" << A.x[2]<< std::endl;
-                    output_file_B << B.x[0] << ";" << B.x[1] << ";" << B.x[2]<< std::endl;
-                    output_file_C << C.x[0] << ";" << C.x[1] << ";" << C.x[2]<< std::endl;
+                    
                     A.computeKineticEnergy();
                     B.computeKineticEnergy();
                     C.computeKineticEnergy();
 
-                    file_energy<<A.energy+B.energy+C.energy+ computePotentialEnergy(A, B, C)<<std::endl;
+                    file_energy<<A.energy + B.energy + C.energy + computePotentialEnergy(A, B, C)<<std::endl;
                 }
                 break;
             case evStringValue2:{
@@ -271,22 +249,7 @@ int main(int argc, char** argv){
                 // x' = v
                 // v' = -G(...)
 
-                double m1;
-                double k1;
-                double m2;
-                double k2;
-                double m3;
-                double k3;
-                double m4;
-                double k4;
-
-                std::array<double,3> vA = A.v; //condizione iniziale velocita
-                std::array<double,3> xA = A.x;
-                std::array<double,3> vB = B.v; //condizione iniziale velocita
-                std::array<double,3> xB = B.x;
-                std::array<double,3> vC = C.v; //condizione iniziale velocita
-                std::array<double,3> xC = C.x;
-                double t;
+               
                 
                 for(int i=0; i<N_STEPS-1; i++){
                     for(int j=0; j<DIM-1; j++){
@@ -343,11 +306,8 @@ int main(int argc, char** argv){
                         vC[j] += (k1 + 2*k2 + 2*k3 + k4)/6;
                         
                     }
-                    //std::cout<<A.x[0]<<std::endl;
+
                     for(int j=0; j<DIM-1;j++){
-                        x_A[j][i+1] = xA[j];
-                        x_B[j][i+1] = xB[j];
-                        x_C[j][i+1] = xC[j];   
                         A.v[j] = vA[j];
                         B.v[j] = vB[j];
                         C.v[j] = vC[j];          
@@ -361,7 +321,7 @@ int main(int argc, char** argv){
                     A.computeKineticEnergy();
                     B.computeKineticEnergy();
                     C.computeKineticEnergy();
-                    file_energy<<A.energy+B.energy+C.energy + computePotentialEnergy(A, B, C)<<std::endl;
+                    file_energy<<A.energy + B.energy + C.energy + computePotentialEnergy(A, B, C)<<std::endl;
                 }
                 }
                 break;
@@ -375,6 +335,11 @@ int main(int argc, char** argv){
                     B.a[j] = acceleration(A, C, B, j);
                     C.a[j] = acceleration(B, A, C, j);
                 }
+                // print initial condition
+                output_file_A << A.x[0] << ";" << A.x[1] << ";" << A.x[2]<< std::endl;
+                output_file_B << B.x[0] << ";" << B.x[1] << ";" << B.x[2]<< std::endl;
+                output_file_C << C.x[0] << ";" << C.x[1] << ";" << C.x[2]<< std::endl;
+
                 x_A[0][1] = x_A[0][0] + A.v[0] * h + 0.5 * A.a[0] * h * h;
                 x_A[1][1] = x_A[1][0] + A.v[1] * h + 0.5 * A.a[1] * h * h;
                 x_A[2][1] = x_A[2][0] + A.v[2] * h + 0.5 * A.a[2] * h * h;
@@ -394,37 +359,44 @@ int main(int argc, char** argv){
                 C.x[0] = x_C[0][1];
                 C.x[1] = x_C[1][1];
                 C.x[2] = x_C[2][1];
-                
                 for (int i=1; i<N_STEPS-1; i++){
+                    output_file_A << A.x[0] << ";" << A.x[1] << ";" << A.x[2]<< std::endl;
+                    output_file_B << B.x[0] << ";" << B.x[1] << ";" << B.x[2]<< std::endl;
+                    output_file_C << C.x[0] << ";" << C.x[1] << ";" << C.x[2]<< std::endl;
                     for(int j=0; j<DIM-1; j++){
                         
                         A.a[j] = acceleration(B, C, A, j);
                         B.a[j] = acceleration(A, C, B, j);
                         C.a[j] = acceleration(B, A, C, j);
-
-                        x_A[j][i + 1] = 2 * x_A[j][i] - x_A[j][i-1] + A.a[j] * h * h;
-                        x_B[j][i + 1] = 2 * x_B[j][i] - x_B[j][i-1] + B.a[j] * h * h;
-                        x_C[j][i + 1] = 2 * x_C[j][i] - x_C[j][i-1] + C.a[j] * h * h;                
                         
-                        A.v[j] = (x_A[j][i + 1] - x_A[j][i]) / h;
-                        B.v[j] = (x_B[j][i + 1] - x_B[j][i]) / h;
-                        C.v[j] = (x_B[j][i + 1] - x_B[j][i]) / h;
+                        x_A[j][2]= x_A[j][1]; //x_A variabile temporanea
+                        x_B[j][2]= x_B[j][1];
+                        x_C[j][2]= x_C[j][1];
+
+                        x_A[j][1] = 2 * x_A[j][1] - x_A[j][0] + A.a[j] * h * h;
+                        x_B[j][1] = 2 * x_B[j][1] - x_B[j][0] + B.a[j] * h * h;
+                        x_C[j][1] = 2 * x_C[j][1] - x_C[j][0] + C.a[j] * h * h;                
+                        
+                        x_A[j][0]= x_A[j][2];
+                        x_B[j][0]= x_B[j][2];
+                        x_C[j][0]= x_C[j][2];
+                        
+                        A.v[j] = (x_A[j][1] - x_A[j][0]) / h;
+                        B.v[j] = (x_B[j][1] - x_B[j][0]) / h;
+                        C.v[j] = (x_B[j][1] - x_B[j][0]) / h;
 
                     }      
                     for (int j = 0; j < DIM-1; j++){
                             
-                        A.x[j] = x_A[j][i + 1];
-                        B.x[j] = x_B[j][i + 1];
-                        C.x[j] = x_C[j][i + 1];
-                        
-                        output_file_A << A.x[0] << ";" << A.x[1] << ";" << A.x[2]<< std::endl;
-                        output_file_B << B.x[0] << ";" << B.x[1] << ";" << B.x[2]<< std::endl;
-                        output_file_C << C.x[0] << ";" << C.x[1] << ";" << C.x[2]<< std::endl;
+                        A.x[j] = x_A[j][1];
+                        B.x[j] = x_B[j][1];
+                        C.x[j] = x_C[j][1];
+                
                         A.computeKineticEnergy();
                         B.computeKineticEnergy();
                         C.computeKineticEnergy();
                     }
-                    file_energy<<A.energy+B.energy+C.energy+ computePotentialEnergy(A, B, C)<<std::endl;
+                    file_energy<<A.energy + B.energy + C.energy + computePotentialEnergy(A, B, C)<<std::endl;
                 }
                 break;
             default:
@@ -436,20 +408,7 @@ int main(int argc, char** argv){
         return 0;
     }
     
-    
-//----------------------------------------------------------------
-
-// Print data on .csv
-
-    
-    // for(int i = 0; i<N_STEPS-1; i++){
-    //     output_file_A << x_A[0][i] << ";" << x_A[1][i] << ";" << x_A[2][i]<< std::endl;
-    //     output_file_B << x_B[0][i] << ";" << x_B[1][i] << ";" << x_B[2][i]<< std::endl;
-    //     output_file_C << x_C[0][i] << ";" << x_C[1][i] << ";" << x_C[2][i]<< std::endl;
-    // }    
-    // for(int i = 0; i<N_STEPS-1; i++){
-    //     output_file_A << x_A[0][i] << ";" << x_A[1][i]<< ";" << x_A[2][i]<<";"<< time[i]<<std::endl;
-    // }    
+//----------------------------------------------------------------  
 
     output_file_A.close();
     output_file_B.close(); 
