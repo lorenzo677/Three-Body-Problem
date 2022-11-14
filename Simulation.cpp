@@ -90,12 +90,15 @@ public:
         double getEnergy(void){
             return energy;
         }
-        void computeEnergy(Planet planet1, Planet planet2){
+        void computeKineticEnergy(){
             
-            energy = 0.5 * m * (pow(v[0],2)+pow(v[1],2)+pow(v[2],2)) - G * m * planet1.m / distance(x, planet1.x) - G * m * planet2.m / distance(x, planet2.x);
+            energy = 0.5 * m * (pow(v[0],2)+pow(v[1],2)+pow(v[2],2));
         }
 };
-
+double computePotentialEnergy(Planet planet1, Planet planet2, Planet planet3){
+    return -1 * G * ( planet3.m * planet1.m / distance(planet3.x, planet1.x) +  planet3.m * planet2.m / distance(planet3.x, planet2.x) + planet1.m * planet2.m / distance(planet1.x, planet2.x));
+        
+}
 double acceleration(Planet A, Planet B, Planet C, int axe){
     // Compute the acceleration of the body C, specifying the axis.
     double mass_A = A.getMass();
@@ -148,7 +151,7 @@ int main(int argc, char** argv){
 
     Planet A(10, -10, 10, -11, -3, 0, 0);   // corpi allineati sull'asse delle x
     Planet B(10, 0, 0, 0, 0, 0, 0);
-    Planet C(10, 10, 14, 12, 0, 0, 0);
+    Planet C(10, 10, 14, 12, 3, 0, 0);
     // Planet A(10, -20, 20, 0, 10, 10, 0.1);   // corpi allineati sulla bisettrice 2 e 3 con velocita perpendicolare
     // Planet B(10, 0, 0, 0, 0, 0, 1);
     // Planet C(10, 20, -20, 0.3, -10, -10, 0);
@@ -210,6 +213,13 @@ int main(int argc, char** argv){
     Initialize();
    
     std::ofstream file_energy("Total_energy_" + std::string(argv[1]) + ".csv");
+    std::ofstream output_file_A("positions_A_" + std::string(argv[1]) + ".csv");
+    std::ofstream output_file_B("positions_B_" + std::string(argv[1]) + ".csv");
+    std::ofstream output_file_C("positions_C_" + std::string(argv[1]) + ".csv");
+
+    output_file_A<<"x;y;z"<<std::endl;
+    output_file_B<<"x;y;z"<<std::endl;
+    output_file_C<<"x;y;z"<<std::endl;
     file_energy<<"energy"<<std::endl;
 
     if (argc>=2){
@@ -234,15 +244,20 @@ int main(int argc, char** argv){
                         x_B[j][i + 1] = x_B[j][i] + B.v[j] * h;
                         x_C[j][i + 1] = x_C[j][i] + C.v[j] * h;
                         
+                    } 
+                    for (int j=0;j<DIM-1;j++){
                         A.x[j] = x_A[j][i + 1];
                         B.x[j] = x_B[j][i + 1];
                         C.x[j] = x_C[j][i + 1];
-                        
-                        A.computeEnergy(B, C);
-                        B.computeEnergy(A, C);
-                        C.computeEnergy(B, A);
-                    } 
-                    file_energy<<A.energy+B.energy+C.energy<<std::endl;
+                    }
+                    output_file_A << A.x[0] << ";" << A.x[1] << ";" << A.x[2]<< std::endl;
+                    output_file_B << B.x[0] << ";" << B.x[1] << ";" << B.x[2]<< std::endl;
+                    output_file_C << C.x[0] << ";" << C.x[1] << ";" << C.x[2]<< std::endl;
+                    A.computeKineticEnergy();
+                    B.computeKineticEnergy();
+                    C.computeKineticEnergy();
+
+                    file_energy<<A.energy+B.energy+C.energy+ computePotentialEnergy(A, B, C)<<std::endl;
                 }
                 break;
             case evStringValue2:{
@@ -332,15 +347,21 @@ int main(int argc, char** argv){
                     for(int j=0; j<DIM-1;j++){
                         x_A[j][i+1] = xA[j];
                         x_B[j][i+1] = xB[j];
-                        x_C[j][i+1] = xC[j];            
+                        x_C[j][i+1] = xC[j];   
+                        A.v[j] = vA[j];
+                        B.v[j] = vB[j];
+                        C.v[j] = vC[j];          
                         A.x[j] = xA[j];
                         B.x[j] = xB[j];
                         C.x[j] = xC[j];
                     }
-                    A.computeEnergy(B, C);
-                    B.computeEnergy(A, C);
-                    C.computeEnergy(B, A);
-                    file_energy<<A.energy+B.energy+C.energy<<std::endl;
+                    output_file_A << A.x[0] << ";" << A.x[1] << ";" << A.x[2]<< std::endl;
+                    output_file_B << B.x[0] << ";" << B.x[1] << ";" << B.x[2]<< std::endl;
+                    output_file_C << C.x[0] << ";" << C.x[1] << ";" << C.x[2]<< std::endl;
+                    A.computeKineticEnergy();
+                    B.computeKineticEnergy();
+                    C.computeKineticEnergy();
+                    file_energy<<A.energy+B.energy+C.energy + computePotentialEnergy(A, B, C)<<std::endl;
                 }
                 }
                 break;
@@ -373,15 +394,13 @@ int main(int argc, char** argv){
                 C.x[0] = x_C[0][1];
                 C.x[1] = x_C[1][1];
                 C.x[2] = x_C[2][1];
-
+                
                 for (int i=1; i<N_STEPS-1; i++){
                     for(int j=0; j<DIM-1; j++){
-
+                        
                         A.a[j] = acceleration(B, C, A, j);
                         B.a[j] = acceleration(A, C, B, j);
                         C.a[j] = acceleration(B, A, C, j);
-
-                        //file_energy<<A.a[j]<<std::endl;
 
                         x_A[j][i + 1] = 2 * x_A[j][i] - x_A[j][i-1] + A.a[j] * h * h;
                         x_B[j][i + 1] = 2 * x_B[j][i] - x_B[j][i-1] + B.a[j] * h * h;
@@ -389,19 +408,23 @@ int main(int argc, char** argv){
                         
                         A.v[j] = (x_A[j][i + 1] - x_A[j][i]) / h;
                         B.v[j] = (x_B[j][i + 1] - x_B[j][i]) / h;
-                        B.v[j] = (x_B[j][i + 1] - x_B[j][i]) / h;
+                        C.v[j] = (x_B[j][i + 1] - x_B[j][i]) / h;
+
                     }      
                     for (int j = 0; j < DIM-1; j++){
                             
                         A.x[j] = x_A[j][i + 1];
                         B.x[j] = x_B[j][i + 1];
                         C.x[j] = x_C[j][i + 1];
-                                
-                        A.computeEnergy(B, C);
-                        B.computeEnergy(A, C);
-                        C.computeEnergy(B, A);
+                        
+                        output_file_A << A.x[0] << ";" << A.x[1] << ";" << A.x[2]<< std::endl;
+                        output_file_B << B.x[0] << ";" << B.x[1] << ";" << B.x[2]<< std::endl;
+                        output_file_C << C.x[0] << ";" << C.x[1] << ";" << C.x[2]<< std::endl;
+                        A.computeKineticEnergy();
+                        B.computeKineticEnergy();
+                        C.computeKineticEnergy();
                     }
-                    file_energy<<A.energy+B.energy+C.energy<<std::endl;
+                    file_energy<<A.energy+B.energy+C.energy+ computePotentialEnergy(A, B, C)<<std::endl;
                 }
                 break;
             default:
@@ -413,130 +436,25 @@ int main(int argc, char** argv){
         return 0;
     }
     
-    file_energy.close();
-// RK4 LUTZ
-
-//     std::array<double, 3> m1A;
-//     std::array<double, 3> k1A;
-//     std::array<double, 3> m2A;
-//     std::array<double, 3> k2A;
-//     std::array<double, 3> m3A;
-//     std::array<double, 3> k3A;
-//     std::array<double, 3> m4A;
-//     std::array<double, 3> k4A;
-
-//     std::array<double, 3> m1B;
-//     std::array<double, 3> k1B;
-//     std::array<double, 3> m2B;
-//     std::array<double, 3> k2B;
-//     std::array<double, 3> m3B;
-//     std::array<double, 3> k3B;
-//     std::array<double, 3> m4B;
-//     std::array<double, 3> k4B;
     
-//     std::array<double, 3> m1C;
-//     std::array<double, 3> k1C;
-//     std::array<double, 3> m2C;
-//     std::array<double, 3> k2C;
-//     std::array<double, 3> m3C;
-//     std::array<double, 3> k3C;
-//     std::array<double, 3> m4C;
-//     std::array<double, 3> k4C;
-
-//     std::array<double,3> vA = A.v; //condizione iniziale velocita
-//     std::array<double,3> xA = A.x;
-//     std::array<double,3> vB = B.v; //condizione iniziale velocita
-//     std::array<double,3> xB = B.x;
-//     std::array<double,3> vC = C.v; //condizione iniziale velocita
-//     std::array<double,3> xC = C.x;
-
-// double t;
-
-// for(int i =0;i<N_STEPS-1;i++){
-//     for(int j=0; j<DIM-1; j++){
-//             // body A
-//             m1A[j] = h*vA[j];
-//             k1A[j] = h*F(xA[j], vA[j], t, C, B, A, j);  
-
-//             m2A[j] = h*(vA[j] + 0.5*k1A[j]);
-//             k2A[j] = h*F(xA[j]+0.5*m1A[j], vA[j]+0.5*k1A[j], t+0.5*h, C, B, A, j);
-
-//             m3A[j] = h*(vA[j] + 0.5*k2A[j]);
-//             k3A[j] = h*F(xA[j]+0.5*m2A[j], vA[j]+0.5*k2A[j], t+0.5*h, C, B, A, j);
-
-//             m4A[j] = h*(vA[j] + k3A[j]);
-//             k4A[j] = h*F(xA[j]+m3A[j], vA[j]+k3A[j], t+h, C, B, A, j);
-
-//             xA[j] += (m1A[j] + 2*m2A[j] + 2*m3A[j] + m4A[j])/6;
-//             vA[j] += (k1A[j] + 2*k2A[j] + 2*k3A[j] + k4A[j])/6;
-        
-//             // body B
-//             m1B[j] = h*vB[j];
-//             k1B[j] = h*F(xB[j], vB[j], t, A, C, B, j);  //(x, v, t)
-
-//             m2B[j] = h*(vB[j] + 0.5*k1B[j]);
-//             k2B[j] = h*F(xB[j]+0.5*m1B[j], vB[j]+0.5*k1B[j], t+0.5*h, A, C, B, j);
-
-//             m3B[j] = h*(vB[j] + 0.5*k2B[j]);
-//             k3B[j] = h*F(xB[j]+0.5*m2B[j], vB[j]+0.5*k2B[j], t+0.5*h, A, C, B, j);
-
-//             m4B[j] = h*(vB[j] + k3B[j]);
-//             k4B[j] = h*F(xB[j]+m3B[j], vB[j]+k3B[j], t+h, A, C, B, j);
-
-//             xB[j] += (m1B[j] + 2*m2B[j] + 2*m3B[j] + m4B[j])/6;
-//             vB[j] += (k1B[j] + 2*k2B[j] + 2*k3B[j] + k4B[j])/6;
-
-//             // body C
-//             m1C[j] = h*vC[j];
-//             k1C[j] = h*F(xC[j], vC[j], t, A, B, C, j);  //(x, v, t)
-
-//             m2C[j] = h*(vC[j] + 0.5*k1C[j]);
-//             k2C[j] = h*F(xC[j]+0.5*m1C[j], vC[j]+0.5*k1C[j], t+0.5*h, A, B, C, j);
-
-//             m3C[j] = h*(vC[j] + 0.5*k2C[j]);
-//             k3C[j] = h*F(xC[j]+0.5*m2C[j], vC[j]+0.5*k2C[j], t+0.5*h, A, B, C, j);
-
-//             m4C[j] = h*(vC[j] + k3C[j]);
-//             k4C[j] = h*F(xC[j]+m3C[j], vC[j]+k3C[j], t+h, A, B, C, j);
-
-//             xC[j] += (m1C[j] + 2*m2C[j] + 2*m3C[j] + m4C[j])/6;
-//             vC[j] += (k1C[j] + 2*k2C[j] + 2*k3C[j] + k4C[j])/6;
-            
-//         }
-
-//         //std::cout<<A.x[0]<<std::endl;
-//         for(int j=0; j<DIM-1;j++){
-//             x_A[j][i+1] = xA[j];
-//             x_B[j][i+1] = xB[j];
-//             x_C[j][i+1] = xC[j];            
-//             A.x[j] = xA[j];
-//             B.x[j] = xB[j];
-//             C.x[j] = xC[j];
-//         }
-//     }
-
 //----------------------------------------------------------------
 
 // Print data on .csv
-    std::ofstream output_file_A("positions_A_" + std::string(argv[1]) + ".csv");
-    std::ofstream output_file_B("positions_B_" + std::string(argv[1]) + ".csv");
-    std::ofstream output_file_C("positions_C_" + std::string(argv[1]) + ".csv");
 
-    output_file_A<<"x;y;z"<<std::endl;
-    output_file_B<<"x;y;z"<<std::endl;
-    output_file_C<<"x;y;z"<<std::endl;
     
-    for(int i = 0; i<N_STEPS-1; i++){
-        output_file_A << x_A[0][i] << ";" << x_A[1][i] << ";" << x_A[2][i]<< std::endl;
-        output_file_B << x_B[0][i] << ";" << x_B[1][i] << ";" << x_B[2][i]<< std::endl;
-        output_file_C << x_C[0][i] << ";" << x_C[1][i] << ";" << x_C[2][i]<< std::endl;
-    }    
+    // for(int i = 0; i<N_STEPS-1; i++){
+    //     output_file_A << x_A[0][i] << ";" << x_A[1][i] << ";" << x_A[2][i]<< std::endl;
+    //     output_file_B << x_B[0][i] << ";" << x_B[1][i] << ";" << x_B[2][i]<< std::endl;
+    //     output_file_C << x_C[0][i] << ";" << x_C[1][i] << ";" << x_C[2][i]<< std::endl;
+    // }    
     // for(int i = 0; i<N_STEPS-1; i++){
     //     output_file_A << x_A[0][i] << ";" << x_A[1][i]<< ";" << x_A[2][i]<<";"<< time[i]<<std::endl;
     // }    
+
     output_file_A.close();
     output_file_B.close(); 
     output_file_C.close();
+    file_energy.close();
 
     #ifdef _WIN32
         std::string command ="python3 plotting.py " + std::string(argv[1]);
@@ -546,5 +464,4 @@ int main(int argc, char** argv){
     FILE* pipe = popen(command.c_str(), "w");
     pclose(pipe);
    return 0;
-      
 }
