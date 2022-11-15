@@ -68,12 +68,12 @@ fig = plt.figure()
 #print(plt.style.available)
 ax = plt.axes(projection='3d')
 line_ani = FuncAnimation(fig, animate_func, interval=1, frames=int(numDataPoints/200))
-#plt.savefig("animation.gif", dpi = 300)
+
 plt.show()
 # Saving the Animation
 f = r"animate_func.gif"
 writergif = PillowWriter(fps=20)
-#line_ani.save(f, writer=writergif, dpi=300)
+# line_ani.save(f, writer=writergif, dpi=300)
 
 # ax.plot3D(file_positions_A.x, file_positions_A.y,file_positions_A.z)
 # ax.plot3D(file_positions_B.x, file_positions_B.y,file_positions_B.z)
