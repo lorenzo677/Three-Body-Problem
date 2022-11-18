@@ -138,15 +138,15 @@ double F(double x, double v, double t, Planet A, Planet B, Planet C, int j ){
 
 int main(int argc, char** argv){
     
-    double h = 0.001;
+    double h = 0.0005;
 
-    Planet A(10, -10, 10, -11, -3, 0, 0);   // corpi allineati sull'asse delle x
-    Planet B(10, 0, 0, 0, 0, 0, 0);
-    Planet C(10, 10, 14, 12, 3, 0, 0);
+    Planet A(100, -10, 10, -11, -3, 0, 0);   // corpi allineati sull'asse delle x
+    Planet B(100, 0, 0, 0, 3, 0, 0);
+    Planet C(0, 10, 14, 12, 3, 0, 0);
     // Planet A(2e30, 0, 0, 0, 0, 0, 0);   // dati veri
     // Planet B(5.9e24, 150e9, 0, 0, 0, 3e4, 0);
     // Planet C(7.34e22, 60e9, 3.8e8, 0, -1022, 3e4, 0);
-    // BE CAREFUL: If starting position of the body on one axis is the same, acceleration will be to inf.
+   
     // Planet A(10, -10, 10, -20, 0, 0, 0);   // corpi allineati sull'asse delle x
     // Planet B(10, 0, 0, 0, 10, 0, 0);
     // Planet C(10, 10, -10, -20, 0, 0, 0);
@@ -222,7 +222,7 @@ int main(int argc, char** argv){
     std::array<double,3> vC = C.v; //condizione iniziale velocita
     std::array<double,3> xC = C.x;
     double t;
-    std::array<double,3> cm;
+    std::array<double,3> cm = computeCM(A, B, C);
 
     if (argc>=2){
         switch (s_mapStringValues[argv[1]]){
@@ -344,6 +344,8 @@ int main(int argc, char** argv){
                     B.computeKineticEnergy();
                     C.computeKineticEnergy();
                     file_energy<<A.energy + B.energy + C.energy <<";"<< computePotentialEnergy(A, B, C)<<std::endl;
+                    cm=computeCM(A, B, C);
+                    file_angmom<<AngularMomentum(cm, A)[0]+ AngularMomentum(cm, B)[0]+AngularMomentum(cm, C)[0]<<";"<< AngularMomentum(cm, A)[1]+ AngularMomentum(cm, B)[1]+AngularMomentum(cm, C)[1]<<";"<<AngularMomentum(cm, A)[2]+ AngularMomentum(cm, B)[2]+AngularMomentum(cm, C)[2]<<std::endl;
                     // file_energy<<A.energy + B.energy + C.energy + computePotentialEnergy(A, B, C)<<std::endl;
                     // file_energy<<A.energy + B.energy + C.energy <<std::endl;
                     // file_energy<< computePotentialEnergy(A, B, C)<<std::endl;
@@ -422,7 +424,9 @@ int main(int argc, char** argv){
                         B.computeKineticEnergy();
                         C.computeKineticEnergy();
                     }
+                    cm=computeCM(A, B, C);
                     file_energy<<A.energy + B.energy + C.energy <<";"<< computePotentialEnergy(A, B, C)<<std::endl;
+                    file_angmom<<AngularMomentum(cm, A)[0]+ AngularMomentum(cm, B)[0]+AngularMomentum(cm, C)[0]<<";"<< AngularMomentum(cm, A)[1]+ AngularMomentum(cm, B)[1]+AngularMomentum(cm, C)[1]<<";"<<AngularMomentum(cm, A)[2]+ AngularMomentum(cm, B)[2]+AngularMomentum(cm, C)[2]<<std::endl;
                     // file_energy<<A.energy + B.energy + C.energy +computePotentialEnergy(A, B, C)<<std::endl;
                     // file_energy<<A.energy + B.energy + C.energy <<std::endl;
                     // file_energy<< computePotentialEnergy(A, B, C)<<std::endl;
