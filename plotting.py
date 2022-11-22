@@ -24,36 +24,37 @@ dataSetC = np.array([xC, yC, zC])
 numDataPoints = len(t)
 
 def animate_func(num):
-    x = 400 #x as speed multiplier
-    num = num*x
+    x = 200 #x as speed multiplier
+    num =  num*x
+   
     if num < len(file_positions_A.x):
         ax.clear()  # Clears the figure to update the line, point,   
                     # title, and axes
         # Updating Trajectory Line (num+1 due to Python indexing)
         ax.plot3D(dataSetA[0, :num+1], dataSetA[1, :num+1], 
-                dataSetA[2, :num+1], c='blue')
+                dataSetA[2, :num+1], c='blue', label='A')
         ax.plot3D(dataSetB[0, :num+1], dataSetB[1, :num+1], 
-                dataSetB[2, :num+1], c='green')
-        ax.plot3D(dataSetC[0, :num+1], dataSetC[1, :num+1], 
-                dataSetC[2, :num+1], c='red')
+                dataSetB[2, :num+1], c='green', label='B')
+        # ax.plot3D(dataSetC[0, :num+1], dataSetC[1, :num+1], 
+        #         dataSetC[2, :num+1], c='red', label='C')
         # Updating Point Location 
         ax.scatter(dataSetA[0, num], dataSetA[1, num], dataSetA[2, num], 
                 c='blue', marker='o')
         ax.scatter(dataSetB[0, num], dataSetB[1, num], dataSetB[2, num], 
                 c='green', marker='o')
-        ax.scatter(dataSetC[0, num], dataSetC[1, num], dataSetC[2, num], 
-                c='red', marker='o')
+        # ax.scatter(dataSetC[0, num], dataSetC[1, num], dataSetC[2, num], 
+        #         c='red', marker='o')
         # Adding Constant Origin
         ax.plot3D(dataSetA[0, 0], dataSetA[1, 0], dataSetA[2, 0],     
                 c='black', marker='o')
         ax.plot3D(dataSetB[0, 0], dataSetB[1, 0], dataSetB[2, 0],     
                 c='black', marker='o')
-        ax.plot3D(dataSetC[0, 0], dataSetC[1, 0], dataSetC[2, 0],     
-                c='black', marker='o')
+        # ax.plot3D(dataSetC[0, 0], dataSetC[1, 0], dataSetC[2, 0],     
+        #         c='black', marker='o')
     # Setting Axes Limits
-    ax.set_xlim3d([-100, 20])
-    ax.set_ylim3d([-20, 30])
-    ax.set_zlim3d([-40, 20])
+#     ax.set_xlim3d([-100, 20])
+#     ax.set_ylim3d([-20, 30])
+#     ax.set_zlim3d([-40, 20])
 
     # Adding Figure Labels
     ax.set_title('Trajectory - ' + sys.argv[1]+ '\nTime = ' + str(np.round(t[num],    
@@ -68,7 +69,7 @@ fig = plt.figure()
 #print(plt.style.available)
 ax = plt.axes(projection='3d')
 line_ani = FuncAnimation(fig, animate_func, interval=1, frames=int(numDataPoints/200))
-
+plt.legend()
 plt.show()
 # Saving the Animation
 f = r"animate_func.gif"
@@ -84,30 +85,31 @@ writergif = PillowWriter(fps=20)
 # %%
 plt.plot(file_positions_A.x,file_positions_A.y, '-o', markersize='1')
 plt.plot(file_positions_B.x,file_positions_B.y, '-o', markersize='1')
-plt.plot(file_positions_C.x,file_positions_C.y, '-o', markersize='1')
+plt.title(sys.argv[1])
+# plt.plot(file_positions_C.x,file_positions_C.y, '-o', markersize='1')
 plt.xlabel('x')
 plt.ylabel('y')
 plt.show()
 
-plt.plot(file_positions_A.z,file_positions_A.x, '-o', markersize='1')
-plt.plot(file_positions_B.z,file_positions_B.x, '-o', markersize='1')
-plt.plot(file_positions_C.z,file_positions_C.x, '-o', markersize='1')
-plt.xlabel('z')
-plt.ylabel('x')
-plt.show()
+# plt.plot(file_positions_A.z,file_positions_A.x, '-o', markersize='1')
+# plt.plot(file_positions_B.z,file_positions_B.x, '-o', markersize='1')
+# plt.plot(file_positions_C.z,file_positions_C.x, '-o', markersize='1')
+# plt.xlabel('z')
+# plt.ylabel('x')
+# plt.show()
 
-plt.plot(file_positions_A.y,file_positions_A.z, '-o', markersize='1')
-plt.plot(file_positions_B.y,file_positions_B.z, '-o', markersize='1')
-plt.plot(file_positions_C.y,file_positions_C.z, '-o', markersize='1')
-plt.xlabel('y')
-plt.ylabel('z')
-plt.show()
-# %%
-plt.plot(file_positions_A.x, '-o')
-plt.plot(file_positions_B.x, '-o')
-plt.plot(file_positions_C.x, '-o')
-plt.xlabel('time')
-plt.ylabel('x')
-plt.show()
+# plt.plot(file_positions_A.y,file_positions_A.z, '-o', markersize='1')
+# plt.plot(file_positions_B.y,file_positions_B.z, '-o', markersize='1')
+# plt.plot(file_positions_C.y,file_positions_C.z, '-o', markersize='1')
+# plt.xlabel('y')
+# plt.ylabel('z')
+# plt.show()
+# # %%
+# plt.plot(file_positions_A.x, '-o')
+# plt.plot(file_positions_B.x, '-o')
+# plt.plot(file_positions_C.x, '-o')
+# plt.xlabel('time')
+# plt.ylabel('x')
+# plt.show()
 
 # %%

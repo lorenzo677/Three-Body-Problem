@@ -32,7 +32,7 @@ void Initialize(){
 static constexpr int DIM = 4;
 static constexpr double G = 10;
 static constexpr int N_BODIES = 3;
-static constexpr int N_STEPS = 300000;
+static constexpr int N_STEPS = 75000;
 
 double distance(std::array<double, 3> r1, std::array<double, 3> r2){
     return sqrt(pow(r1[0]-r2[0],2)+pow(r1[1]-r2[1],2)+pow(r1[2]-r2[2],2));
@@ -49,16 +49,16 @@ public:
     
     Planet (double mass, double x_position, double y_position, double z_position, double x_velocity, double y_velocity, double z_velocity) {
         m = mass;
-			x[0] = x_position;
-			x[1] = y_position;
-            x[2] = z_position;
-			v[0] = x_velocity;
-            v[1] = y_velocity;
-            v[2] = z_velocity;
-        };
-        void computeKineticEnergy(){
-            energy = 0.5 * m * (pow(v[0],2)+pow(v[1],2)+pow(v[2],2));
-        }
+		x[0] = x_position;
+		x[1] = y_position;
+        x[2] = z_position;
+		v[0] = x_velocity;
+        v[1] = y_velocity;
+        v[2] = z_velocity;
+    };
+    void computeKineticEnergy(){
+        energy = 0.5 * m * (pow(v[0],2)+pow(v[1],2)+pow(v[2],2));
+    }
 };
 
 std::array<double, 3> differenceOfArrays(std::array<double, 3>  v1, std::array<double, 3> v2){
@@ -138,11 +138,11 @@ double F(double x, double v, double t, Planet A, Planet B, Planet C, int j ){
 
 int main(int argc, char** argv){
     
-    double h = 0.0005;
+    double h = 0.002;
 
     Planet A(100, -10, 10, -11, -3, 0, 0);   // corpi allineati sull'asse delle x
     Planet B(100, 0, 0, 0, 3, 0, 0);
-    Planet C(0, 10, 14, 12, 3, 0, 0);
+    Planet C(0, 10, 14, 12, 0, 0, 0);
     // Planet A(2e30, 0, 0, 0, 0, 0, 0);   // dati veri
     // Planet B(5.9e24, 150e9, 0, 0, 0, 3e4, 0);
     // Planet C(7.34e22, 60e9, 3.8e8, 0, -1022, 3e4, 0);
@@ -206,14 +206,14 @@ int main(int argc, char** argv){
     file_energy<<"k;p"<<std::endl;
     file_angmom<<"Lx;Ly;Lz"<<std::endl;
 
-    double m1;
-    double k1;
-    double m2;
-    double k2;
-    double m3;
-    double k3;
-    double m4;
-    double k4;
+    double m1[4][4];
+    double k1[4][4];
+    double m2[4][4];
+    double k2[4][4];
+    double m3[4][4];
+    double k3[4][4];
+    double m4[4][4];
+    double k4[4][4];
     
     std::array<double,3> vA = A.v; //condizione iniziale velocita
     std::array<double,3> xA = A.x;
@@ -274,69 +274,149 @@ int main(int argc, char** argv){
                 // ==========================================================
 
                 for(int i=0; i<N_STEPS-1; i++){
+                    vA = A.v;
+                    xA = A.x;
+                    vB = B.v;
+                    xB = B.x;
+                    vC = C.v;
+                    xC = C.x;
                     for(int j=0; j<DIM-1; j++){
                         // body A
-                        m1 = h*vA[j];
-                        k1 = h*F(xA[j], vA[j], t, C, B, A, j);  
-
-                        m2 = h*(vA[j] + 0.5*k1);
-                        k2 = h*F(xA[j]+0.5*m1, vA[j]+0.5*k1, t+0.5*h, C, B, A, j);
-
-                        m3 = h*(vA[j] + 0.5*k2);
-                        k3 = h*F(xA[j]+0.5*m2, vA[j]+0.5*k2, t+0.5*h, C, B, A, j);
-
-                        m4 = h*(vA[j] + k3);
-                        k4 = h*F(xA[j]+m3, vA[j]+k3, t+h, C, B, A, j);
-
-                        xA[j] += (m1 + 2*m2 + 2*m3 + m4)/6;
-                        vA[j] += (k1 + 2*k2 + 2*k3 + k4)/6;
-                    }
-
-                    for(int j=0; j<DIM-1; j++){
+                        m1[0][j] = h*vA[j];
+                        k1[0][j] = h*F(xA[j], vA[j], t, C, B, A, j);
                         // body B
-                        m1 = h*vB[j];
-                        k1 = h*F(xB[j], vB[j], t, A, C, B, j);  //(x, v, t)
-
-                        m2 = h*(vB[j] + 0.5*k1);
-                        k2 = h*F(xB[j]+0.5*m1, vB[j]+0.5*k1, t+0.5*h, A, C, B, j);
-
-                        m3 = h*(vB[j] + 0.5*k2);
-                        k3 = h*F(xB[j]+0.5*m2, vB[j]+0.5*k2, t+0.5*h, A, C, B, j);
-
-                        m4 = h*(vB[j] + k3);
-                        k4 = h*F(xB[j]+m3, vB[j]+k3, t+h, A, C, B, j);
-
-                        xB[j] += (m1 + 2*m2 + 2*m3 + m4)/6;
-                        vB[j] += (k1 + 2*k2 + 2*k3 + k4)/6;
-                    }
-
-                    for(int j=0; j<DIM-1; j++){   
+                        m1[1][j] = h*vB[j];
+                        k1[1][j] = h*F(xB[j], vB[j], t, C, A, B, j); 
                         // body C
-                        m1 = h*vC[j];
-                        k1 = h*F(xC[j], vC[j], t, A, B, C, j);  //(x, v, t)
-
-                        m2 = h*(vC[j] + 0.5*k1);
-                        k2 = h*F(xC[j]+0.5*m1, vC[j]+0.5*k1, t+0.5*h, A, B, C, j);
-
-                        m3 = h*(vC[j] + 0.5*k2);
-                        k3 = h*F(xC[j]+0.5*m2, vC[j]+0.5*k2, t+0.5*h, A, B, C, j);
-
-                        m4 = h*(vC[j] + k3);
-                        k4 = h*F(xC[j]+m3, vC[j]+k3, t+h, A, B, C, j);
-
-                        xC[j] += (m1 + 2*m2 + 2*m3 + m4)/6;
-                        vC[j] += (k1 + 2*k2 + 2*k3 + k4)/6;
-                        
+                        m1[2][j] = h*vC[j];
+                        k1[2][j] = h*F(xC[j], vC[j], t, A, B, C, j); 
+                    }
+                    for(int j=0; j<DIM-1;j++){
+                        A.v[j] = vA[j] + 0.5 * k1[0][j];
+                        B.v[j] = vB[j] + 0.5 * k1[1][j];
+                        C.v[j] = vC[j] + 0.5 * k1[2][j];          
+                        A.x[j] = xA[j] + 0.5 * m1[0][j];
+                        B.x[j] = xB[j] + 0.5 * m1[1][j];
+                        C.x[j] = xC[j] + 0.5 * m1[2][j];
+                    }
+                    for(int j=0; j<DIM-1; j++){
+                        //Body A
+                        m2[0][j] = h*(A.v[j]);
+                        k2[0][j] = h*F(A.x[j], A.v[j], t+0.5*h, C, B, A, j);
+                        //Body B
+                        m2[1][j] = h*(B.v[j]);
+                        k2[1][j] = h*F(B.x[j], B.v[j], t+0.5*h, C, A, B, j);
+                        // Body C
+                        m2[2][j] = h*(C.v[j]);
+                        k2[2][j] = h*F(C.x[j], C.v[j], t+0.5*h, A, B, C, j);
+                    }
+                     for(int j=0; j<DIM-1;j++){
+                        A.v[j] = vA[j] + 0.5 * k2[0][j];
+                        B.v[j] = vB[j] + 0.5 * k2[1][j];
+                        C.v[j] = vC[j] + 0.5 * k2[2][j];          
+                        A.x[j] = xA[j] + 0.5 * m2[0][j];
+                        B.x[j] = xB[j] + 0.5 * m2[1][j];
+                        C.x[j] = xC[j] + 0.5 * m2[2][j];
+                    }
+                    for(int j=0; j<DIM-1; j++){
+                        //Body A
+                        m3[0][j] = h*(A.v[j]);
+                        k3[0][j] = h*F(A.x[j], A.v[j], t+0.5*h, C, B, A, j);
+                       
+                        //Body B
+                        m3[1][j] = h*(B.v[j]);
+                        k3[1][j] = h*F(B.x[j], B.v[j], t+0.5*h, C, A, B, j);
+                        // Body C
+                        m3[2][j] = h*(C.v[j]);
+                        k3[2][j] = h*F(C.x[j], C.v[j], t+0.5*h, A, B, C, j);
+                    }
+                     for(int j=0; j<DIM-1;j++){
+                        A.v[j] = vA[j] + k3[0][j];
+                        B.v[j] = vB[j] + k3[1][j];
+                        C.v[j] = vC[j] + k3[2][j];          
+                        A.x[j] = xA[j] + m3[0][j];
+                        B.x[j] = xB[j] + m3[1][j];
+                        C.x[j] = xC[j] + m3[2][j];
+                    }
+                    for(int j=0; j<DIM-1; j++){
+                        //Body A
+                        m4[0][j] = h*(A.v[j]);
+                        k4[0][j] = h*F(A.x[j], A.v[j], t + h, C, B, A, j);
+                        //Body B
+                        m4[1][j] = h*(B.v[j]);
+                        k4[1][j] = h*F(B.x[j], B.v[j], t + h, C, A, B, j);
+                        // Body C
+                        m4[2][j] = h*(C.v[j]);
+                        k4[2][j] = h*F(C.x[j], C.v[j], t + h, A, B, C, j);
                     }
 
                     for(int j=0; j<DIM-1;j++){
-                        A.v[j] = vA[j];
-                        B.v[j] = vB[j];
-                        C.v[j] = vC[j];          
-                        A.x[j] = xA[j];
-                        B.x[j] = xB[j];
-                        C.x[j] = xC[j];
+                        A.v[j] = vA[j] + (k1[0][j] + 2*k2[0][j] + 2*k3[0][j] + k4[0][j])/6;
+                        B.v[j] = vB[j] + (k1[1][j] + 2*k2[1][j] + 2*k3[1][j] + k4[1][j])/6;
+                        C.v[j] = vC[j] + (k1[2][j] + 2*k2[2][j] + 2*k3[2][j] + k4[2][j])/6;          
+                        A.x[j] = xA[j] + (m1[0][j] + 2*m2[0][j] + 2*m3[0][j] + m4[0][j])/6;
+                        B.x[j] = xB[j] + (m1[1][j] + 2*m2[1][j] + 2*m3[1][j] + m4[1][j])/6;
+                        C.x[j] = xC[j] + (m1[2][j] + 2*m2[2][j] + 2*m3[2][j] + m4[2][j])/6;
                     }
+
+
+
+                // for(int i=0; i<N_STEPS-1; i++){
+                //     for(int j=0; j<DIM-1; j++){
+                //         // body A
+                //         m1 = h*vA[j];
+                //         k1 = h*F(xA[j], vA[j], t, C, B, A, j);  
+
+                //         m2 = h*(vA[j] + 0.5*k1);
+                //         k2 = h*F(xA[j]+0.5*m1, vA[j]+0.5*k1, t+0.5*h, C, B, A, j);
+
+                //         m3 = h*(vA[j] + 0.5*k2);
+                //         k3 = h*F(xA[j]+0.5*m2, vA[j]+0.5*k2, t+0.5*h, C, B, A, j);
+
+                //         m4 = h*(vA[j] + k3);
+                //         k4 = h*F(xA[j]+m3, vA[j]+k3, t+h, C, B, A, j);
+
+                //         xA[j] += (m1 + 2*m2 + 2*m3 + m4)/6;
+                //         vA[j] += (k1 + 2*k2 + 2*k3 + k4)/6;
+                //     }
+
+                //     for(int j=0; j<DIM-1; j++){
+                //         // body B
+                //         m1 = h*vB[j];
+                //         k1 = h*F(xB[j], vB[j], t, A, C, B, j);  //(x, v, t)
+
+                //         m2 = h*(vB[j] + 0.5*k1);
+                //         k2 = h*F(xB[j]+0.5*m1, vB[j]+0.5*k1, t+0.5*h, A, C, B, j);
+
+                //         m3 = h*(vB[j] + 0.5*k2);
+                //         k3 = h*F(xB[j]+0.5*m2, vB[j]+0.5*k2, t+0.5*h, A, C, B, j);
+
+                //         m4 = h*(vB[j] + k3);
+                //         k4 = h*F(xB[j]+m3, vB[j]+k3, t+h, A, C, B, j);
+
+                //         xB[j] += (m1 + 2*m2 + 2*m3 + m4)/6;
+                //         vB[j] += (k1 + 2*k2 + 2*k3 + k4)/6;
+                //     }
+
+                //     for(int j=0; j<DIM-1; j++){   
+                //         // body C
+                //         m1 = h*vC[j];
+                //         k1 = h*F(xC[j], vC[j], t, A, B, C, j);  //(x, v, t)
+
+                //         m2 = h*(vC[j] + 0.5*k1);
+                //         k2 = h*F(xC[j]+0.5*m1, vC[j]+0.5*k1, t+0.5*h, A, B, C, j);
+
+                //         m3 = h*(vC[j] + 0.5*k2);
+                //         k3 = h*F(xC[j]+0.5*m2, vC[j]+0.5*k2, t+0.5*h, A, B, C, j);
+
+                //         m4 = h*(vC[j] + k3);
+                //         k4 = h*F(xC[j]+m3, vC[j]+k3, t+h, A, B, C, j);
+
+                //         xC[j] += (m1 + 2*m2 + 2*m3 + m4)/6;
+                //         vC[j] += (k1 + 2*k2 + 2*k3 + k4)/6;
+                        
+                //     }
+
                     output_file_A << A.x[0] << ";" << A.x[1] << ";" << A.x[2]<< std::endl;
                     output_file_B << B.x[0] << ";" << B.x[1] << ";" << B.x[2]<< std::endl;
                     output_file_C << C.x[0] << ";" << C.x[1] << ";" << C.x[2]<< std::endl;
@@ -385,9 +465,9 @@ int main(int argc, char** argv){
                     output_file_B << B.x[0] << ";" << B.x[1] << ";" << B.x[2]<< std::endl;
                     output_file_C << C.x[0] << ";" << C.x[1] << ";" << C.x[2]<< std::endl;
                     for(int j=0; j<DIM-1; j++){
-                        k1=A.a[j];
-                        k2=B.a[j];
-                        k3=C.a[j];
+                        k1[0][0]=A.a[j];
+                        k2[0][0]=B.a[j];
+                        k3[0][0]=C.a[j];
 
                         A.a[j] = acceleration(B, C, A, j);
                         B.a[j] = acceleration(A, C, B, j);
@@ -405,13 +485,13 @@ int main(int argc, char** argv){
                         x_B[j][0]= x_B[j][2];
                         x_C[j][0]= x_C[j][2];
 
-                        // A.v[j] = (x_A[j][1] - x_A[j][0]) / h;
-                        // B.v[j] = (x_B[j][1] - x_B[j][0]) / h;
-                        // C.v[j] = (x_B[j][1] - x_B[j][0]) / h;
+                        A.v[j] = (x_A[j][1] - x_A[j][0]) / h;
+                        B.v[j] = (x_B[j][1] - x_B[j][0]) / h;
+                        C.v[j] = (x_B[j][1] - x_B[j][0]) / h;
                         
-                        A.v[j] += 0.5 * (A.a[j]+k1) * h;
-                        B.v[j] += 0.5 * (B.a[j]+k2) * h;
-                        C.v[j] += 0.5 * (C.a[j]+k3) * h;
+                        // A.v[j] += 0.5 * (A.a[j]+k1[0][0]) * h;
+                        // B.v[j] += 0.5 * (B.a[j]+k2[0][0]) * h;
+                        // C.v[j] += 0.5 * (C.a[j]+k3[0][0]) * h;
 
                     }      
                     for (int j = 0; j < DIM-1; j++){
