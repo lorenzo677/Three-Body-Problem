@@ -2,7 +2,7 @@
 3D Three-Body-Problem simulation.
 Created on November 2022.
 
-@authors: Lorenzo Barsotti & Keivan Amini
+@authors: Lorenzo Barsotti & Keivan Amini ciao
 */
 
 #include <iostream>
