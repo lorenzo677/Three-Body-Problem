@@ -17,7 +17,8 @@ Created on November 2022.
 enum StringValue { evNotDefined,
                           evStringValue1,
                           evStringValue2,
-                          evStringValue3 
+                          evStringValue3,
+                          evStringValue4 
                           };
 
 // Map to associate the strings with the enum values
@@ -27,6 +28,7 @@ void Initialize(){
   s_mapStringValues["euler"] = evStringValue1;
   s_mapStringValues["rk4"] = evStringValue2;
   s_mapStringValues["verlet"] = evStringValue3;
+  s_mapStringValues["leapfrog"] = evStringValue4;
 }
 
 static constexpr int DIM = 4;
@@ -512,6 +514,19 @@ int main(int argc, char** argv){
                     // file_energy<< computePotentialEnergy(A, B, C)<<std::endl;
                 }
                 break;
+            case evStringValue4:
+                // ==========================================================
+                //                          LEAPFROG
+                // ==========================================================
+                
+
+
+
+
+
+
+
+            break;
             default:
                 std::cout<<"Inserire un argomento tra: euler, rk o verlet"<<std::endl;
                 return 0;
