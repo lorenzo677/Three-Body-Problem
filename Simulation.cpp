@@ -140,7 +140,7 @@ double F(double x, double v, double t, Planet A, Planet B, Planet C, int j ){
 
 int main(int argc, char** argv){
     
-    double h = 0.002;
+    double h = 0.001;
 
     Planet A(100, -10, 10, -11, -3, 0, 0);   // corpi allineati sull'asse delle x
     Planet B(100, 0, 0, 0, 3, 0, 0);
@@ -242,21 +242,18 @@ int main(int argc, char** argv){
                         A.a[j] = acceleration(B, C, A, j);
                         B.a[j] = acceleration(A, C, B, j);
                         C.a[j] = acceleration(B, A, C, j);
-
+                    }
+                    for(int j=0; j<DIM-1; j++){
+                        
                         A.v[j] += A.a[j] * h;
                         B.v[j] += B.a[j] * h;
                         C.v[j] += C.a[j] * h;
-
-                        x_A[j][0] = x_A[j][0] + A.v[j] * h;
-                        x_B[j][0] = x_B[j][0] + B.v[j] * h;
-                        x_C[j][0] = x_C[j][0] + C.v[j] * h;
+                        
+                        A.x[j] += A.v[j] * h;
+                        B.x[j] += B.v[j] * h;
+                        C.x[j] += C.v[j] * h;
                         
                     } 
-                    for (int j=0;j<DIM-1;j++){
-                        A.x[j] = x_A[j][0];
-                        B.x[j] = x_B[j][0];
-                        C.x[j] = x_C[j][0];
-                    }
                     
                     A.computeKineticEnergy();
                     B.computeKineticEnergy();
@@ -361,64 +358,6 @@ int main(int argc, char** argv){
                         C.x[j] = xC[j] + (m1[2][j] + 2*m2[2][j] + 2*m3[2][j] + m4[2][j])/6;
                     }
 
-
-
-                // for(int i=0; i<N_STEPS-1; i++){
-                //     for(int j=0; j<DIM-1; j++){
-                //         // body A
-                //         m1 = h*vA[j];
-                //         k1 = h*F(xA[j], vA[j], t, C, B, A, j);  
-
-                //         m2 = h*(vA[j] + 0.5*k1);
-                //         k2 = h*F(xA[j]+0.5*m1, vA[j]+0.5*k1, t+0.5*h, C, B, A, j);
-
-                //         m3 = h*(vA[j] + 0.5*k2);
-                //         k3 = h*F(xA[j]+0.5*m2, vA[j]+0.5*k2, t+0.5*h, C, B, A, j);
-
-                //         m4 = h*(vA[j] + k3);
-                //         k4 = h*F(xA[j]+m3, vA[j]+k3, t+h, C, B, A, j);
-
-                //         xA[j] += (m1 + 2*m2 + 2*m3 + m4)/6;
-                //         vA[j] += (k1 + 2*k2 + 2*k3 + k4)/6;
-                //     }
-
-                //     for(int j=0; j<DIM-1; j++){
-                //         // body B
-                //         m1 = h*vB[j];
-                //         k1 = h*F(xB[j], vB[j], t, A, C, B, j);  //(x, v, t)
-
-                //         m2 = h*(vB[j] + 0.5*k1);
-                //         k2 = h*F(xB[j]+0.5*m1, vB[j]+0.5*k1, t+0.5*h, A, C, B, j);
-
-                //         m3 = h*(vB[j] + 0.5*k2);
-                //         k3 = h*F(xB[j]+0.5*m2, vB[j]+0.5*k2, t+0.5*h, A, C, B, j);
-
-                //         m4 = h*(vB[j] + k3);
-                //         k4 = h*F(xB[j]+m3, vB[j]+k3, t+h, A, C, B, j);
-
-                //         xB[j] += (m1 + 2*m2 + 2*m3 + m4)/6;
-                //         vB[j] += (k1 + 2*k2 + 2*k3 + k4)/6;
-                //     }
-
-                //     for(int j=0; j<DIM-1; j++){   
-                //         // body C
-                //         m1 = h*vC[j];
-                //         k1 = h*F(xC[j], vC[j], t, A, B, C, j);  //(x, v, t)
-
-                //         m2 = h*(vC[j] + 0.5*k1);
-                //         k2 = h*F(xC[j]+0.5*m1, vC[j]+0.5*k1, t+0.5*h, A, B, C, j);
-
-                //         m3 = h*(vC[j] + 0.5*k2);
-                //         k3 = h*F(xC[j]+0.5*m2, vC[j]+0.5*k2, t+0.5*h, A, B, C, j);
-
-                //         m4 = h*(vC[j] + k3);
-                //         k4 = h*F(xC[j]+m3, vC[j]+k3, t+h, A, B, C, j);
-
-                //         xC[j] += (m1 + 2*m2 + 2*m3 + m4)/6;
-                //         vC[j] += (k1 + 2*k2 + 2*k3 + k4)/6;
-                        
-                //     }
-
                     output_file_A << A.x[0] << ";" << A.x[1] << ";" << A.x[2]<< std::endl;
                     output_file_B << B.x[0] << ";" << B.x[1] << ";" << B.x[2]<< std::endl;
                     output_file_C << C.x[0] << ";" << C.x[1] << ";" << C.x[2]<< std::endl;
@@ -518,13 +457,42 @@ int main(int argc, char** argv){
                 // ==========================================================
                 //                          LEAPFROG
                 // ==========================================================
-                
+            
+                for (int i=0; i<N_STEPS-1; i++){
+                    output_file_A << A.x[0] << ";" << A.x[1] << ";" << A.x[2]<< std::endl;
+                    output_file_B << B.x[0] << ";" << B.x[1] << ";" << B.x[2]<< std::endl;
+                    output_file_C << C.x[0] << ";" << C.x[1] << ";" << C.x[2]<< std::endl;
 
+                    for(int j=0; j<DIM-1; j++){
+                        A.x[j] += A.v[j] * h / 2;
+                        B.x[j] += B.v[j] * h / 2;
+                        C.x[j] += C.v[j] * h / 2;
+                    }
+                    
+                    for(int j=0; j<DIM-1; j++){
+                        A.a[j] = acceleration(B, C, A, j);
+                        B.a[j] = acceleration(A, C, B, j);
+                        C.a[j] = acceleration(B, A, C, j);
 
+                        A.v[j] += A.a[j] * h;
+                        B.v[j] += B.a[j] * h;
+                        C.v[j] += C.a[j] * h;
 
+                    } 
+                    for(int j=0; j<DIM-1; j++){
 
-
-
+                        A.x[j] += A.v[j] * h / 2;
+                        B.x[j] += B.v[j] * h / 2;
+                        C.x[j] += C.v[j] * h / 2;
+                    }
+        
+                    A.computeKineticEnergy();
+                    B.computeKineticEnergy();
+                    C.computeKineticEnergy();
+                    cm = computeCM(A,B,C);
+                    file_energy<<A.energy + B.energy + C.energy<<";"<< computePotentialEnergy(A, B, C)<<std::endl;
+                    file_angmom<<AngularMomentum(cm, A)[0]+ AngularMomentum(cm, B)[0]+AngularMomentum(cm, C)[0]<<";"<< AngularMomentum(cm, A)[1]+ AngularMomentum(cm, B)[1]+AngularMomentum(cm, C)[1]<<";"<<AngularMomentum(cm, A)[2]+ AngularMomentum(cm, B)[2]+AngularMomentum(cm, C)[2]<<std::endl;
+                }
 
             break;
             default:
