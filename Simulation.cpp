@@ -17,8 +17,7 @@ Created on November 2022.
 enum StringValue { evNotDefined,
                           evStringValue1,
                           evStringValue2,
-                          evStringValue3,
-                          evStringValue4 
+                          evStringValue3
                           };
 
 // Map to associate the strings with the enum values
@@ -27,14 +26,14 @@ static std::map<std::string, StringValue> s_mapStringValues;
 void Initialize(){
   s_mapStringValues["euler"] = evStringValue1;
   s_mapStringValues["rk4"] = evStringValue2;
-  s_mapStringValues["verlet"] = evStringValue3;
-  s_mapStringValues["leapfrog"] = evStringValue4;
+  s_mapStringValues["leapfrog"] = evStringValue3;
 }
 
 static constexpr int DIM = 4;
 static constexpr double G = 10;
 static constexpr int N_BODIES = 3;
-static constexpr int N_STEPS = 75000;
+static constexpr int K_CONST = 1000;
+static constexpr int N_STEPS = 70000;
 
 double distance(std::array<double, 3> r1, std::array<double, 3> r2){
     return sqrt(pow(r1[0]-r2[0],2)+pow(r1[1]-r2[1],2)+pow(r1[2]-r2[2],2));
@@ -93,78 +92,29 @@ std::array<double, 3> AngularMomentum(std::array<double, 3> cm, Planet planet){
     return L;
 }
 
-double acceleration(Planet A, Planet B, Planet C, int axe){
+double acceleration(double x, double v, double t, Planet A, Planet B, Planet C, int axe){
     // Compute the acceleration of the body C, specifying the axis.
-    double mass_A = A.m;
-    double mass_B = B.m;
-    double posx_A = A.x[0]; 
-    double posx_B = B.x[0]; 
-    double posx_C = C.x[0]; 
-    double posy_A = A.x[1]; 
-    double posy_B = B.x[1]; 
-    double posy_C = C.x[1]; 
-    double posz_A = A.x[2]; 
-    double posz_B = B.x[2]; 
-    double posz_C = C.x[2];
-    if (axe == 0){
-        return (-1 * G * (mass_A * (posx_C-posx_A) / pow(sqrt(pow(posx_C-posx_A,2)+pow(posy_C-posy_A,2)+pow(posz_C-posz_A,2)), 3) + mass_B * (posx_C-posx_B) / pow(sqrt(pow(posx_C-posx_B,2)+pow(posy_C-posy_B,2)+pow(posz_C-posz_B,2)), 3)));
-    }else if (axe == 1){
-        return (-1 * G * (mass_A * (posy_C-posy_A) / pow(sqrt(pow(posx_C-posx_A,2)+pow(posy_C-posy_A,2)+pow(posz_C-posz_A,2)), 3) + mass_B * (posy_C-posy_B) / pow(sqrt(pow(posx_C-posx_B,2)+pow(posy_C-posy_B,2)+pow(posz_C-posz_B,2)), 3)));
-    }else if (axe == 2){
-        return (-1 * G * (mass_A * (posz_C-posz_A) / pow(sqrt(pow(posx_C-posx_A,2)+pow(posy_C-posy_A,2)+pow(posz_C-posz_A,2)), 3) + mass_B * (posz_C-posz_B) / pow(sqrt(pow(posx_C-posx_B,2)+pow(posy_C-posy_B,2)+pow(posz_C-posz_B,2)), 3)));
-    }
-}
-
-double F(double x, double v, double t, Planet A, Planet B, Planet C, int j ){
-    // Function to integrate via Runge-Kutta.
-    double mass_A = A.m;
-    double mass_B = B.m;
-    double posx_A = A.x[0]; 
-    double posx_B = B.x[0]; 
-    double posx_C = C.x[0]; 
-    double posy_A = A.x[1]; 
-    double posy_B = B.x[1]; 
-    double posy_C = C.x[1]; 
-    double posz_A = A.x[2]; 
-    double posz_B = B.x[2]; 
-    double posz_C = C.x[2];
-
-    if (j == 0){
-        return (-1 * G * (mass_A * (x-posx_A) / pow(sqrt(pow(x-posx_A,2)+pow(posy_C-posy_A,2)+pow(posz_C-posz_A,2)), 3) + mass_B * (x-posx_B) / pow(sqrt(pow(x-posx_B,2)+pow(posy_C-posy_B,2)+pow(posz_C-posz_B,2)), 3)));
-    }else if (j == 1) {
-        return (-1 * G * (mass_A * (x-posy_A) / pow(sqrt(pow(posx_C-posx_A,2)+pow(x-posy_A,2)+pow(posz_C-posz_A,2)), 3) + mass_B * (x-posy_B) / pow(sqrt(pow(posx_C-posx_B,2)+pow(x-posy_B,2)+pow(posz_C-posz_B,2)), 3)));
-    }else if (j == 2) {
-        return (-1 * G * (mass_A * (x-posz_A) / pow(sqrt(pow(posx_C-posx_A,2)+pow(posy_C-posy_A,2)+pow(x-posz_A,2)), 3) + mass_B * (x-posz_B) / pow(sqrt(pow(posx_C-posx_B,2)+pow(posy_C-posy_B,2)+pow(x-posz_B,2)), 3)));
-    }
+    return (-1 * G * (A.m * (C.x[axe]-A.x[axe]) / pow(distance(A.x, C.x), 3) + B.m * (C.x[axe]-B.x[axe]) / pow(distance(B.x, C.x), 3)));
 }
 
 int main(int argc, char** argv){
     
-    double h = 0.001;
+    double h = 0.008;
 
-    Planet A(100, -10, 10, -11, -3, 0, 0);   // corpi allineati sull'asse delle x
-    Planet B(100, 0, 0, 0, 3, 0, 0);
-    Planet C(0, 10, 14, 12, 0, 0, 0);
-    // Planet A(2e30, 0, 0, 0, 0, 0, 0);   // dati veri
-    // Planet B(5.9e24, 150e9, 0, 0, 0, 3e4, 0);
-    // Planet C(7.34e22, 60e9, 3.8e8, 0, -1022, 3e4, 0);
-   
-    // Planet A(10, -10, 10, -20, 0, 0, 0);   // corpi allineati sull'asse delle x
-    // Planet B(10, 0, 0, 0, 10, 0, 0);
-    // Planet C(10, 10, -10, -20, 0, 0, 0);
-    
+
+    Planet A(200, -10, 0, 0, 0, -5, 0);   // corpi allineati sull'asse delle x
+    Planet B(10, 10, 0, 0, 0, 5, 0);
+    Planet C(10, 10, 14, 12, 0, 0, 0);
+
+    // CONFIGURAZIONI BELLE
+
+    // Planet A(200, -10, 0, 0, 0, -5, 0); 
+    // Planet B(10, 10, 0, 0, 0, 5, 0);
+    // Planet C(10, 10, 14, 12, 0, 0, 0);
+
     double x_A[DIM][3];
     double x_B[DIM][3];
     double x_C[DIM][3];
-    double vx_A;
-    double vy_A;
-    double vz_A;
-    double vx_B;
-    double vy_B;
-    double vz_B;
-    double vx_C;
-    double vy_C;
-    double vz_C;
 
     double mass_A = A.m;
     double mass_B = B.m;
@@ -173,26 +123,14 @@ int main(int argc, char** argv){
     x_A[0][0] = A.x[0];
     x_B[0][0] = B.x[0];
     x_C[0][0] = C.x[0];
-    
-    vx_A = A.v[0];
-    vx_B = B.v[0];
-    vx_C = C.v[0];
 
     x_A[1][0] = A.x[1];
     x_B[1][0] = B.x[1];
     x_C[1][0] = C.x[1];
 
-    vy_A = A.v[1];
-    vy_B = B.v[1];
-    vy_C = C.v[1];
-
     x_A[2][0] = A.x[2];
     x_B[2][0] = B.x[2];
     x_C[2][0] = C.x[2];
-
-    vz_A = A.v[2];
-    vz_B = B.v[2];
-    vz_C = C.v[2];
 
     Initialize();
    
@@ -239,9 +177,9 @@ int main(int argc, char** argv){
                     output_file_C << C.x[0] << ";" << C.x[1] << ";" << C.x[2]<< std::endl;
                     for(int j=0; j<DIM-1; j++){
 
-                        A.a[j] = acceleration(B, C, A, j);
-                        B.a[j] = acceleration(A, C, B, j);
-                        C.a[j] = acceleration(B, A, C, j);
+                        A.a[j] = acceleration(0, 0, 0, B, C, A, j);
+                        B.a[j] = acceleration(0, 0, 0, A, C, B, j);
+                        C.a[j] = acceleration(0, 0, 0, B, A, C, j);
                     }
                     for(int j=0; j<DIM-1; j++){
                         
@@ -271,8 +209,9 @@ int main(int argc, char** argv){
                 // ==========================================================
                 //                          RUNGE KUTTA 4
                 // ==========================================================
-
-                for(int i=0; i<N_STEPS-1; i++){
+                h *= 4;
+                
+                for(int i=0; i<N_STEPS/4-1; i++){
                     vA = A.v;
                     xA = A.x;
                     vB = B.v;
@@ -281,14 +220,14 @@ int main(int argc, char** argv){
                     xC = C.x;
                     for(int j=0; j<DIM-1; j++){
                         // body A
-                        m1[0][j] = h*vA[j];
-                        k1[0][j] = h*F(xA[j], vA[j], t, C, B, A, j);
+                        m1[0][j] = h * vA[j];
+                        k1[0][j] = h * acceleration(xA[j], vA[j], t, C, B, A, j);
                         // body B
-                        m1[1][j] = h*vB[j];
-                        k1[1][j] = h*F(xB[j], vB[j], t, C, A, B, j); 
+                        m1[1][j] = h * vB[j];
+                        k1[1][j] = h * acceleration(xB[j], vB[j], t, C, A, B, j); 
                         // body C
-                        m1[2][j] = h*vC[j];
-                        k1[2][j] = h*F(xC[j], vC[j], t, A, B, C, j); 
+                        m1[2][j] = h * vC[j];
+                        k1[2][j] = h * acceleration(xC[j], vC[j], t, A, B, C, j); 
                     }
                     for(int j=0; j<DIM-1;j++){
                         A.v[j] = vA[j] + 0.5 * k1[0][j];
@@ -300,14 +239,14 @@ int main(int argc, char** argv){
                     }
                     for(int j=0; j<DIM-1; j++){
                         //Body A
-                        m2[0][j] = h*(A.v[j]);
-                        k2[0][j] = h*F(A.x[j], A.v[j], t+0.5*h, C, B, A, j);
+                        m2[0][j] = h * A.v[j];
+                        k2[0][j] = h * acceleration(A.x[j], A.v[j], t+0.5*h, C, B, A, j);
                         //Body B
-                        m2[1][j] = h*(B.v[j]);
-                        k2[1][j] = h*F(B.x[j], B.v[j], t+0.5*h, C, A, B, j);
+                        m2[1][j] = h * B.v[j];
+                        k2[1][j] = h * acceleration(B.x[j], B.v[j], t+0.5*h, C, A, B, j);
                         // Body C
-                        m2[2][j] = h*(C.v[j]);
-                        k2[2][j] = h*F(C.x[j], C.v[j], t+0.5*h, A, B, C, j);
+                        m2[2][j] = h * C.v[j];
+                        k2[2][j] = h * acceleration(C.x[j], C.v[j], t+0.5*h, A, B, C, j);
                     }
                      for(int j=0; j<DIM-1;j++){
                         A.v[j] = vA[j] + 0.5 * k2[0][j];
@@ -319,15 +258,15 @@ int main(int argc, char** argv){
                     }
                     for(int j=0; j<DIM-1; j++){
                         //Body A
-                        m3[0][j] = h*(A.v[j]);
-                        k3[0][j] = h*F(A.x[j], A.v[j], t+0.5*h, C, B, A, j);
+                        m3[0][j] = h * A.v[j];
+                        k3[0][j] = h * acceleration(A.x[j], A.v[j], t+0.5*h, C, B, A, j);
                        
                         //Body B
-                        m3[1][j] = h*(B.v[j]);
-                        k3[1][j] = h*F(B.x[j], B.v[j], t+0.5*h, C, A, B, j);
+                        m3[1][j] = h * B.v[j];
+                        k3[1][j] = h * acceleration(B.x[j], B.v[j], t+0.5*h, C, A, B, j);
                         // Body C
-                        m3[2][j] = h*(C.v[j]);
-                        k3[2][j] = h*F(C.x[j], C.v[j], t+0.5*h, A, B, C, j);
+                        m3[2][j] = h * C.v[j];
+                        k3[2][j] = h * acceleration(C.x[j], C.v[j], t+0.5*h, A, B, C, j);
                     }
                      for(int j=0; j<DIM-1;j++){
                         A.v[j] = vA[j] + k3[0][j];
@@ -339,14 +278,14 @@ int main(int argc, char** argv){
                     }
                     for(int j=0; j<DIM-1; j++){
                         //Body A
-                        m4[0][j] = h*(A.v[j]);
-                        k4[0][j] = h*F(A.x[j], A.v[j], t + h, C, B, A, j);
+                        m4[0][j] = h * A.v[j];
+                        k4[0][j] = h * acceleration(A.x[j], A.v[j], t + h, C, B, A, j);
                         //Body B
-                        m4[1][j] = h*(B.v[j]);
-                        k4[1][j] = h*F(B.x[j], B.v[j], t + h, C, A, B, j);
+                        m4[1][j] = h * B.v[j];
+                        k4[1][j] = h * acceleration(B.x[j], B.v[j], t + h, C, A, B, j);
                         // Body C
-                        m4[2][j] = h*(C.v[j]);
-                        k4[2][j] = h*F(C.x[j], C.v[j], t + h, A, B, C, j);
+                        m4[2][j] = h * C.v[j];
+                        k4[2][j] = h * acceleration(C.x[j], C.v[j], t + h, A, B, C, j);
                     }
 
                     for(int j=0; j<DIM-1;j++){
@@ -375,86 +314,6 @@ int main(int argc, char** argv){
                 break;
             case evStringValue3:
                 // ==========================================================
-                //                          VERLET
-                // ==========================================================
-                
-                for(int j=0; j<DIM-1; j++){
-                    A.a[j] = acceleration(B, C, A, j);
-                    B.a[j] = acceleration(A, C, B, j);
-                    C.a[j] = acceleration(B, A, C, j);
-                    x_A[j][1] = x_A[j][0] + A.v[j] * h + 0.5 * A.a[j] * h * h;
-                    x_B[j][1] = x_B[j][0] + B.v[j] * h + 0.5 * B.a[j] * h * h;
-                    x_C[j][1] = x_C[j][0] + C.v[j] * h + 0.5 * C.a[j] * h * h;
-            
-                }
-                // print initial condition
-                output_file_A << A.x[0] << ";" << A.x[1] << ";" << A.x[2]<< std::endl;
-                output_file_B << B.x[0] << ";" << B.x[1] << ";" << B.x[2]<< std::endl;
-                output_file_C << C.x[0] << ";" << C.x[1] << ";" << C.x[2]<< std::endl;
-
-                A.x[0] = x_A[0][1];
-                A.x[1] = x_A[1][1];
-                A.x[2] = x_A[2][1];
-                B.x[0] = x_B[0][1];
-                B.x[1] = x_B[1][1];
-                B.x[2] = x_B[2][1];
-                C.x[0] = x_C[0][1];
-                C.x[1] = x_C[1][1];
-                C.x[2] = x_C[2][1];
-                for (int i=1; i<N_STEPS-1; i++){
-                    output_file_A << A.x[0] << ";" << A.x[1] << ";" << A.x[2]<< std::endl;
-                    output_file_B << B.x[0] << ";" << B.x[1] << ";" << B.x[2]<< std::endl;
-                    output_file_C << C.x[0] << ";" << C.x[1] << ";" << C.x[2]<< std::endl;
-                    for(int j=0; j<DIM-1; j++){
-                        k1[0][0]=A.a[j];
-                        k2[0][0]=B.a[j];
-                        k3[0][0]=C.a[j];
-
-                        A.a[j] = acceleration(B, C, A, j);
-                        B.a[j] = acceleration(A, C, B, j);
-                        C.a[j] = acceleration(B, A, C, j);
-                        
-                        x_A[j][2]= x_A[j][1]; //x_A variabile temporanea
-                        x_B[j][2]= x_B[j][1];
-                        x_C[j][2]= x_C[j][1];
-
-                        x_A[j][1] = 2 * x_A[j][1] - x_A[j][0] + A.a[j] * h * h;
-                        x_B[j][1] = 2 * x_B[j][1] - x_B[j][0] + B.a[j] * h * h;
-                        x_C[j][1] = 2 * x_C[j][1] - x_C[j][0] + C.a[j] * h * h;                
-                        
-                        x_A[j][0]= x_A[j][2];
-                        x_B[j][0]= x_B[j][2];
-                        x_C[j][0]= x_C[j][2];
-
-                        A.v[j] = (x_A[j][1] - x_A[j][0]) / h;
-                        B.v[j] = (x_B[j][1] - x_B[j][0]) / h;
-                        C.v[j] = (x_B[j][1] - x_B[j][0]) / h;
-                        
-                        // A.v[j] += 0.5 * (A.a[j]+k1[0][0]) * h;
-                        // B.v[j] += 0.5 * (B.a[j]+k2[0][0]) * h;
-                        // C.v[j] += 0.5 * (C.a[j]+k3[0][0]) * h;
-
-                    }      
-                    for (int j = 0; j < DIM-1; j++){
-                            
-                        A.x[j] = x_A[j][1];
-                        B.x[j] = x_B[j][1];
-                        C.x[j] = x_C[j][1];
-                
-                        A.computeKineticEnergy();
-                        B.computeKineticEnergy();
-                        C.computeKineticEnergy();
-                    }
-                    cm=computeCM(A, B, C);
-                    file_energy<<A.energy + B.energy + C.energy <<";"<< computePotentialEnergy(A, B, C)<<std::endl;
-                    file_angmom<<AngularMomentum(cm, A)[0]+ AngularMomentum(cm, B)[0]+AngularMomentum(cm, C)[0]<<";"<< AngularMomentum(cm, A)[1]+ AngularMomentum(cm, B)[1]+AngularMomentum(cm, C)[1]<<";"<<AngularMomentum(cm, A)[2]+ AngularMomentum(cm, B)[2]+AngularMomentum(cm, C)[2]<<std::endl;
-                    // file_energy<<A.energy + B.energy + C.energy +computePotentialEnergy(A, B, C)<<std::endl;
-                    // file_energy<<A.energy + B.energy + C.energy <<std::endl;
-                    // file_energy<< computePotentialEnergy(A, B, C)<<std::endl;
-                }
-                break;
-            case evStringValue4:
-                // ==========================================================
                 //                          LEAPFROG
                 // ==========================================================
             
@@ -470,9 +329,9 @@ int main(int argc, char** argv){
                     }
                     
                     for(int j=0; j<DIM-1; j++){
-                        A.a[j] = acceleration(B, C, A, j);
-                        B.a[j] = acceleration(A, C, B, j);
-                        C.a[j] = acceleration(B, A, C, j);
+                        A.a[j] = acceleration(0, 0, 0, B, C, A, j);
+                        B.a[j] = acceleration(0, 0, 0, A, C, B, j);
+                        C.a[j] = acceleration(0, 0, 0, B, A, C, j);
 
                         A.v[j] += A.a[j] * h;
                         B.v[j] += B.a[j] * h;
@@ -496,11 +355,11 @@ int main(int argc, char** argv){
 
             break;
             default:
-                std::cout<<"Inserire un argomento tra: euler, rk o verlet"<<std::endl;
+                std::cout<<"Insert an argument between: euler, rk or leapfrog"<<std::endl;
                 return 0;
         }
     }else{
-        std::cout<<"Inserire argomento: euler, rk4 oppure verlet"<<std::endl;
+        std::cout<<"Insert an argument between: euler, rk4 or leapfrog"<<std::endl;
         return 0;
     }
     
