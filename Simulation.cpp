@@ -2,7 +2,7 @@
 3D Three-Body-Problem simulation.
 Created on November 2022.
 
-@authors: Lorenzo Barsotti & Keivan Amini ciao
+@authors: Lorenzo Barsotti & Keivan Amini 
 */
 
 #include <iostream>
@@ -32,12 +32,27 @@ void Initialize(){
 static constexpr int DIM = 4;
 static constexpr double G = 10;
 static constexpr int N_BODIES = 3;
-static constexpr int K_CONST = 1000;
+static constexpr int K_CONST = 100;
+static constexpr int L0 = 100; // lunghezza a riposo molla
 static constexpr int N_STEPS = 70000;
 
 double distance(std::array<double, 3> r1, std::array<double, 3> r2){
     return sqrt(pow(r1[0]-r2[0],2)+pow(r1[1]-r2[1],2)+pow(r1[2]-r2[2],2));
 }
+
+
+class Spring{ // da fare forse
+public:
+
+    std::array <double, 3> x;
+
+    Spring (double L0) {}
+
+};
+
+
+
+
 
 class Planet{
 public:
@@ -92,8 +107,18 @@ std::array<double, 3> AngularMomentum(std::array<double, 3> cm, Planet planet){
     return L;
 }
 
+double springC(double x, double v, double t, Planet A, Planet B, Planet C, int axe){
+    // Compute the gravitational + spring acceleration of the body C, specifying the axis.
+    return (-1 * (G * (A.m * (C.x[axe]-A.x[axe]) / pow(distance(A.x, C.x), 3) + B.m * (C.x[axe]-B.x[axe]) / pow(distance(B.x, C.x), 3))) + K_CONST * (B.x[axe]-C.x[axe]) / C.m);
+}
+
+double springB(double x, double v, double t, Planet A, Planet B, Planet C, int axe){
+    // Compute the gravitational + spring acceleration of the body C, specifying the axis.
+    return (-1 * (G * (A.m * (C.x[axe]-A.x[axe]) / pow(distance(A.x, C.x), 3) + B.m * (C.x[axe]-B.x[axe]) / pow(distance(B.x, C.x), 3))) + K_CONST * (A.x[axe]-C.x[axe]) / B.m );
+}
+
 double acceleration(double x, double v, double t, Planet A, Planet B, Planet C, int axe){
-    // Compute the acceleration of the body C, specifying the axis.
+    // Compute the gravitational acceleration of the body C, specifying the axis.
     return (-1 * G * (A.m * (C.x[axe]-A.x[axe]) / pow(distance(A.x, C.x), 3) + B.m * (C.x[axe]-B.x[axe]) / pow(distance(B.x, C.x), 3)));
 }
 
@@ -224,10 +249,10 @@ int main(int argc, char** argv){
                         k1[0][j] = h * acceleration(xA[j], vA[j], t, C, B, A, j);
                         // body B
                         m1[1][j] = h * vB[j];
-                        k1[1][j] = h * acceleration(xB[j], vB[j], t, C, A, B, j); 
+                        k1[1][j] = h * springB(xB[j], vB[j], t, C, A, B, j); 
                         // body C
                         m1[2][j] = h * vC[j];
-                        k1[2][j] = h * acceleration(xC[j], vC[j], t, A, B, C, j); 
+                        k1[2][j] = h * springC(xC[j], vC[j], t, A, B, C, j); 
                     }
                     for(int j=0; j<DIM-1;j++){
                         A.v[j] = vA[j] + 0.5 * k1[0][j];
@@ -371,7 +396,7 @@ int main(int argc, char** argv){
     file_energy.close();
 
     #ifdef _WIN32
-        std::string command ="python3 plotting.py " + std::string(argv[1]);
+        std::string command ="python3.9 plotting.py " + std::string(argv[1]);
     #elif __APPLE__
         std::string command ="python3.11 plotting.py " + std::string(argv[1]);
     #endif
