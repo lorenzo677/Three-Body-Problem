@@ -32,26 +32,20 @@ void Initialize(){
 static constexpr int DIM = 4;
 static constexpr double G = 10;
 static constexpr int N_BODIES = 3;
-static constexpr int K_CONST = 100;
-static constexpr int L0 = 100; // lunghezza a riposo molla
 static constexpr int N_STEPS = 70000;
+
+// Spring
+static constexpr int K_CONST = 1000;
+static constexpr int L0X = 5; 
+static constexpr int L0Y = 5;
+static constexpr int L0Z = 5;
+float l0 = sqrt(pow(L0X,2)+pow(L0Y,2)+pow(L0Z,2)); // modulo lunghezza a riposo molla
+
+std::array <double, 3> L0 = {L0X, L0Y, L0Z};
 
 double distance(std::array<double, 3> r1, std::array<double, 3> r2){
     return sqrt(pow(r1[0]-r2[0],2)+pow(r1[1]-r2[1],2)+pow(r1[2]-r2[2],2));
 }
-
-
-class Spring{ // da fare forse
-public:
-
-    std::array <double, 3> x;
-
-    Spring (double L0) {}
-
-};
-
-
-
 
 
 class Planet{
@@ -109,12 +103,12 @@ std::array<double, 3> AngularMomentum(std::array<double, 3> cm, Planet planet){
 
 double springC(double x, double v, double t, Planet A, Planet B, Planet C, int axe){
     // Compute the gravitational + spring acceleration of the body C, specifying the axis.
-    return (-1 * (G * (A.m * (C.x[axe]-A.x[axe]) / pow(distance(A.x, C.x), 3) + B.m * (C.x[axe]-B.x[axe]) / pow(distance(B.x, C.x), 3))) + K_CONST * (B.x[axe]-C.x[axe]) / C.m);
+    return (-1 * (G * (A.m * (C.x[axe]-A.x[axe]) / pow(distance(A.x, C.x), 3) + B.m * (C.x[axe]-B.x[axe]) / pow(distance(B.x, C.x), 3))) + K_CONST * (B.x[axe]-C.x[axe]-L0[axe]) / C.m);
 }
 
 double springB(double x, double v, double t, Planet A, Planet B, Planet C, int axe){
     // Compute the gravitational + spring acceleration of the body C, specifying the axis.
-    return (-1 * (G * (A.m * (C.x[axe]-A.x[axe]) / pow(distance(A.x, C.x), 3) + B.m * (C.x[axe]-B.x[axe]) / pow(distance(B.x, C.x), 3))) + K_CONST * (A.x[axe]-C.x[axe]) / B.m );
+    return (-1 * (G * (A.m * (C.x[axe]-A.x[axe]) / pow(distance(A.x, C.x), 3) + B.m * (C.x[axe]-B.x[axe]) / pow(distance(B.x, C.x), 3))) + K_CONST * (A.x[axe]-C.x[axe]-L0[axe]) / B.m );
 }
 
 double acceleration(double x, double v, double t, Planet A, Planet B, Planet C, int axe){
@@ -127,9 +121,9 @@ int main(int argc, char** argv){
     double h = 0.008;
 
 
-    Planet A(200, -10, 0, 0, 0, -5, 0);   // corpi allineati sull'asse delle x
-    Planet B(10, 10, 0, 0, 0, 5, 0);
-    Planet C(10, 10, 14, 12, 0, 0, 0);
+    Planet A(5000, -10, 0, 0, 0, -40, 0);   // corpi allineati sull'asse delle x
+    Planet B(10, 10, 0, 0, 0, 0, 0);
+    Planet C(10, 10, 5, 10, 0, 0, 0);
 
     // CONFIGURAZIONI BELLE
 
@@ -268,10 +262,10 @@ int main(int argc, char** argv){
                         k2[0][j] = h * acceleration(A.x[j], A.v[j], t+0.5*h, C, B, A, j);
                         //Body B
                         m2[1][j] = h * B.v[j];
-                        k2[1][j] = h * acceleration(B.x[j], B.v[j], t+0.5*h, C, A, B, j);
+                        k2[1][j] = h * springB(B.x[j], B.v[j], t+0.5*h, C, A, B, j);
                         // Body C
                         m2[2][j] = h * C.v[j];
-                        k2[2][j] = h * acceleration(C.x[j], C.v[j], t+0.5*h, A, B, C, j);
+                        k2[2][j] = h * springC(C.x[j], C.v[j], t+0.5*h, A, B, C, j);
                     }
                      for(int j=0; j<DIM-1;j++){
                         A.v[j] = vA[j] + 0.5 * k2[0][j];
@@ -288,10 +282,10 @@ int main(int argc, char** argv){
                        
                         //Body B
                         m3[1][j] = h * B.v[j];
-                        k3[1][j] = h * acceleration(B.x[j], B.v[j], t+0.5*h, C, A, B, j);
+                        k3[1][j] = h * springB(B.x[j], B.v[j], t+0.5*h, C, A, B, j);
                         // Body C
                         m3[2][j] = h * C.v[j];
-                        k3[2][j] = h * acceleration(C.x[j], C.v[j], t+0.5*h, A, B, C, j);
+                        k3[2][j] = h * springC(C.x[j], C.v[j], t+0.5*h, A, B, C, j);
                     }
                      for(int j=0; j<DIM-1;j++){
                         A.v[j] = vA[j] + k3[0][j];
@@ -307,10 +301,10 @@ int main(int argc, char** argv){
                         k4[0][j] = h * acceleration(A.x[j], A.v[j], t + h, C, B, A, j);
                         //Body B
                         m4[1][j] = h * B.v[j];
-                        k4[1][j] = h * acceleration(B.x[j], B.v[j], t + h, C, A, B, j);
+                        k4[1][j] = h * springB(B.x[j], B.v[j], t + h, C, A, B, j);
                         // Body C
                         m4[2][j] = h * C.v[j];
-                        k4[2][j] = h * acceleration(C.x[j], C.v[j], t + h, A, B, C, j);
+                        k4[2][j] = h * springC(C.x[j], C.v[j], t + h, A, B, C, j);
                     }
 
                     for(int j=0; j<DIM-1;j++){
