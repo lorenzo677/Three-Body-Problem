@@ -35,13 +35,14 @@ static constexpr int N_BODIES = 3;
 static constexpr int N_STEPS = 70000;
 
 // Spring
-static constexpr int K_CONST = 1000;
+static constexpr int K_CONST = 5000;
 static constexpr int L0X = 5; 
 static constexpr int L0Y = 5;
 static constexpr int L0Z = 5;
 float l0 = sqrt(pow(L0X,2)+pow(L0Y,2)+pow(L0Z,2)); // modulo lunghezza a riposo molla
 
 std::array <double, 3> L0 = {L0X, L0Y, L0Z};
+
 
 double distance(std::array<double, 3> r1, std::array<double, 3> r2){
     return sqrt(pow(r1[0]-r2[0],2)+pow(r1[1]-r2[1],2)+pow(r1[2]-r2[2],2));
@@ -56,6 +57,7 @@ public:
     std::array <double, 3> v;
     std::array <double, 3> a;
     double energy;
+    double omega;
     
     Planet (double mass, double x_position, double y_position, double z_position, double x_velocity, double y_velocity, double z_velocity) {
         m = mass;
@@ -68,6 +70,10 @@ public:
     };
     void computeKineticEnergy(){
         energy = 0.5 * m * (pow(v[0],2)+pow(v[1],2)+pow(v[2],2));
+    }
+    
+    void computeOmega(){
+        omega = sqrt(K_CONST / m);
     }
 };
 
@@ -103,12 +109,12 @@ std::array<double, 3> AngularMomentum(std::array<double, 3> cm, Planet planet){
 
 double springC(double x, double v, double t, Planet A, Planet B, Planet C, int axe){
     // Compute the gravitational + spring acceleration of the body C, specifying the axis.
-    return (-1 * (G * (A.m * (C.x[axe]-A.x[axe]) / pow(distance(A.x, C.x), 3) + B.m * (C.x[axe]-B.x[axe]) / pow(distance(B.x, C.x), 3))) + K_CONST * (B.x[axe]-C.x[axe]-L0[axe]) / C.m);
+    return (-1 * (G * (A.m * (C.x[axe]-A.x[axe]) / pow(distance(A.x, C.x), 3) + B.m * (C.x[axe]-B.x[axe]) / pow(distance(B.x, C.x), 3))) + (K_CONST / C.m) * (B.x[axe]-C.x[axe]-L0[axe]) / (pow(distance(B.x, C.x), 3)));
 }
 
 double springB(double x, double v, double t, Planet A, Planet B, Planet C, int axe){
     // Compute the gravitational + spring acceleration of the body C, specifying the axis.
-    return (-1 * (G * (A.m * (C.x[axe]-A.x[axe]) / pow(distance(A.x, C.x), 3) + B.m * (C.x[axe]-B.x[axe]) / pow(distance(B.x, C.x), 3))) + K_CONST * (A.x[axe]-C.x[axe]-L0[axe]) / B.m );
+    return (-1 * (G * (A.m * (C.x[axe]-A.x[axe]) / pow(distance(A.x, C.x), 3) + B.m * (C.x[axe]-B.x[axe]) / pow(distance(B.x, C.x), 3))) + (K_CONST / B.m) * (C.x[axe]-A.x[axe]-L0[axe]) / (pow(distance(A.x, C.x), 3)));
 }
 
 double acceleration(double x, double v, double t, Planet A, Planet B, Planet C, int axe){
