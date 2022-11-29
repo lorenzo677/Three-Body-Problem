@@ -36,12 +36,10 @@ static constexpr int N_STEPS = 70000;
 
 // Spring
 static constexpr int K_CONST = 5000;
-static constexpr int L0X = 5; 
-static constexpr int L0Y = 5;
-static constexpr int L0Z = 5;
-float l0 = sqrt(pow(L0X,2)+pow(L0Y,2)+pow(L0Z,2)); // modulo lunghezza a riposo molla
+static constexpr int L0 = 10; 
+// float l0 = sqrt(pow(L0X,2)+pow(L0Y,2)+pow(L0Z,2)); // modulo lunghezza a riposo molla
 
-std::array <double, 3> L0 = {L0X, L0Y, L0Z};
+// std::array <double, 3> L0 = {L0X, L0Y, L0Z};
 
 
 double distance(std::array<double, 3> r1, std::array<double, 3> r2){
@@ -109,33 +107,33 @@ std::array<double, 3> AngularMomentum(std::array<double, 3> cm, Planet planet){
 
 double springC(double x, double v, double t, Planet A, Planet B, Planet C, int axe){
     // Compute the gravitational + spring acceleration of the body C, specifying the axis.
-    return (-1 * (G * (A.m * (C.x[axe]-A.x[axe]) / pow(distance(A.x, C.x), 3) + B.m * (C.x[axe]-B.x[axe]) / pow(distance(B.x, C.x), 3))) + (K_CONST / C.m) * (B.x[axe]-C.x[axe]-L0[axe]) / (pow(distance(B.x, C.x), 3)));
+    return (-1 * (G * (A.m * (C.x[axe]-A.x[axe]) / pow(distance(A.x, C.x), 3) + B.m * (C.x[axe]-B.x[axe]) / pow(distance(B.x, C.x), 3)))); // + (K_CONST / C.m) * (B.x[axe]-C.x[axe]) * (distance(B.x, C.x)-L0) / distance(B.x, C.x));
 }
 
 double springB(double x, double v, double t, Planet A, Planet B, Planet C, int axe){
     // Compute the gravitational + spring acceleration of the body C, specifying the axis.
-    return (-1 * (G * (A.m * (C.x[axe]-A.x[axe]) / pow(distance(A.x, C.x), 3) + B.m * (C.x[axe]-B.x[axe]) / pow(distance(B.x, C.x), 3))) + (K_CONST / B.m) * (C.x[axe]-A.x[axe]-L0[axe]) / (pow(distance(A.x, C.x), 3)));
+    return (-1 * (G * (A.m * (C.x[axe]-A.x[axe]) / pow(distance(A.x, C.x), 3) - B.m * (C.x[axe]-B.x[axe]) / pow(distance(B.x, C.x), 3)))); //+ (K_CONST / B.m) * (C.x[axe]-A.x[axe])  * (distance(A.x, C.x) - L0) / distance(A.x, C.x));
 }
 
 double acceleration(double x, double v, double t, Planet A, Planet B, Planet C, int axe){
     // Compute the gravitational acceleration of the body C, specifying the axis.
-    return (-1 * G * (A.m * (C.x[axe]-A.x[axe]) / pow(distance(A.x, C.x), 3) + B.m * (C.x[axe]-B.x[axe]) / pow(distance(B.x, C.x), 3)));
+    return (-1 * G * (A.m * (C.x[axe]-A.x[axe]) / pow(distance(A.x, C.x), 3) - B.m * (C.x[axe]-B.x[axe]) / pow(distance(B.x, C.x), 3)));
 }
 
 int main(int argc, char** argv){
     
-    double h = 0.008;
+    double h = 0.002;
 
 
-    Planet A(5000, -10, 0, 0, 0, -40, 0);   // corpi allineati sull'asse delle x
-    Planet B(10, 10, 0, 0, 0, 0, 0);
-    Planet C(10, 10, 5, 10, 0, 0, 0);
+    // Planet A(0, -10, 0, 0, 0, 0, 0);   // corpi allineati sull'asse delle x
+    // Planet B(10, 10, 0, 0, -2, 3, 0);
+    // Planet C(10, 10, 5, 0, 2, -3, 0);
 
     // CONFIGURAZIONI BELLE
 
-    // Planet A(200, -10, 0, 0, 0, -5, 0); 
-    // Planet B(10, 10, 0, 0, 0, 5, 0);
-    // Planet C(10, 10, 14, 12, 0, 0, 0);
+    Planet A(0, -10, 0, 0, 0, -5, 0); 
+    Planet B(100, 0, 0, 0, 0, 5, 0);
+    Planet C(100, 13, 14, 12, 0, -5, 0);
 
     double x_A[DIM][3];
     double x_B[DIM][3];
