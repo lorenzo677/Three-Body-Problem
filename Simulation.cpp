@@ -36,7 +36,7 @@ static constexpr int N_STEPS = 70000;
 
 // Spring
 static constexpr int K_CONST = 5000;
-static constexpr double L0 = 11.18; 
+static constexpr double L0 = 4; 
 // float l0 = sqrt(pow(L0X,2)+pow(L0Y,2)+pow(L0Z,2)); // modulo lunghezza a riposo molla
 
 // std::array <double, 3> L0 = {L0X, L0Y, L0Z};
@@ -113,12 +113,12 @@ std::array<double, 3> AngularMomentum(std::array<double, 3> cm, Planet planet){
 
 double springC(double x, double v, double t, Planet A, Planet B, Planet C, int axe){
     // Compute the gravitational + spring acceleration of the body C, specifying the axis.
-    return (-1 * (G * (A.m * (C.x[axe]-A.x[axe]) / pow(distance(A.x, C.x), 3) + B.m * (C.x[axe]-B.x[axe]) / pow(distance(B.x, C.x), 3))) + (K_CONST / C.m) * (C.x[axe]-B.x[axe]-L0) * (C.x[axe]-B.x[axe]) / (pow(distance(B.x, C.x), 3)));
+    return (-1 * (G * (A.m * (C.x[axe]-A.x[axe]) / pow(distance(A.x, C.x), 3) + B.m * (C.x[axe]-B.x[axe]) / pow(distance(B.x, C.x), 3))) - (K_CONST / C.m) * (std::abs(C.x[axe]-B.x[axe])-L0) * (C.x[axe]-B.x[axe]) / (distance(B.x, C.x)));
 }
 
 double springB(double x, double v, double t, Planet A, Planet B, Planet C, int axe){
     // Compute the gravitational + spring acceleration of the body C, specifying the axis.
-    return (-1 * (G * (A.m * (C.x[axe]-A.x[axe]) / pow(distance(A.x, C.x), 3) + B.m * (C.x[axe]-B.x[axe]) / pow(distance(B.x, C.x), 3))) + (K_CONST / C.m) * (C.x[axe]-A.x[axe]-L0) * (C.x[axe]-A.x[axe]) / (pow(distance(A.x, C.x), 3)));
+    return (-1 * (G * (A.m * (C.x[axe]-A.x[axe]) / pow(distance(A.x, C.x), 3) + B.m * (C.x[axe]-B.x[axe]) / pow(distance(B.x, C.x), 3))) - (K_CONST / C.m) * (std::abs(C.x[axe]-A.x[axe])-L0) * (C.x[axe]-A.x[axe]) / (distance(A.x, C.x)));
 }
 
 double acceleration(double x, double v, double t, Planet A, Planet B, Planet C, int axe){
@@ -132,8 +132,8 @@ int main(int argc, char** argv){
 
 
      Planet A(5000, 0, 0, 0, 0, 0, 0);   // corpi allineati sull'asse delle x
-     Planet B(10, -5, 0, 0, 0, 0, 0);
-     Planet C(10, 5, 0, 0, 0, 0, 0);
+     Planet B(10, 7, -5, 10, 0, 0, 0);
+     Planet C(10, -10, 20, 4, 0, 0, 0);
 
     // CONFIGURAZIONI BELLE
 
