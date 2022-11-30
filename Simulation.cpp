@@ -30,12 +30,12 @@ void Initialize(){
 }
 
 static constexpr int DIM = 4;
-static constexpr double G = 0;
+static constexpr double G = 100;
 static constexpr int N_BODIES = 3;
 static constexpr int N_STEPS = 70000;
 
 // Spring
-static constexpr int K_CONST = 5000;
+static constexpr int K_CONST = 500;
 static constexpr double L0 = 4; 
 // float l0 = sqrt(pow(L0X,2)+pow(L0Y,2)+pow(L0Z,2)); // modulo lunghezza a riposo molla
 
@@ -131,9 +131,9 @@ int main(int argc, char** argv){
     double h = 0.002;
 
 
-     Planet A(5000, 0, 0, 0, 0, 0, 0);   // corpi allineati sull'asse delle x
-     Planet B(10, 7, -5, 10, 0, 0, 0);
-     Planet C(10, -10, 20, 4, 0, 0, 0);
+     Planet A(500, 0, 0, 0, 0, -10, 0);   // corpi allineati sull'asse delle x
+     Planet B(10, 0, 0 , 5, 50, 0, 50);
+     Planet C(10, 0, 0, -5, -50, 0, -50);
 
     // CONFIGURAZIONI BELLE
 
