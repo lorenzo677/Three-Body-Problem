@@ -113,7 +113,7 @@ std::array<double, 3> AngularMomentum(std::array<double, 3> cm, Planet planet){
 
 double springC(double x, double v, double t, Planet A, Planet B, Planet C, int axe){
     // Compute the gravitational + spring acceleration of the body C, specifying the axis.
-    return (-1 * (G * (A.m * (C.x[axe]-A.x[axe]) / pow(distance(A.x, C.x), 3) + B.m * (C.x[axe]-B.x[axe]) / pow(distance(B.x, C.x), 3))) - (K_CONST / C.m) * std::abs((distance(A.x, C.x))-L0) * (C.x[axe]-B.x[axe]) / (distance(B.x, C.x)));
+    return (-1 * (G * (A.m * (C.x[axe]-A.x[axe]) / pow(distance(A.x, C.x), 3) + B.m * (C.x[axe]-B.x[axe]) / pow(distance(B.x, C.x), 3))) - (K_CONST / C.m) * std::abs((distance(B.x, C.x))-L0) * (C.x[axe]-B.x[axe]) / (distance(B.x, C.x)));
 }
 
 double springB(double x, double v, double t, Planet A, Planet B, Planet C, int axe){
@@ -132,7 +132,7 @@ int main(int argc, char** argv){
 
 
      Planet A(500, 0, 0, 0, 0, 0, 0);   // corpi allineati sull'asse delle x
-     Planet B(10, 10, 4 , 0, 0, 0, 0);
+     Planet B(10, 10, 0, 0, 0, 0, 0);
      Planet C(10, -10, 0, 0, 0, 0, 0);
 
     // CONFIGURAZIONI BELLE
