@@ -35,7 +35,7 @@ static constexpr int N_BODIES = 3;
 static constexpr int N_STEPS = 70000;
 
 // Spring
-static constexpr int K_CONST = 5000;
+static constexpr int K_CONST = 100000;
 static constexpr double L0 = 10; 
 // float l0 = sqrt(pow(L0X,2)+pow(L0Y,2)+pow(L0Z,2)); // modulo lunghezza a riposo molla
 
@@ -83,10 +83,15 @@ std::array<double, 3> differenceOfArrays(std::array<double, 3>  v1, std::array<d
     return difference;
 }
 
-double computePotentialEnergy(Planet planet1, Planet planet2, Planet planet3){
+double computeGravitationalEnergy(Planet planet1, Planet planet2, Planet planet3){
     return -1 * G * ( planet3.m * planet1.m / distance(planet3.x, planet1.x) +  planet3.m * planet2.m / distance(planet3.x, planet2.x) + planet1.m * planet2.m / distance(planet1.x, planet2.x));
         
 }
+
+double computeElasticEnergy(Planet planet1, Planet planet2){
+    return 0.5 * K_CONST * pow(distance(planet2.x, planet1.x)-L0,2);
+}
+
 std::array<double, 3> computeCM(Planet planet1, Planet planet2, Planet planet3){
     std::array<double, 3> cm;
     for(int j=0;j<DIM-1;j++){
@@ -104,11 +109,6 @@ std::array<double, 3> AngularMomentum(std::array<double, 3> cm, Planet planet){
     L[2] = planet.m * (difference[0] * planet.v[1] - difference[1] * planet.v[0]);
     return L;
 }
-
-
-// Commenti - robe da sistemare:
-// 1) Il pianeta B ha molta più accelerazione elastica del pianeta C inspiegabilmente
-// 2) Bisogna introdurre il respingimento della molla che fino ad adesso non si verifica
 
 
 double springC(double x, double v, double t, Planet A, Planet B, Planet C, int axe){
@@ -131,9 +131,9 @@ int main(int argc, char** argv){
     double h = 0.002;
 
 
-     Planet A(500, 0, 0, 0, 0, -10, 0);   // corpi allineati sull'asse delle x
-     Planet B(10, 0, 0 , 5, 50, 0, 50);
-     Planet C(10, 0, 0, -5, -50, 0, -50);
+     Planet A(500, 0, 0, 0, 0, 0, 0);   // corpi allineati sull'asse delle x
+     Planet B(10, 0, 0 , 5, 5, 0, 5);
+     Planet C(10, 0, 0, -5, -5, 0, -5);
 
     // CONFIGURAZIONI BELLE
 
@@ -172,7 +172,7 @@ int main(int argc, char** argv){
     output_file_A<<"x;y;z"<<std::endl;
     output_file_B<<"x;y;z"<<std::endl;
     output_file_C<<"x;y;z"<<std::endl;
-    file_energy<<"k;p"<<std::endl;
+    file_energy<<"k;g;e"<<std::endl;
     file_angmom<<"Lx;Ly;Lz"<<std::endl;
 
     double m1[4][4];
@@ -207,8 +207,8 @@ int main(int argc, char** argv){
                     for(int j=0; j<DIM-1; j++){
 
                         A.a[j] = acceleration(0, 0, 0, B, C, A, j);
-                        B.a[j] = acceleration(0, 0, 0, A, C, B, j);
-                        C.a[j] = acceleration(0, 0, 0, B, A, C, j);
+                        B.a[j] = springB(0, 0, 0, C, A, B, j);
+                        C.a[j] = springC(0, 0, 0, A, B, C, j);
                     }
                     for(int j=0; j<DIM-1; j++){
                         
@@ -226,7 +226,7 @@ int main(int argc, char** argv){
                     B.computeKineticEnergy();
                     C.computeKineticEnergy();
                     cm = computeCM(A,B,C);
-                    file_energy<<A.energy + B.energy + C.energy<<";"<< computePotentialEnergy(A, B, C)<<std::endl;
+                    file_energy<<A.energy + B.energy + C.energy<<";"<< computeGravitationalEnergy(A, B, C)<<";"<< computeElasticEnergy(B, C) <<std::endl;
                     file_angmom<<AngularMomentum(cm, A)[0]+ AngularMomentum(cm, B)[0]+AngularMomentum(cm, C)[0]<<";"<< AngularMomentum(cm, A)[1]+ AngularMomentum(cm, B)[1]+AngularMomentum(cm, C)[1]<<";"<<AngularMomentum(cm, A)[2]+ AngularMomentum(cm, B)[2]+AngularMomentum(cm, C)[2]<<std::endl;
                     // file_angmom<< <<";"<< <<";"<< <<std::endl;
                     // file_energy<<A.energy + B.energy + C.energy <<std::endl;
@@ -332,7 +332,7 @@ int main(int argc, char** argv){
                     A.computeKineticEnergy();
                     B.computeKineticEnergy();
                     C.computeKineticEnergy();
-                    file_energy<<A.energy + B.energy + C.energy <<";"<< computePotentialEnergy(A, B, C)<<std::endl;
+                    file_energy<<A.energy + B.energy + C.energy <<";"<< computeGravitationalEnergy(A, B, C)<<";"<<computeElasticEnergy(B, C)<<std::endl;
                     cm=computeCM(A, B, C);
                     file_angmom<<AngularMomentum(cm, A)[0]+ AngularMomentum(cm, B)[0]+AngularMomentum(cm, C)[0]<<";"<< AngularMomentum(cm, A)[1]+ AngularMomentum(cm, B)[1]+AngularMomentum(cm, C)[1]<<";"<<AngularMomentum(cm, A)[2]+ AngularMomentum(cm, B)[2]+AngularMomentum(cm, C)[2]<<std::endl;
                     // file_energy<<A.energy + B.energy + C.energy + computePotentialEnergy(A, B, C)<<std::endl;
@@ -359,8 +359,8 @@ int main(int argc, char** argv){
                     
                     for(int j=0; j<DIM-1; j++){
                         A.a[j] = acceleration(0, 0, 0, B, C, A, j);
-                        B.a[j] = acceleration(0, 0, 0, A, C, B, j);
-                        C.a[j] = acceleration(0, 0, 0, B, A, C, j);
+                        B.a[j] = springB(0, 0, 0, C, A, B, j);
+                        C.a[j] = springC(0, 0, 0, A, B, C, j);
 
                         A.v[j] += A.a[j] * h;
                         B.v[j] += B.a[j] * h;
@@ -378,7 +378,7 @@ int main(int argc, char** argv){
                     B.computeKineticEnergy();
                     C.computeKineticEnergy();
                     cm = computeCM(A,B,C);
-                    file_energy<<A.energy + B.energy + C.energy<<";"<< computePotentialEnergy(A, B, C)<<std::endl;
+                    file_energy<<A.energy + B.energy + C.energy<<";"<< computeGravitationalEnergy(A, B, C)<<";"<<computeElasticEnergy(B, C)<<std::endl;
                     file_angmom<<AngularMomentum(cm, A)[0]+ AngularMomentum(cm, B)[0]+AngularMomentum(cm, C)[0]<<";"<< AngularMomentum(cm, A)[1]+ AngularMomentum(cm, B)[1]+AngularMomentum(cm, C)[1]<<";"<<AngularMomentum(cm, A)[2]+ AngularMomentum(cm, B)[2]+AngularMomentum(cm, C)[2]<<std::endl;
                 }
 
