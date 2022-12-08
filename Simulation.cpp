@@ -13,21 +13,6 @@ Created on November 2022.
 #include <string>
 #include <map>
 
-// Value-Defintions of the different String values
-enum StringValue { evNotDefined,
-                          evStringValue1,
-                          evStringValue2,
-                          evStringValue3
-                          };
-
-// Map to associate the strings with the enum values
-static std::map<std::string, StringValue> s_mapStringValues;
-
-void Initialize(){
-  s_mapStringValues["euler"] = evStringValue1;
-  s_mapStringValues["rk4"] = evStringValue2;
-  s_mapStringValues["leapfrog"] = evStringValue3;
-}
 
 static constexpr int DIM = 4;
 static constexpr double G = 10;
@@ -37,15 +22,10 @@ static constexpr int N_STEPS = 70000;
 // Spring
 static constexpr int K_CONST = 100000;
 static constexpr double L0 = 10; 
-// float l0 = sqrt(pow(L0X,2)+pow(L0Y,2)+pow(L0Z,2)); // modulo lunghezza a riposo molla
-
-// std::array <double, 3> L0 = {L0X, L0Y, L0Z};
-
 
 double distance(std::array<double, 3> r1, std::array<double, 3> r2){
     return sqrt(pow(r1[0]-r2[0],2)+pow(r1[1]-r2[1],2)+pow(r1[2]-r2[2],2));
 }
-
 
 class Planet{
 public:
@@ -130,10 +110,9 @@ int main(int argc, char** argv){
     
     double h = 0.002;
 
-
-     Planet A(500, 0, 0, 0, 0, 0, 0);   // corpi allineati sull'asse delle x
-     Planet B(10, 0, 0 , 5, 5, 0, 5);
-     Planet C(10, 0, 0, -5, -5, 0, -5);
+    Planet A(500, 0, 0, 0, 0, 0, 0);   // corpi allineati sull'asse delle x
+    Planet B(10, 0, 0 , 5, 5, 0, 5);
+    Planet C(10, 0, 0, -5, -5, 0, -5);
 
     // CONFIGURAZIONI BELLE
 
@@ -161,19 +140,45 @@ int main(int argc, char** argv){
     x_B[2][0] = B.x[2];
     x_C[2][0] = C.x[2];
 
-    Initialize();
-   
-    std::ofstream file_energy("Total_energy_" + std::string(argv[1]) + ".csv");
-    std::ofstream output_file_A("positions_A_" + std::string(argv[1]) + ".csv");
-    std::ofstream output_file_B("positions_B_" + std::string(argv[1]) + ".csv");
-    std::ofstream output_file_C("positions_C_" + std::string(argv[1]) + ".csv");
-    std::ofstream file_angmom("Total_angular_momentum_" + std::string(argv[1]) + ".csv");
 
-    output_file_A<<"x;y;z"<<std::endl;
-    output_file_B<<"x;y;z"<<std::endl;
-    output_file_C<<"x;y;z"<<std::endl;
-    file_energy<<"k;g;e"<<std::endl;
-    file_angmom<<"Lx;Ly;Lz"<<std::endl;
+    std::array<std::array<double, 3>, 6> initial_conditions = {A.x, A.v, B.x, B.v, C.x, C.v};
+    // std::ofstream file_energy("Total_energy_" + std::string(argv[1]) + ".csv");
+    // std::ofstream output_file_A("positions_A_" + std::string(argv[1]) + ".csv");
+    // std::ofstream output_file_B("positions_B_" + std::string(argv[1]) + ".csv");
+    // std::ofstream output_file_C("positions_C_" + std::string(argv[1]) + ".csv");
+    // std::ofstream file_angmom("Total_angular_momentum_" + std::string(argv[1]) + ".csv");
+    
+    std::ofstream file_energy_euler("Total_energy_euler.csv");
+    std::ofstream file_energy_leapfrog("Total_energy_leapfrog.csv");
+    std::ofstream file_energy_rk4("Total_energy_rk4.csv");
+    std::ofstream output_file_A_euler("positions_A_euler.csv");
+    std::ofstream output_file_A_leapfrog("positions_A_leapfrog.csv");
+    std::ofstream output_file_A_rk4("positions_A_rk4.csv");
+    std::ofstream output_file_B_euler("positions_B_euler.csv");
+    std::ofstream output_file_B_leapfrog("positions_B_leapfrog.csv");
+    std::ofstream output_file_B_rk4("positions_B_rk4.csv");
+    std::ofstream output_file_C_euler("positions_C_euler.csv");
+    std::ofstream output_file_C_leapfrog("positions_C_leapfrog.csv");
+    std::ofstream output_file_C_rk4("positions_C_rk4.csv");
+    std::ofstream file_angmom_euler("Total_angular_momentum_euler.csv");
+    std::ofstream file_angmom_leapfrog("Total_angular_momentum_leapfrog.csv");
+    std::ofstream file_angmom_rk4("Total_angular_momentum_rk4.csv");
+    
+    output_file_A_euler<<"x;y;z"<<std::endl;
+    output_file_B_euler<<"x;y;z"<<std::endl;
+    output_file_C_euler<<"x;y;z"<<std::endl;
+    file_energy_euler<<"k;g;e"<<std::endl;
+    file_angmom_euler<<"Lx;Ly;Lz"<<std::endl;
+    output_file_A_leapfrog<<"x;y;z"<<std::endl;
+    output_file_B_leapfrog<<"x;y;z"<<std::endl;
+    output_file_C_leapfrog<<"x;y;z"<<std::endl;
+    file_energy_leapfrog<<"k;g;e"<<std::endl;
+    file_angmom_leapfrog<<"Lx;Ly;Lz"<<std::endl;
+    output_file_A_rk4<<"x;y;z"<<std::endl;
+    output_file_B_rk4<<"x;y;z"<<std::endl;
+    output_file_C_rk4<<"x;y;z"<<std::endl;
+    file_energy_rk4<<"k;g;e"<<std::endl;
+    file_angmom_rk4<<"Lx;Ly;Lz"<<std::endl;
 
     double m1[4][4];
     double k1[4][4];
@@ -193,218 +198,233 @@ int main(int argc, char** argv){
     double t;
     std::array<double,3> cm = computeCM(A, B, C);
 
-    if (argc>=2){
-        switch (s_mapStringValues[argv[1]]){
-            case evStringValue1: 
-                // ==========================================================
-                //                          EULER
-                // ==========================================================
+// ==========================================================
+//                          EULER
+// ==========================================================
 
-                for (int i=0; i<N_STEPS-1; i++){
-                    output_file_A << A.x[0] << ";" << A.x[1] << ";" << A.x[2]<< std::endl;
-                    output_file_B << B.x[0] << ";" << B.x[1] << ";" << B.x[2]<< std::endl;
-                    output_file_C << C.x[0] << ";" << C.x[1] << ";" << C.x[2]<< std::endl;
-                    for(int j=0; j<DIM-1; j++){
+for (int i=0; i<N_STEPS-1; i++){
+    output_file_A_euler << A.x[0] << ";" << A.x[1] << ";" << A.x[2]<< std::endl;
+    output_file_B_euler << B.x[0] << ";" << B.x[1] << ";" << B.x[2]<< std::endl;
+    output_file_C_euler << C.x[0] << ";" << C.x[1] << ";" << C.x[2]<< std::endl;
+    for(int j=0; j<DIM-1; j++){
 
-                        A.a[j] = acceleration(0, 0, 0, B, C, A, j);
-                        B.a[j] = springB(0, 0, 0, C, A, B, j);
-                        C.a[j] = springC(0, 0, 0, A, B, C, j);
-                    }
-                    for(int j=0; j<DIM-1; j++){
-                        
-                        A.v[j] += A.a[j] * h;
-                        B.v[j] += B.a[j] * h;
-                        C.v[j] += C.a[j] * h;
-                        
-                        A.x[j] += A.v[j] * h;
-                        B.x[j] += B.v[j] * h;
-                        C.x[j] += C.v[j] * h;
-                        
-                    } 
-                    
-                    A.computeKineticEnergy();
-                    B.computeKineticEnergy();
-                    C.computeKineticEnergy();
-                    cm = computeCM(A,B,C);
-                    file_energy<<A.energy + B.energy + C.energy<<";"<< computeGravitationalEnergy(A, B, C)<<";"<< computeElasticEnergy(B, C) <<std::endl;
-                    file_angmom<<AngularMomentum(cm, A)[0]+ AngularMomentum(cm, B)[0]+AngularMomentum(cm, C)[0]<<";"<< AngularMomentum(cm, A)[1]+ AngularMomentum(cm, B)[1]+AngularMomentum(cm, C)[1]<<";"<<AngularMomentum(cm, A)[2]+ AngularMomentum(cm, B)[2]+AngularMomentum(cm, C)[2]<<std::endl;
-                    // file_angmom<< <<";"<< <<";"<< <<std::endl;
-                    // file_energy<<A.energy + B.energy + C.energy <<std::endl;
-                    // file_energy<< computePotentialEnergy(A, B, C)<<std::endl;
-                }
-                
-                break;
-            case evStringValue2:{
-                // ==========================================================
-                //                          RUNGE KUTTA 4
-                // ==========================================================
-                h *= 4;
-                
-                for(int i=0; i<N_STEPS/4-1; i++){
-                    vA = A.v;
-                    xA = A.x;
-                    vB = B.v;
-                    xB = B.x;
-                    vC = C.v;
-                    xC = C.x;
-                    for(int j=0; j<DIM-1; j++){
-                        // body A
-                        m1[0][j] = h * vA[j];
-                        k1[0][j] = h * acceleration(xA[j], vA[j], t, C, B, A, j);
-                        // body B
-                        m1[1][j] = h * vB[j];
-                        k1[1][j] = h * springB(xB[j], vB[j], t, C, A, B, j); 
-                        // body C
-                        m1[2][j] = h * vC[j];
-                        k1[2][j] = h * springC(xC[j], vC[j], t, A, B, C, j); 
-                    }
-                    for(int j=0; j<DIM-1;j++){
-                        A.v[j] = vA[j] + 0.5 * k1[0][j];
-                        B.v[j] = vB[j] + 0.5 * k1[1][j];
-                        C.v[j] = vC[j] + 0.5 * k1[2][j];          
-                        A.x[j] = xA[j] + 0.5 * m1[0][j];
-                        B.x[j] = xB[j] + 0.5 * m1[1][j];
-                        C.x[j] = xC[j] + 0.5 * m1[2][j];
-                    }
-                    for(int j=0; j<DIM-1; j++){
-                        //Body A
-                        m2[0][j] = h * A.v[j];
-                        k2[0][j] = h * acceleration(A.x[j], A.v[j], t+0.5*h, C, B, A, j);
-                        //Body B
-                        m2[1][j] = h * B.v[j];
-                        k2[1][j] = h * springB(B.x[j], B.v[j], t+0.5*h, C, A, B, j);
-                        // Body C
-                        m2[2][j] = h * C.v[j];
-                        k2[2][j] = h * springC(C.x[j], C.v[j], t+0.5*h, A, B, C, j);
-                    }
-                     for(int j=0; j<DIM-1;j++){
-                        A.v[j] = vA[j] + 0.5 * k2[0][j];
-                        B.v[j] = vB[j] + 0.5 * k2[1][j];
-                        C.v[j] = vC[j] + 0.5 * k2[2][j];          
-                        A.x[j] = xA[j] + 0.5 * m2[0][j];
-                        B.x[j] = xB[j] + 0.5 * m2[1][j];
-                        C.x[j] = xC[j] + 0.5 * m2[2][j];
-                    }
-                    for(int j=0; j<DIM-1; j++){
-                        //Body A
-                        m3[0][j] = h * A.v[j];
-                        k3[0][j] = h * acceleration(A.x[j], A.v[j], t+0.5*h, C, B, A, j);
-                       
-                        //Body B
-                        m3[1][j] = h * B.v[j];
-                        k3[1][j] = h * springB(B.x[j], B.v[j], t+0.5*h, C, A, B, j);
-                        // Body C
-                        m3[2][j] = h * C.v[j];
-                        k3[2][j] = h * springC(C.x[j], C.v[j], t+0.5*h, A, B, C, j);
-                    }
-                     for(int j=0; j<DIM-1;j++){
-                        A.v[j] = vA[j] + k3[0][j];
-                        B.v[j] = vB[j] + k3[1][j];
-                        C.v[j] = vC[j] + k3[2][j];          
-                        A.x[j] = xA[j] + m3[0][j];
-                        B.x[j] = xB[j] + m3[1][j];
-                        C.x[j] = xC[j] + m3[2][j];
-                    }
-                    for(int j=0; j<DIM-1; j++){
-                        //Body A
-                        m4[0][j] = h * A.v[j];
-                        k4[0][j] = h * acceleration(A.x[j], A.v[j], t + h, C, B, A, j);
-                        //Body B
-                        m4[1][j] = h * B.v[j];
-                        k4[1][j] = h * springB(B.x[j], B.v[j], t + h, C, A, B, j);
-                        // Body C
-                        m4[2][j] = h * C.v[j];
-                        k4[2][j] = h * springC(C.x[j], C.v[j], t + h, A, B, C, j);
-                    }
-
-                    for(int j=0; j<DIM-1;j++){
-                        A.v[j] = vA[j] + (k1[0][j] + 2*k2[0][j] + 2*k3[0][j] + k4[0][j])/6;
-                        B.v[j] = vB[j] + (k1[1][j] + 2*k2[1][j] + 2*k3[1][j] + k4[1][j])/6;
-                        C.v[j] = vC[j] + (k1[2][j] + 2*k2[2][j] + 2*k3[2][j] + k4[2][j])/6;          
-                        A.x[j] = xA[j] + (m1[0][j] + 2*m2[0][j] + 2*m3[0][j] + m4[0][j])/6;
-                        B.x[j] = xB[j] + (m1[1][j] + 2*m2[1][j] + 2*m3[1][j] + m4[1][j])/6;
-                        C.x[j] = xC[j] + (m1[2][j] + 2*m2[2][j] + 2*m3[2][j] + m4[2][j])/6;
-                    }
-
-                    output_file_A << A.x[0] << ";" << A.x[1] << ";" << A.x[2]<< std::endl;
-                    output_file_B << B.x[0] << ";" << B.x[1] << ";" << B.x[2]<< std::endl;
-                    output_file_C << C.x[0] << ";" << C.x[1] << ";" << C.x[2]<< std::endl;
-                    A.computeKineticEnergy();
-                    B.computeKineticEnergy();
-                    C.computeKineticEnergy();
-                    file_energy<<A.energy + B.energy + C.energy <<";"<< computeGravitationalEnergy(A, B, C)<<";"<<computeElasticEnergy(B, C)<<std::endl;
-                    cm=computeCM(A, B, C);
-                    file_angmom<<AngularMomentum(cm, A)[0]+ AngularMomentum(cm, B)[0]+AngularMomentum(cm, C)[0]<<";"<< AngularMomentum(cm, A)[1]+ AngularMomentum(cm, B)[1]+AngularMomentum(cm, C)[1]<<";"<<AngularMomentum(cm, A)[2]+ AngularMomentum(cm, B)[2]+AngularMomentum(cm, C)[2]<<std::endl;
-                    // file_energy<<A.energy + B.energy + C.energy + computePotentialEnergy(A, B, C)<<std::endl;
-                    // file_energy<<A.energy + B.energy + C.energy <<std::endl;
-                    // file_energy<< computePotentialEnergy(A, B, C)<<std::endl;
-                }
-                }
-                break;
-            case evStringValue3:
-                // ==========================================================
-                //                          LEAPFROG
-                // ==========================================================
-            
-                for (int i=0; i<N_STEPS-1; i++){
-                    output_file_A << A.x[0] << ";" << A.x[1] << ";" << A.x[2]<< std::endl;
-                    output_file_B << B.x[0] << ";" << B.x[1] << ";" << B.x[2]<< std::endl;
-                    output_file_C << C.x[0] << ";" << C.x[1] << ";" << C.x[2]<< std::endl;
-
-                    for(int j=0; j<DIM-1; j++){
-                        A.x[j] += A.v[j] * h / 2;
-                        B.x[j] += B.v[j] * h / 2;
-                        C.x[j] += C.v[j] * h / 2;
-                    }
-                    
-                    for(int j=0; j<DIM-1; j++){
-                        A.a[j] = acceleration(0, 0, 0, B, C, A, j);
-                        B.a[j] = springB(0, 0, 0, C, A, B, j);
-                        C.a[j] = springC(0, 0, 0, A, B, C, j);
-
-                        A.v[j] += A.a[j] * h;
-                        B.v[j] += B.a[j] * h;
-                        C.v[j] += C.a[j] * h;
-
-                    } 
-                    for(int j=0; j<DIM-1; j++){
-
-                        A.x[j] += A.v[j] * h / 2;
-                        B.x[j] += B.v[j] * h / 2;
-                        C.x[j] += C.v[j] * h / 2;
-                    }
-        
-                    A.computeKineticEnergy();
-                    B.computeKineticEnergy();
-                    C.computeKineticEnergy();
-                    cm = computeCM(A,B,C);
-                    file_energy<<A.energy + B.energy + C.energy<<";"<< computeGravitationalEnergy(A, B, C)<<";"<<computeElasticEnergy(B, C)<<std::endl;
-                    file_angmom<<AngularMomentum(cm, A)[0]+ AngularMomentum(cm, B)[0]+AngularMomentum(cm, C)[0]<<";"<< AngularMomentum(cm, A)[1]+ AngularMomentum(cm, B)[1]+AngularMomentum(cm, C)[1]<<";"<<AngularMomentum(cm, A)[2]+ AngularMomentum(cm, B)[2]+AngularMomentum(cm, C)[2]<<std::endl;
-                }
-
-            break;
-            default:
-                std::cout<<"Insert an argument between: euler, rk4 or leapfrog"<<std::endl;
-                return 0;
-        }
-    }else{
-        std::cout<<"Insert an argument between: euler, rk4 or leapfrog"<<std::endl;
-        return 0;
+        A.a[j] = acceleration(0, 0, 0, B, C, A, j);
+        B.a[j] = springB(0, 0, 0, C, A, B, j);
+        C.a[j] = springC(0, 0, 0, A, B, C, j);
     }
+    for(int j=0; j<DIM-1; j++){
+        
+        A.v[j] += A.a[j] * h;
+        B.v[j] += B.a[j] * h;
+        C.v[j] += C.a[j] * h;
+        
+        A.x[j] += A.v[j] * h;
+        B.x[j] += B.v[j] * h;
+        C.x[j] += C.v[j] * h;
+        
+    } 
+    
+    A.computeKineticEnergy();
+    B.computeKineticEnergy();
+    C.computeKineticEnergy();
+    cm = computeCM(A,B,C);
+    file_energy_euler<<A.energy + B.energy + C.energy<<";"<< computeGravitationalEnergy(A, B, C)<<";"<< computeElasticEnergy(B, C) <<std::endl;
+    file_angmom_euler<<AngularMomentum(cm, A)[0]+ AngularMomentum(cm, B)[0]+AngularMomentum(cm, C)[0]<<";"<< AngularMomentum(cm, A)[1]+ AngularMomentum(cm, B)[1]+AngularMomentum(cm, C)[1]<<";"<<AngularMomentum(cm, A)[2]+ AngularMomentum(cm, B)[2]+AngularMomentum(cm, C)[2]<<std::endl;
+    // file_angmom<< <<";"<< <<";"<< <<std::endl;
+    // file_energy<<A.energy + B.energy + C.energy <<std::endl;
+    // file_energy<< computePotentialEnergy(A, B, C)<<std::endl;
+}
+
+// ==========================================================
+//                          RUNGE KUTTA 4
+// ==========================================================
+A.x = initial_conditions[0];
+A.v = initial_conditions[1];
+B.x = initial_conditions[2];
+B.v = initial_conditions[3];
+C.x = initial_conditions[4];
+C.v = initial_conditions[5];
+
+h *= 4;
+
+for(int i=0; i<N_STEPS/4-1; i++){
+    vA = A.v;
+    xA = A.x;
+    vB = B.v;
+    xB = B.x;
+    vC = C.v;
+    xC = C.x;
+    for(int j=0; j<DIM-1; j++){
+        // body A
+        m1[0][j] = h * vA[j];
+        k1[0][j] = h * acceleration(xA[j], vA[j], t, C, B, A, j);
+        // body B
+        m1[1][j] = h * vB[j];
+        k1[1][j] = h * springB(xB[j], vB[j], t, C, A, B, j); 
+        // body C
+        m1[2][j] = h * vC[j];
+        k1[2][j] = h * springC(xC[j], vC[j], t, A, B, C, j); 
+    }
+    for(int j=0; j<DIM-1;j++){
+        A.v[j] = vA[j] + 0.5 * k1[0][j];
+        B.v[j] = vB[j] + 0.5 * k1[1][j];
+        C.v[j] = vC[j] + 0.5 * k1[2][j];          
+        A.x[j] = xA[j] + 0.5 * m1[0][j];
+        B.x[j] = xB[j] + 0.5 * m1[1][j];
+        C.x[j] = xC[j] + 0.5 * m1[2][j];
+    }
+    for(int j=0; j<DIM-1; j++){
+        //Body A
+        m2[0][j] = h * A.v[j];
+        k2[0][j] = h * acceleration(A.x[j], A.v[j], t+0.5*h, C, B, A, j);
+        //Body B
+        m2[1][j] = h * B.v[j];
+        k2[1][j] = h * springB(B.x[j], B.v[j], t+0.5*h, C, A, B, j);
+        // Body C
+        m2[2][j] = h * C.v[j];
+        k2[2][j] = h * springC(C.x[j], C.v[j], t+0.5*h, A, B, C, j);
+    }
+        for(int j=0; j<DIM-1;j++){
+        A.v[j] = vA[j] + 0.5 * k2[0][j];
+        B.v[j] = vB[j] + 0.5 * k2[1][j];
+        C.v[j] = vC[j] + 0.5 * k2[2][j];          
+        A.x[j] = xA[j] + 0.5 * m2[0][j];
+        B.x[j] = xB[j] + 0.5 * m2[1][j];
+        C.x[j] = xC[j] + 0.5 * m2[2][j];
+    }
+    for(int j=0; j<DIM-1; j++){
+        //Body A
+        m3[0][j] = h * A.v[j];
+        k3[0][j] = h * acceleration(A.x[j], A.v[j], t+0.5*h, C, B, A, j);
+        
+        //Body B
+        m3[1][j] = h * B.v[j];
+        k3[1][j] = h * springB(B.x[j], B.v[j], t+0.5*h, C, A, B, j);
+        // Body C
+        m3[2][j] = h * C.v[j];
+        k3[2][j] = h * springC(C.x[j], C.v[j], t+0.5*h, A, B, C, j);
+    }
+        for(int j=0; j<DIM-1;j++){
+        A.v[j] = vA[j] + k3[0][j];
+        B.v[j] = vB[j] + k3[1][j];
+        C.v[j] = vC[j] + k3[2][j];          
+        A.x[j] = xA[j] + m3[0][j];
+        B.x[j] = xB[j] + m3[1][j];
+        C.x[j] = xC[j] + m3[2][j];
+    }
+    for(int j=0; j<DIM-1; j++){
+        //Body A
+        m4[0][j] = h * A.v[j];
+        k4[0][j] = h * acceleration(A.x[j], A.v[j], t + h, C, B, A, j);
+        //Body B
+        m4[1][j] = h * B.v[j];
+        k4[1][j] = h * springB(B.x[j], B.v[j], t + h, C, A, B, j);
+        // Body C
+        m4[2][j] = h * C.v[j];
+        k4[2][j] = h * springC(C.x[j], C.v[j], t + h, A, B, C, j);
+    }
+
+    for(int j=0; j<DIM-1;j++){
+        A.v[j] = vA[j] + (k1[0][j] + 2*k2[0][j] + 2*k3[0][j] + k4[0][j])/6;
+        B.v[j] = vB[j] + (k1[1][j] + 2*k2[1][j] + 2*k3[1][j] + k4[1][j])/6;
+        C.v[j] = vC[j] + (k1[2][j] + 2*k2[2][j] + 2*k3[2][j] + k4[2][j])/6;          
+        A.x[j] = xA[j] + (m1[0][j] + 2*m2[0][j] + 2*m3[0][j] + m4[0][j])/6;
+        B.x[j] = xB[j] + (m1[1][j] + 2*m2[1][j] + 2*m3[1][j] + m4[1][j])/6;
+        C.x[j] = xC[j] + (m1[2][j] + 2*m2[2][j] + 2*m3[2][j] + m4[2][j])/6;
+    }
+
+    output_file_A_rk4 << A.x[0] << ";" << A.x[1] << ";" << A.x[2]<< std::endl;
+    output_file_B_rk4 << B.x[0] << ";" << B.x[1] << ";" << B.x[2]<< std::endl;
+    output_file_C_rk4 << C.x[0] << ";" << C.x[1] << ";" << C.x[2]<< std::endl;
+    A.computeKineticEnergy();
+    B.computeKineticEnergy();
+    C.computeKineticEnergy();
+    file_energy_rk4<<A.energy + B.energy + C.energy <<";"<< computeGravitationalEnergy(A, B, C)<<";"<<computeElasticEnergy(B, C)<<std::endl;
+    cm=computeCM(A, B, C);
+    file_angmom_rk4<<AngularMomentum(cm, A)[0]+ AngularMomentum(cm, B)[0]+AngularMomentum(cm, C)[0]<<";"<< AngularMomentum(cm, A)[1]+ AngularMomentum(cm, B)[1]+AngularMomentum(cm, C)[1]<<";"<<AngularMomentum(cm, A)[2]+ AngularMomentum(cm, B)[2]+AngularMomentum(cm, C)[2]<<std::endl;
+    // file_energy<<A.energy + B.energy + C.energy + computePotentialEnergy(A, B, C)<<std::endl;
+    // file_energy<<A.energy + B.energy + C.energy <<std::endl;
+    // file_energy<< computePotentialEnergy(A, B, C)<<std::endl;
+}
+
+// ==========================================================
+//                          LEAPFROG
+// ==========================================================
+A.x = initial_conditions[0];
+A.v = initial_conditions[1];
+B.x = initial_conditions[2];
+B.v = initial_conditions[3];
+C.x = initial_conditions[4];
+C.v = initial_conditions[5];
+h/=4;
+for (int i=0; i<N_STEPS-1; i++){
+    output_file_A_leapfrog << A.x[0] << ";" << A.x[1] << ";" << A.x[2]<< std::endl;
+    output_file_B_leapfrog << B.x[0] << ";" << B.x[1] << ";" << B.x[2]<< std::endl;
+    output_file_C_leapfrog << C.x[0] << ";" << C.x[1] << ";" << C.x[2]<< std::endl;
+
+    for(int j=0; j<DIM-1; j++){
+        A.x[j] += A.v[j] * h / 2;
+        B.x[j] += B.v[j] * h / 2;
+        C.x[j] += C.v[j] * h / 2;
+    }
+    
+    for(int j=0; j<DIM-1; j++){
+        A.a[j] = acceleration(0, 0, 0, B, C, A, j);
+        B.a[j] = springB(0, 0, 0, C, A, B, j);
+        C.a[j] = springC(0, 0, 0, A, B, C, j);
+
+        A.v[j] += A.a[j] * h;
+        B.v[j] += B.a[j] * h;
+        C.v[j] += C.a[j] * h;
+
+    } 
+    for(int j=0; j<DIM-1; j++){
+
+        A.x[j] += A.v[j] * h / 2;
+        B.x[j] += B.v[j] * h / 2;
+        C.x[j] += C.v[j] * h / 2;
+    }
+
+    A.computeKineticEnergy();
+    B.computeKineticEnergy();
+    C.computeKineticEnergy();
+    cm = computeCM(A,B,C);
+    file_energy_leapfrog<<A.energy + B.energy + C.energy<<";"<< computeGravitationalEnergy(A, B, C)<<";"<<computeElasticEnergy(B, C)<<std::endl;
+    file_angmom_leapfrog<<AngularMomentum(cm, A)[0]+ AngularMomentum(cm, B)[0]+AngularMomentum(cm, C)[0]<<";"<< AngularMomentum(cm, A)[1]+ AngularMomentum(cm, B)[1]+AngularMomentum(cm, C)[1]<<";"<<AngularMomentum(cm, A)[2]+ AngularMomentum(cm, B)[2]+AngularMomentum(cm, C)[2]<<std::endl;
+}
     
 //----------------------------------------------------------------  
 
-    output_file_A.close();
-    output_file_B.close(); 
-    output_file_C.close();
-    file_energy.close();
+    output_file_A_euler.close();
+    output_file_B_euler.close(); 
+    output_file_C_euler.close();
+    file_energy_euler.close();
+    file_angmom_euler.close();
+    output_file_A_rk4.close();
+    output_file_B_rk4.close(); 
+    output_file_C_rk4.close();
+    file_energy_rk4.close();
+    file_angmom_rk4.close();
+    output_file_A_leapfrog.close();
+    output_file_B_leapfrog.close(); 
+    output_file_C_leapfrog.close();
+    file_energy_leapfrog.close();
+    file_angmom_leapfrog.close();
 
     #ifdef _WIN32
-        std::string command ="python3.9 plotting.py " + std::string(argv[1]);
+        std::string command1 ="python3.9 plotting.py rk4";
+        std::string command2 ="python3.9 plotting.py euler";
+        std::string command3 ="python3.9 plotting.py leapfrog";
     #elif __APPLE__
-        std::string command ="python3.11 plotting.py " + std::string(argv[1]);
+        std::string command1 ="python3.11 plotting.py rk4";
+        std::string command2 ="python3.11 plotting.py euler";
+        std::string command3 ="python3.11 plotting.py leapfrog";
     #endif
-    FILE* pipe = popen(command.c_str(), "w");
-    pclose(pipe);
+    FILE* pipe1 = popen(command1.c_str(), "w");
+    pclose(pipe1);
+    FILE* pipe2 = popen(command2.c_str(), "w");
+    pclose(pipe2);
+    FILE* pipe3 = popen(command3.c_str(), "w");
+    pclose(pipe3);
    return 0;
 }
