@@ -20,7 +20,7 @@ static constexpr int N_BODIES = 3;
 static constexpr int N_STEPS = 70000;
 
 // Spring
-static constexpr int K_CONST = 100000;
+static constexpr int K_CONST = 10000;
 static constexpr double L0 = 10; 
 
 double distance(std::array<double, 3> r1, std::array<double, 3> r2){
@@ -50,9 +50,6 @@ public:
         energy = 0.5 * m * (pow(v[0],2)+pow(v[1],2)+pow(v[2],2));
     }
     
-    void computeOmega(){
-        omega = sqrt(K_CONST / m);
-    }
 };
 
 std::array<double, 3> differenceOfArrays(std::array<double, 3>  v1, std::array<double, 3> v2){
@@ -71,6 +68,56 @@ double computeGravitationalEnergy(Planet planet1, Planet planet2, Planet planet3
 double computeElasticEnergy(Planet planet1, Planet planet2){
     return 0.5 * K_CONST * pow(distance(planet2.x, planet1.x)-L0,2);
 }
+
+
+
+std::array<double,3> computeVcm(Planet planet1, Planet planet2){
+    std::array<double, 3> Vcm; // Center mass velocity between the two spring-bodies.
+    for(int j=0;j<DIM-1;j++){
+        Vcm[j] = (planet1.m * planet1.v[j] + planet2.m * planet2.v[j]) / (planet1.m + planet2.m);
+    }
+    return Vcm;
+}
+
+std::array<double,3> computeOmegaSpring(Planet planet1, Planet planet2){
+    std::array<double, 3> OmegaSpring; //  Angular velocity ω of planet1 with respect to the center of mass.
+    std::array<double, 3> Vcm; // Center mass velocity between the two spring-bodies.
+    std::array<double, 3> v1cm; // Radial velocity of planet1 with respect to the center of mass
+
+    double distanza = distance(planet1.x,planet2.x);
+    double R = 0.5 * distanza;
+    
+    Vcm = computeVcm(planet1,planet2);
+    v1cm = differenceOfArrays(planet1.v, Vcm);
+
+    for(int j=0;j<DIM-1;j++){
+        OmegaSpring[j] = (v1cm[j]/R);
+    }
+    return OmegaSpring;
+}
+
+
+std::array<double,3> computeOmegaRevolution(Planet planet1, Planet planet2, Planet planet3){
+    std::array<double, 3> OmegaRevolution; // Angular velocity ω of the center mass of the two-body-spring system wrt the the massive planet.
+    std::array<double, 3> VelocityRevolution; // Radial velocity of the center mass of the two-body-spring system wrt the the massive planet.
+    std::array<double, 3> Rcm; // Center mass position between the two spring-bodies.
+    std::array<double, 3> Vcm; // Center mass velocity between the two spring-bodies.
+
+    for(int j=0;j<DIM-1;j++){
+        Rcm[j] = (planet1.m * planet1.x[j] + planet2.m * planet2.x[j]) / (planet1.m + planet2.m);
+    }
+    double R = distance(Rcm, planet3.x);
+
+    Vcm = computeVcm(planet1, planet2);
+    VelocityRevolution = differenceOfArrays(Vcm, planet3.v);
+
+    for(int j=0;j<DIM-1;j++){
+        OmegaRevolution[j] = (VelocityRevolution[j]/R);
+    }
+
+    return OmegaRevolution;
+}
+
 
 std::array<double, 3> computeCM(Planet planet1, Planet planet2, Planet planet3){
     std::array<double, 3> cm;
@@ -110,7 +157,7 @@ int main(int argc, char** argv){
     
     double h = 0.002;
 
-    Planet A(500, 0, 0, 0, 0, 0, 0);   // corpi allineati sull'asse delle x
+    Planet A(50000, 0, 0, 0, 0, 1000, 0);   // corpi allineati sull'asse delle x
     Planet B(10, 0, 0 , 5, 5, 0, 5);
     Planet C(10, 0, 0, -5, -5, 0, -5);
 
