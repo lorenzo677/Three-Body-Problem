@@ -158,8 +158,8 @@ int main(int argc, char** argv){
     
     double h = 0.002;
 
-    Planet A(500, 0, 0, 0, 0, 0, 0);   // corpi allineati sull'asse delle x
-    Planet B(10, 0, 0 , 5, 4.99, 0, 5);
+    Planet A(500, 0, 0, 0, 0, -1, 0);   // corpi allineati sull'asse delle x
+    Planet B(10, 0, 0 , 5, 5, 0, 5);
     Planet C(10, 0, 0, -5, -5, 0, -5);
 
     // CONFIGURAZIONI BELLE
@@ -211,6 +211,9 @@ int main(int argc, char** argv){
     std::ofstream file_angmom_euler("Total_angular_momentum_euler.csv");
     std::ofstream file_angmom_leapfrog("Total_angular_momentum_leapfrog.csv");
     std::ofstream file_angmom_rk4("Total_angular_momentum_rk4.csv");
+    std::ofstream file_omega_euler("omega_euler.csv");
+    std::ofstream file_omega_leapfrog("omega_leapfrog.csv");
+    std::ofstream file_omega_rk4("omega_rk4.csv");
     
     output_file_A_euler<<"x;y;z"<<std::endl;
     output_file_B_euler<<"x;y;z"<<std::endl;
@@ -227,7 +230,10 @@ int main(int argc, char** argv){
     output_file_C_rk4<<"x;y;z"<<std::endl;
     file_energy_rk4<<"k;g;e"<<std::endl;
     file_angmom_rk4<<"Lx;Ly;Lz"<<std::endl;
-
+    file_omega_euler<<"omega1;omega2;OMEGA"<<std::endl;
+    file_omega_leapfrog<<"omega1;omega2;OMEGA"<<std::endl;
+    file_omega_rk4<<"omega1x;omega1y;omega1z;omega2x;omega2y;omega2z;OMEGAx;OMEGAy;OMEGAz"<<std::endl;
+    
     double m1[4][4];
     double k1[4][4];
     double m2[4][4];
@@ -390,9 +396,7 @@ for(int i=0; i<N_STEPS/4-1; i++){
     file_energy_rk4<<A.energy + B.energy + C.energy <<";"<< computeGravitationalEnergy(A, B, C)<<";"<<computeElasticEnergy(B, C)<<std::endl;
     cm=computeCM(A, B, C);
     file_angmom_rk4<<AngularMomentum(cm, A)[0]+ AngularMomentum(cm, B)[0]+AngularMomentum(cm, C)[0]<<";"<< AngularMomentum(cm, A)[1]+ AngularMomentum(cm, B)[1]+AngularMomentum(cm, C)[1]<<";"<<AngularMomentum(cm, A)[2]+ AngularMomentum(cm, B)[2]+AngularMomentum(cm, C)[2]<<std::endl;
-    // file_energy<<A.energy + B.energy + C.energy + computePotentialEnergy(A, B, C)<<std::endl;
-    // file_energy<<A.energy + B.energy + C.energy <<std::endl;
-    // file_energy<< computePotentialEnergy(A, B, C)<<std::endl;
+    file_omega_rk4<<computeOmegaSpring(B, C)[0]<<";"<<computeOmegaSpring(B, C)[1]<<";"<<computeOmegaSpring(B, C)[2]<<";"<<computeOmegaSpring(C, B)[0]<<";"<<computeOmegaSpring(C, B)[1]<<";"<<computeOmegaSpring(C, B)[2]<<";"<<computeOmegaRevolution(B, C, A)[0]<<";"<<computeOmegaRevolution(B, C, A)[1]<<";"<<computeOmegaRevolution(B, C, A)[2]<<std::endl;
 }
 
 // ==========================================================
@@ -458,7 +462,9 @@ for (int i=0; i<N_STEPS-1; i++){
     output_file_C_leapfrog.close();
     file_energy_leapfrog.close();
     file_angmom_leapfrog.close();
-
+    file_omega_euler.close();
+    file_omega_leapfrog.close();
+    file_omega_rk4.close();
     #ifdef _WIN32
         std::string command1 ="python3.9 plotting.py rk4";
         std::string command2 ="python3.9 plotting.py euler";
