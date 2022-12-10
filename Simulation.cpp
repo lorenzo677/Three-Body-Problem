@@ -20,7 +20,7 @@ static constexpr int N_BODIES = 3;
 static constexpr int N_STEPS = 70000;
 
 // Spring
-static constexpr int K_CONST = 10000;
+static constexpr int K_CONST = 100000;
 static constexpr double L0 = 10; 
 
 double distance(std::array<double, 3> r1, std::array<double, 3> r2){
@@ -98,15 +98,16 @@ std::array<double,3> computeOmegaSpring(Planet planet1, Planet planet2){
 
 
 std::array<double,3> computeOmegaRevolution(Planet planet1, Planet planet2, Planet planet3){
-    std::array<double, 3> OmegaRevolution; // Angular velocity ω of the center mass of the two-body-spring system wrt the the massive planet.
-    std::array<double, 3> VelocityRevolution; // Radial velocity of the center mass of the two-body-spring system wrt the the massive planet.
+    // planet1 and planet2 are the body with the spring
+    std::array<double, 3> OmegaRevolution; // Angular velocity ω of the center mass of the two-body-spring system wrt the massive planet.
+    std::array<double, 3> VelocityRevolution; // Radial velocity of the center mass of the two-body-spring system wrt the massive planet.
     std::array<double, 3> Rcm; // Center mass position between the two spring-bodies.
     std::array<double, 3> Vcm; // Center mass velocity between the two spring-bodies.
 
     for(int j=0;j<DIM-1;j++){
         Rcm[j] = (planet1.m * planet1.x[j] + planet2.m * planet2.x[j]) / (planet1.m + planet2.m);
     }
-    double R = distance(Rcm, planet3.x);
+    double R = distance(Rcm, planet3.x); //true only if mass of third planet >> wrt masses of the other planets
 
     Vcm = computeVcm(planet1, planet2);
     VelocityRevolution = differenceOfArrays(Vcm, planet3.v);
@@ -157,8 +158,8 @@ int main(int argc, char** argv){
     
     double h = 0.002;
 
-    Planet A(50000, 0, 0, 0, 0, 1000, 0);   // corpi allineati sull'asse delle x
-    Planet B(10, 0, 0 , 5, 5, 0, 5);
+    Planet A(500, 0, 0, 0, 0, 0, 0);   // corpi allineati sull'asse delle x
+    Planet B(10, 0, 0 , 5, 4.99, 0, 5);
     Planet C(10, 0, 0, -5, -5, 0, -5);
 
     // CONFIGURAZIONI BELLE
