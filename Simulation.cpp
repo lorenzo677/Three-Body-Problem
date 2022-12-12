@@ -69,8 +69,6 @@ double computeElasticEnergy(Planet planet1, Planet planet2){
     return 0.5 * K_CONST * pow(distance(planet2.x, planet1.x)-L0,2);
 }
 
-
-
 std::array<double,3> computeVcm(Planet planet1, Planet planet2){
     std::array<double, 3> Vcm; // Center mass velocity between the two spring-bodies.
     for(int j=0;j<DIM-1;j++){
@@ -95,7 +93,6 @@ std::array<double,3> computeOmegaSpring(Planet planet1, Planet planet2){
     }
     return OmegaSpring;
 }
-
 
 std::array<double,3> computeOmegaRevolution(Planet planet1, Planet planet2, Planet planet3){
     // planet1 and planet2 are the body with the spring
@@ -158,9 +155,14 @@ int main(int argc, char** argv){
     
     double h = 0.002;
 
-    Planet A(500, 0, 0, 0, 0, -1, 0);   // corpi allineati sull'asse delle x
-    Planet B(10, 0, 0 , 5, 5, 0, 5);
-    Planet C(10, 0, 0, -5, -5, 0, -5);
+
+    // Planet A(200, -10, 0, 0, 0, -5, 0);   // corpi allineati sull'asse delle x
+    // Planet B(10, 10, 0, 0, 0, 5, 0);
+    // Planet C(10, 10, 14, 12, 0, 0, 0);
+
+    Planet A(200, 0, 0, 0, 0, 1, 0);   // corpi allineati sull'asse delle x
+    Planet B(10, 0, 0 , 5, -5, 0, 5);
+    Planet C(10, 0, 0, -5, 5, 0, -5);
 
     // CONFIGURAZIONI BELLE
 
@@ -199,15 +201,9 @@ int main(int argc, char** argv){
     std::ofstream file_energy_euler("Total_energy_euler.csv");
     std::ofstream file_energy_leapfrog("Total_energy_leapfrog.csv");
     std::ofstream file_energy_rk4("Total_energy_rk4.csv");
-    std::ofstream output_file_A_euler("positions_A_euler.csv");
-    std::ofstream output_file_A_leapfrog("positions_A_leapfrog.csv");
-    std::ofstream output_file_A_rk4("positions_A_rk4.csv");
-    std::ofstream output_file_B_euler("positions_B_euler.csv");
-    std::ofstream output_file_B_leapfrog("positions_B_leapfrog.csv");
-    std::ofstream output_file_B_rk4("positions_B_rk4.csv");
-    std::ofstream output_file_C_euler("positions_C_euler.csv");
-    std::ofstream output_file_C_leapfrog("positions_C_leapfrog.csv");
-    std::ofstream output_file_C_rk4("positions_C_rk4.csv");
+    std::ofstream output_file_euler("positions_euler.csv");
+    std::ofstream output_file_leapfrog("positions_leapfrog.csv");
+    std::ofstream output_file_rk4("positions_rk4.csv");
     std::ofstream file_angmom_euler("Total_angular_momentum_euler.csv");
     std::ofstream file_angmom_leapfrog("Total_angular_momentum_leapfrog.csv");
     std::ofstream file_angmom_rk4("Total_angular_momentum_rk4.csv");
@@ -215,19 +211,13 @@ int main(int argc, char** argv){
     std::ofstream file_omega_leapfrog("omega_leapfrog.csv");
     std::ofstream file_omega_rk4("omega_rk4.csv");
     
-    output_file_A_euler<<"x;y;z"<<std::endl;
-    output_file_B_euler<<"x;y;z"<<std::endl;
-    output_file_C_euler<<"x;y;z"<<std::endl;
+    output_file_euler<<"xA;yA;zA;xB;yB;zB;xC;yC;zC"<<std::endl;
     file_energy_euler<<"k;g;e"<<std::endl;
     file_angmom_euler<<"Lx;Ly;Lz"<<std::endl;
-    output_file_A_leapfrog<<"x;y;z"<<std::endl;
-    output_file_B_leapfrog<<"x;y;z"<<std::endl;
-    output_file_C_leapfrog<<"x;y;z"<<std::endl;
+    output_file_leapfrog<<"xA;yA;zA;xB;yB;zB;xC;yC;zC"<<std::endl;
     file_energy_leapfrog<<"k;g;e"<<std::endl;
     file_angmom_leapfrog<<"Lx;Ly;Lz"<<std::endl;
-    output_file_A_rk4<<"x;y;z"<<std::endl;
-    output_file_B_rk4<<"x;y;z"<<std::endl;
-    output_file_C_rk4<<"x;y;z"<<std::endl;
+    output_file_rk4<<"xA;yA;zA;xB;yB;zB;xC;yC;zC"<<std::endl;
     file_energy_rk4<<"k;g;e"<<std::endl;
     file_angmom_rk4<<"Lx;Ly;Lz"<<std::endl;
     file_omega_euler<<"omega1;omega2;OMEGA"<<std::endl;
@@ -257,14 +247,15 @@ int main(int argc, char** argv){
 // ==========================================================
 
 for (int i=0; i<N_STEPS-1; i++){
-    output_file_A_euler << A.x[0] << ";" << A.x[1] << ";" << A.x[2]<< std::endl;
-    output_file_B_euler << B.x[0] << ";" << B.x[1] << ";" << B.x[2]<< std::endl;
-    output_file_C_euler << C.x[0] << ";" << C.x[1] << ";" << C.x[2]<< std::endl;
+    output_file_euler << A.x[0] << ";" << A.x[1] << ";" << A.x[2]<< ";";
+    output_file_euler << B.x[0] << ";" << B.x[1] << ";" << B.x[2]<< ";";
+    output_file_euler << C.x[0] << ";" << C.x[1] << ";" << C.x[2]<< std::endl;
     for(int j=0; j<DIM-1; j++){
 
         A.a[j] = acceleration(0, 0, 0, B, C, A, j);
         B.a[j] = springB(0, 0, 0, C, A, B, j);
         C.a[j] = springC(0, 0, 0, A, B, C, j);
+
     }
     for(int j=0; j<DIM-1; j++){
         
@@ -387,9 +378,9 @@ for(int i=0; i<N_STEPS/4-1; i++){
         C.x[j] = xC[j] + (m1[2][j] + 2*m2[2][j] + 2*m3[2][j] + m4[2][j])/6;
     }
 
-    output_file_A_rk4 << A.x[0] << ";" << A.x[1] << ";" << A.x[2]<< std::endl;
-    output_file_B_rk4 << B.x[0] << ";" << B.x[1] << ";" << B.x[2]<< std::endl;
-    output_file_C_rk4 << C.x[0] << ";" << C.x[1] << ";" << C.x[2]<< std::endl;
+    output_file_rk4 << A.x[0] << ";" << A.x[1] << ";" << A.x[2]<< ";";
+    output_file_rk4 << B.x[0] << ";" << B.x[1] << ";" << B.x[2]<< ";";
+    output_file_rk4 << C.x[0] << ";" << C.x[1] << ";" << C.x[2]<< std::endl;
     A.computeKineticEnergy();
     B.computeKineticEnergy();
     C.computeKineticEnergy();
@@ -410,9 +401,9 @@ C.x = initial_conditions[4];
 C.v = initial_conditions[5];
 h/=4;
 for (int i=0; i<N_STEPS-1; i++){
-    output_file_A_leapfrog << A.x[0] << ";" << A.x[1] << ";" << A.x[2]<< std::endl;
-    output_file_B_leapfrog << B.x[0] << ";" << B.x[1] << ";" << B.x[2]<< std::endl;
-    output_file_C_leapfrog << C.x[0] << ";" << C.x[1] << ";" << C.x[2]<< std::endl;
+    output_file_leapfrog << A.x[0] << ";" << A.x[1] << ";" << A.x[2]<< ";";
+    output_file_leapfrog << B.x[0] << ";" << B.x[1] << ";" << B.x[2]<< ";";
+    output_file_leapfrog << C.x[0] << ";" << C.x[1] << ";" << C.x[2]<< std::endl;
 
     for(int j=0; j<DIM-1; j++){
         A.x[j] += A.v[j] * h / 2;
@@ -447,19 +438,13 @@ for (int i=0; i<N_STEPS-1; i++){
     
 //----------------------------------------------------------------  
 
-    output_file_A_euler.close();
-    output_file_B_euler.close(); 
-    output_file_C_euler.close();
+    output_file_euler.close();
     file_energy_euler.close();
     file_angmom_euler.close();
-    output_file_A_rk4.close();
-    output_file_B_rk4.close(); 
-    output_file_C_rk4.close();
+    output_file_rk4.close();
     file_energy_rk4.close();
     file_angmom_rk4.close();
-    output_file_A_leapfrog.close();
-    output_file_B_leapfrog.close(); 
-    output_file_C_leapfrog.close();
+    output_file_leapfrog.close();
     file_energy_leapfrog.close();
     file_angmom_leapfrog.close();
     file_omega_euler.close();
