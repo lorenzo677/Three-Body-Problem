@@ -1,0 +1,5 @@
+1. in certe condizioni iniziali particolari i tre algoritmi coincidono, in altre condizioni iniziali, sono tutti e tre diversi
+2. con 2 corpi tornano, con tre succede come in 1.
+3. energia non si conserva nei casi 1.
+4. formule omega non sappiamo se sono corrette
+5. cosa dovrebbe tendere a zero
