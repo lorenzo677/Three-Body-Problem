@@ -22,7 +22,7 @@ dataSetC = np.array([xC, yC, zC])
 numDataPoints = len(t)
 
 def animate_func(num):
-    x = 200 #x as speed multiplier
+    x = 150 #x as speed multiplier
     num =  num*x
    
     if num < len(file_positions.xA):
@@ -66,7 +66,7 @@ fig = plt.figure()
 #plt.style.use('Solarize_Light2')
 #print(plt.style.available)
 ax = plt.axes(projection='3d')
-line_ani = FuncAnimation(fig, animate_func, interval=1, frames=int(numDataPoints/200))
+line_ani = FuncAnimation(fig, animate_func, interval=1, frames=int(numDataPoints))
 # plt.legend()
 plt.show()
 # Saving the Animation
@@ -96,13 +96,13 @@ writergif = PillowWriter(fps=20)
 # plt.ylabel('x')
 # plt.show()
 
-plt.plot(file_positions.yA,file_positions.zA, '-o', markersize='1')
-plt.plot(file_positions.yB,file_positions.zB, '-o', markersize='1')
-plt.plot(file_positions.yC,file_positions.zC, '-o', markersize='1')
-plt.xlabel('y')
-plt.ylabel('z')
-plt.show()
-# # %%
+# plt.plot(file_positions.yA,file_positions.zA, '-o', markersize='1')
+# plt.plot(file_positions.yB,file_positions.zB, '-o', markersize='1')
+# plt.plot(file_positions.yC,file_positions.zC, '-o', markersize='1')
+# plt.xlabel('y')
+# plt.ylabel('z')
+# plt.show()
+# # # %%
 # plt.plot(file_positions.xA, '-o')
 # plt.plot(file_positions.xB, '-o')
 # plt.plot(file_positions.xC, '-o')

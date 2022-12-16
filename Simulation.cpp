@@ -11,7 +11,6 @@ Created on November 2022.
 #include <fstream>
 #include "integrators.h"
 #include <string>
-#include <map>
 
 
 static constexpr int DIM = 4;
@@ -20,8 +19,8 @@ static constexpr int N_BODIES = 3;
 static constexpr int N_STEPS = 70000;
 
 // Spring
-static constexpr int K_CONST = 100000;
-static constexpr double L0 = 10; 
+static constexpr int K_CONST = 1000000;
+static constexpr double L0 = 18.7; 
 
 double distance(std::array<double, 3> r1, std::array<double, 3> r2){
     return sqrt(pow(r1[0]-r2[0],2)+pow(r1[1]-r2[1],2)+pow(r1[2]-r2[2],2));
@@ -156,13 +155,13 @@ int main(int argc, char** argv){
     double h = 0.002;
 
 
-    // Planet A(200, -10, 0, 0, 0, -5, 0);   // corpi allineati sull'asse delle x
-    // Planet B(10, 10, 0, 0, 0, 5, 0);
-    // Planet C(10, 10, 14, 12, 0, 0, 0);
+    Planet A(10, 0, 0, 0, -1, 0, 0);   // corpi allineati sull'asse delle x
+    Planet B(10, 20, 0, 0, 0, 0, 1);
+    Planet C(10, 15, 15, 10, 0, 2, 0);
 
-    Planet A(200, 0, 0, 0, 0, 1, 0);   // corpi allineati sull'asse delle x
-    Planet B(10, 0, 0 , 5, -5, 0, 5);
-    Planet C(10, 0, 0, -5, 5, 0, -5);
+    // Planet A(20, 0, 0, 0, 0, 1, 0);   // corpi allineati sull'asse delle x
+    // Planet B(10, 0, 0 , 5, -5, 0, 5);
+    // Planet C(10, 0, 0, -5, 5, 0, -5);
 
     // CONFIGURAZIONI BELLE
 
@@ -220,8 +219,8 @@ int main(int argc, char** argv){
     output_file_rk4<<"xA;yA;zA;xB;yB;zB;xC;yC;zC"<<std::endl;
     file_energy_rk4<<"k;g;e"<<std::endl;
     file_angmom_rk4<<"Lx;Ly;Lz"<<std::endl;
-    file_omega_euler<<"omega1;omega2;OMEGA"<<std::endl;
-    file_omega_leapfrog<<"omega1;omega2;OMEGA"<<std::endl;
+    file_omega_euler<<"omega1x;omega1y;omega1z;omega2x;omega2y;omega2z;OMEGAx;OMEGAy;OMEGAz"<<std::endl;
+    file_omega_leapfrog<<"omega1x;omega1y;omega1z;omega2x;omega2y;omega2z;OMEGAx;OMEGAy;OMEGAz"<<std::endl;
     file_omega_rk4<<"omega1x;omega1y;omega1z;omega2x;omega2y;omega2z;OMEGAx;OMEGAy;OMEGAz"<<std::endl;
     
     double m1[4][4];
@@ -266,7 +265,6 @@ for (int i=0; i<N_STEPS-1; i++){
         A.x[j] += A.v[j] * h;
         B.x[j] += B.v[j] * h;
         C.x[j] += C.v[j] * h;
-        
     } 
     
     A.computeKineticEnergy();
@@ -275,6 +273,7 @@ for (int i=0; i<N_STEPS-1; i++){
     cm = computeCM(A,B,C);
     file_energy_euler<<A.energy + B.energy + C.energy<<";"<< computeGravitationalEnergy(A, B, C)<<";"<< computeElasticEnergy(B, C) <<std::endl;
     file_angmom_euler<<AngularMomentum(cm, A)[0]+ AngularMomentum(cm, B)[0]+AngularMomentum(cm, C)[0]<<";"<< AngularMomentum(cm, A)[1]+ AngularMomentum(cm, B)[1]+AngularMomentum(cm, C)[1]<<";"<<AngularMomentum(cm, A)[2]+ AngularMomentum(cm, B)[2]+AngularMomentum(cm, C)[2]<<std::endl;
+    file_omega_euler<<computeOmegaSpring(B, C)[0]<<";"<<computeOmegaSpring(B, C)[1]<<";"<<computeOmegaSpring(B, C)[2]<<";"<<computeOmegaSpring(C, B)[0]<<";"<<computeOmegaSpring(C, B)[1]<<";"<<computeOmegaSpring(C, B)[2]<<";"<<computeOmegaRevolution(B, C, A)[0]<<";"<<computeOmegaRevolution(B, C, A)[1]<<";"<<computeOmegaRevolution(B, C, A)[2]<<std::endl;
     // file_angmom<< <<";"<< <<";"<< <<std::endl;
     // file_energy<<A.energy + B.energy + C.energy <<std::endl;
     // file_energy<< computePotentialEnergy(A, B, C)<<std::endl;
@@ -434,6 +433,7 @@ for (int i=0; i<N_STEPS-1; i++){
     cm = computeCM(A,B,C);
     file_energy_leapfrog<<A.energy + B.energy + C.energy<<";"<< computeGravitationalEnergy(A, B, C)<<";"<<computeElasticEnergy(B, C)<<std::endl;
     file_angmom_leapfrog<<AngularMomentum(cm, A)[0]+ AngularMomentum(cm, B)[0]+AngularMomentum(cm, C)[0]<<";"<< AngularMomentum(cm, A)[1]+ AngularMomentum(cm, B)[1]+AngularMomentum(cm, C)[1]<<";"<<AngularMomentum(cm, A)[2]+ AngularMomentum(cm, B)[2]+AngularMomentum(cm, C)[2]<<std::endl;
+    file_omega_leapfrog<<computeOmegaSpring(B, C)[0]<<";"<<computeOmegaSpring(B, C)[1]<<";"<<computeOmegaSpring(B, C)[2]<<";"<<computeOmegaSpring(C, B)[0]<<";"<<computeOmegaSpring(C, B)[1]<<";"<<computeOmegaSpring(C, B)[2]<<";"<<computeOmegaRevolution(B, C, A)[0]<<";"<<computeOmegaRevolution(B, C, A)[1]<<";"<<computeOmegaRevolution(B, C, A)[2]<<std::endl;
 }
     
 //----------------------------------------------------------------  
