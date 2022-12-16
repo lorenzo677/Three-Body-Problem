@@ -19,8 +19,8 @@ static constexpr int N_BODIES = 3;
 static constexpr int N_STEPS = 70000;
 
 // Spring
-static constexpr int K_CONST = 1000000;
-static constexpr double L0 = 18.7; 
+static constexpr int K_CONST = 100000;
+static constexpr double L0 = 22.56; 
 
 double distance(std::array<double, 3> r1, std::array<double, 3> r2){
     return sqrt(pow(r1[0]-r2[0],2)+pow(r1[1]-r2[1],2)+pow(r1[2]-r2[2],2));
@@ -137,12 +137,12 @@ std::array<double, 3> AngularMomentum(std::array<double, 3> cm, Planet planet){
 
 double springC(double x, double v, double t, Planet A, Planet B, Planet C, int axe){
     // Compute the gravitational + spring acceleration of the body C, specifying the axis.
-    return (-1 * (G * (A.m * (C.x[axe]-A.x[axe]) / pow(distance(A.x, C.x), 3) + B.m * (C.x[axe]-B.x[axe]) / pow(distance(B.x, C.x), 3))) - (K_CONST / C.m) * (std::abs(distance(B.x, C.x))-L0) * (C.x[axe]-B.x[axe]) / (distance(B.x, C.x)));
+    return (-1 * (G * (A.m * (C.x[axe]-A.x[axe]) / pow(distance(A.x, C.x), 3) + B.m * (C.x[axe]-B.x[axe]) / pow(distance(B.x, C.x), 3)))- (K_CONST / C.m) * (std::abs(distance(B.x, C.x))-L0) * (C.x[axe]-B.x[axe]) / (distance(B.x, C.x)));
 }
 
 double springB(double x, double v, double t, Planet A, Planet B, Planet C, int axe){
     // Compute the gravitational + spring acceleration of the body C, specifying the axis.
-    return (-1 * (G * (A.m * (C.x[axe]-A.x[axe]) / pow(distance(A.x, C.x), 3) + B.m * (C.x[axe]-B.x[axe]) / pow(distance(B.x, C.x), 3))) - (K_CONST / C.m) * (std::abs(distance(A.x, C.x))-L0) * (C.x[axe]-A.x[axe]) / (distance(A.x, C.x)));
+    return (-1 * (G * (A.m * (C.x[axe]-A.x[axe]) / pow(distance(A.x, C.x), 3) + B.m * (C.x[axe]-B.x[axe]) / pow(distance(B.x, C.x), 3)))- (K_CONST / C.m) * (std::abs(distance(A.x, C.x))-L0) * (C.x[axe]-A.x[axe]) / (distance(A.x, C.x)));
 }
 
 double acceleration(double x, double v, double t, Planet A, Planet B, Planet C, int axe){
@@ -154,10 +154,13 @@ int main(int argc, char** argv){
     
     double h = 0.002;
 
+    // Planet A(10, 0, 0, 0, -1, 0, 0);   // corpi allineati sull'asse delle x
+    // Planet B(10, 20, 0, 0, 0, 0, 1);
+    // Planet C(10, 15, 15, 10, 0, 2, 0);
 
-    Planet A(10, 0, 0, 0, -1, 0, 0);   // corpi allineati sull'asse delle x
-    Planet B(10, 20, 0, 0, 0, 0, 1);
-    Planet C(10, 15, 15, 10, 0, 2, 0);
+    // Planet A(10, 0, 0, 0, -1, 0, 0);   // corpi allineati sull'asse delle x
+    // Planet B(10, 20, 0, 0, 0, 0, 1);
+    // Planet C(10, 15, 15, 10, 0, 2, 0);
 
     // Planet A(20, 0, 0, 0, 0, 1, 0);   // corpi allineati sull'asse delle x
     // Planet B(10, 0, 0 , 5, -5, 0, 5);
@@ -165,9 +168,15 @@ int main(int argc, char** argv){
 
     // CONFIGURAZIONI BELLE
 
-    //Planet A(0, -10, 0, 0, 0, -5, 0); 
-    //Planet B(100, 0, 0, 0, 0, 5, 0);
-    //Planet C(100, 13, 14, 12, 0, -5, 0);
+     Planet A(200, -10, 0, 0, 0, 0, 0); 
+     Planet B(10, 0, 0, 0, 0, 5, 0);
+     Planet C(10, 13, 14, 12, 0, -5, 0);
+
+    //Planet A(100, -10, 10, -11, -3, 0, 0);
+    //Planet B(100, 0, 0, 0, 3, 0, 0);
+    //Planet C(100, 10, 14, 12, 3, 0, 0);
+
+
 
     double x_A[DIM][3];
     double x_B[DIM][3];
