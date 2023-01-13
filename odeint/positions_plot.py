@@ -7,7 +7,7 @@ import numpy as np
 
 #%%
 
-file_positions = pd.read_csv("/Users/lorenzo/Desktop/output.csv")
+file_positions = pd.read_csv("/Users/lorenzo/Desktop/Three-Body-Problem/odeint/output.csv")
 
 t = range(0, len(file_positions.x1))
 
