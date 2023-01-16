@@ -7,7 +7,7 @@ using namespace std;
 using namespace boost::numeric::odeint;
 
 // Define the state type as a Boost array of double
-typedef boost::array< double , 18 > state_type;
+typedef std::array< double , 18 > state_type;
 
 // Declare the total energy function
 double total_energy( const state_type &x){
@@ -122,7 +122,7 @@ int main()
     // state_type x = {{ 0.0 , 0.0 , 0.0 , 0.0 , 1.0 , 0.0 , -20.0 , 10.0 , 10.0 , 1.0 , 0.0 , 0.0, -20.0 , 12.0 , 12.0 , -1.0 , 0.0, 0.0 }};
     
     state_type x = {{ 0.0 , 0.0 , 0.0 , 0.0 , 2.0 , 0.0 , -20.0 , 10.0 , 10.0 , 1.0 , 0.0 , 0.0, -20.0 , 12.0 , 12.0 , -1.0 , 0.0, 0.0 }};
-
+    // state_type x = {{ 0.0 , 0.0 , 0.0 , 0.0 , 2.0 , 0.0 , -20.0 , 10.0 , 10.0 , 1.0 , 0.0 , 0.0, -24.0 , 12.0 , 12.0 , -1.0 , 0.0, 0.0 }};
     // Declare the energy variable 
     double energy = 0;
 
@@ -130,10 +130,10 @@ int main()
     double distance = 0;
 
     // Set the integration time step
-    double dt = 0.002;
+    double dt = 0.0006;
 
     // Set the end time of the simulation
-    double tend = 140;
+    double tend = 200;
 
     // Set the output file
     ofstream output("output.csv");
@@ -153,9 +153,10 @@ int main()
         distance = distance_from_line(x);
 
         // Write the current state to the file
-        output << t << "," << x[0] << "," << x[1] << "," << x[2] << "," << x[3] << "," << x[4] << "," << x[5] << "," << x[6] << "," << x[7] << "," << x[8] << "," << x[9] << "," << x[10] << "," << x[11] << "," << x[12] << "," << x[13] << "," << x[14] << "," << x[15] << "," << x[16] << "," << x[17] << "," << energy << "," << distance <<endl;
+        output << t << ","  << x[0] << "," << x[1] << "," << x[2] << "," << x[3] << "," << x[4] << "," << x[5] << "," << x[6] << "," << x[7] << "," << x[8] << "," << x[9] << "," << x[10] << "," << x[11] << "," << x[12] << "," << x[13] << "," << x[14] << "," << x[15] << "," << x[16] << "," << x[17] << "," << energy << "," << distance <<endl;
         
         integrate_adaptive( stepper, three_body_force, x , 0.0 , dt , dt );
+    
     }
 
     // Close the output file

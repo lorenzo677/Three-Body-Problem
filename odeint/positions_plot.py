@@ -19,9 +19,9 @@ dataSetA = np.array([x1, y1, z1])  # Combining our position coordinates
 dataSetB = np.array([x2, y2, z2])
 dataSetC = np.array([x3, y3, z3])
 numDataPoints = len(t)
-
+#%%
 def animate_func(num):
-    x = 100 #x as speed multiplier
+    x = 10 #x as speed multiplier
     num =  num*x
    
     if num < len(file_positions.x1):
@@ -108,4 +108,27 @@ writergif = PillowWriter(fps=120)
 # plt.ylabel('x')
 # plt.show()
 
+# %%
+### TO SAVE A SCREENSHOT OF THE TRAJECTORIES
+# num = 100000
+# fig = plt.figure()
+# ax = plt.axes(projection='3d')
+
+# ax.plot3D(dataSetA[0, :num+1], dataSetA[1, :num+1], dataSetA[2, :num+1], c='blue', label='A')
+# ax.plot3D(dataSetB[0, :num+1], dataSetB[1, :num+1], dataSetB[2, :num+1], c='green', label='B')
+# ax.plot3D(dataSetC[0, :num+1], dataSetC[1, :num+1], dataSetC[2, :num+1], c='red', label='C')
+# # Updating Point Location 
+# ax.scatter(dataSetA[0, num], dataSetA[1, num], dataSetA[2, num], c='blue', marker='o')
+# ax.scatter(dataSetB[0, num], dataSetB[1, num], dataSetB[2, num], c='green', marker='o')
+# ax.scatter(dataSetC[0, num], dataSetC[1, num], dataSetC[2, num], c='red', marker='o')
+# # Adding Constant Origin
+# ax.plot3D(dataSetA[0, 0], dataSetA[1, 0], dataSetA[2, 0], c='black', marker='o', markersize=10)
+# ax.plot3D(dataSetB[0, 0], dataSetB[1, 0], dataSetB[2, 0], c='black', marker='o')
+# ax.plot3D(dataSetC[0, 0], dataSetC[1, 0], dataSetC[2, 0], c='black', marker='o')
+# ax.set_title('Trajectories')
+# ax.set_xlabel('x')
+# ax.set_ylabel('y')
+# ax.set_zlabel('z')
+# plt.savefig('/Users/lorenzo/Desktop/traj.pdf', dpi=400)
+# plt.show()
 # %%
