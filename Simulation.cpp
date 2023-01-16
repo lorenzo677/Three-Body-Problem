@@ -19,8 +19,8 @@ static constexpr int N_BODIES = 3;
 static constexpr int N_STEPS = 70000;
 
 // Spring
-static constexpr int K_CONST = 100000;
-static constexpr double L0 = 22.56; 
+static constexpr int K_CONST = 1.0e4;
+static constexpr double L0 = 2.8284271247; 
 
 double distance(std::array<double, 3> r1, std::array<double, 3> r2){
     return sqrt(pow(r1[0]-r2[0],2)+pow(r1[1]-r2[1],2)+pow(r1[2]-r2[2],2));
@@ -75,7 +75,7 @@ std::array<double,3> computeVcm(Planet planet1, Planet planet2){
     }
     return Vcm;
 }
-
+/*
 std::array<double,3> computeOmegaSpring(Planet planet1, Planet planet2){
     std::array<double, 3> OmegaSpring; //  Angular velocity ω of planet1 with respect to the center of mass.
     std::array<double, 3> Vcm; // Center mass velocity between the two spring-bodies.
@@ -114,7 +114,10 @@ std::array<double,3> computeOmegaRevolution(Planet planet1, Planet planet2, Plan
 
     return OmegaRevolution;
 }
-
+*/
+double computeDistance(double A, double B, double C, double D, Planet planet){
+    double d = std::abs(A * planet.x[0] + B * planet.x[1] + C * planet.x[2] + D) / sqrt(A*A + B*B + C*C);
+}
 
 std::array<double, 3> computeCM(Planet planet1, Planet planet2, Planet planet3){
     std::array<double, 3> cm;
@@ -137,12 +140,12 @@ std::array<double, 3> AngularMomentum(std::array<double, 3> cm, Planet planet){
 
 double springC(double x, double v, double t, Planet A, Planet B, Planet C, int axe){
     // Compute the gravitational + spring acceleration of the body C, specifying the axis.
-    return (-1 * (G * (A.m * (C.x[axe]-A.x[axe]) / pow(distance(A.x, C.x), 3) + B.m * (C.x[axe]-B.x[axe]) / pow(distance(B.x, C.x), 3)))- (K_CONST / C.m) * (std::abs(distance(B.x, C.x))-L0) * (C.x[axe]-B.x[axe]) / (distance(B.x, C.x)));
+    return (-1 * (G * (A.m * (C.x[axe]-A.x[axe]) / pow(distance(A.x, C.x), 3) + B.m * (C.x[axe]-B.x[axe]) / pow(distance(B.x, C.x), 3))) - (K_CONST / C.m) * (std::abs(distance(B.x, C.x))-L0) * (C.x[axe]-B.x[axe]) / (distance(B.x, C.x)));
 }
 
 double springB(double x, double v, double t, Planet A, Planet B, Planet C, int axe){
     // Compute the gravitational + spring acceleration of the body C, specifying the axis.
-    return (-1 * (G * (A.m * (C.x[axe]-A.x[axe]) / pow(distance(A.x, C.x), 3) + B.m * (C.x[axe]-B.x[axe]) / pow(distance(B.x, C.x), 3)))- (K_CONST / C.m) * (std::abs(distance(A.x, C.x))-L0) * (C.x[axe]-A.x[axe]) / (distance(A.x, C.x)));
+    return (-1 * (G * (A.m * (C.x[axe]-A.x[axe]) / pow(distance(A.x, C.x), 3) + B.m * (C.x[axe]-B.x[axe]) / pow(distance(B.x, C.x), 3))) - (K_CONST / C.m) * (std::abs(distance(A.x, C.x))-L0) * (C.x[axe]-A.x[axe]) / (distance(A.x, C.x)));
 }
 
 double acceleration(double x, double v, double t, Planet A, Planet B, Planet C, int axe){
@@ -154,29 +157,24 @@ int main(int argc, char** argv){
     
     double h = 0.002;
 
+    Planet A(20, 0, 0, 0, 0, 2, 0);   // corpi allineati sull'asse delle x
+    Planet B(1, -20, 10, 10, 1, 0, 0);
+    Planet C(1, -20, 12, 12, -1, 0, 0);
     // Planet A(10, 0, 0, 0, -1, 0, 0);   // corpi allineati sull'asse delle x
     // Planet B(10, 20, 0, 0, 0, 0, 1);
     // Planet C(10, 15, 15, 10, 0, 2, 0);
-
-    // Planet A(10, 0, 0, 0, -1, 0, 0);   // corpi allineati sull'asse delle x
-    // Planet B(10, 20, 0, 0, 0, 0, 1);
-    // Planet C(10, 15, 15, 10, 0, 2, 0);
-
+    // Planet A(1, 0, 0, 0, -1, 0, 0);   // corpi allineati sull'asse delle x
+    // Planet B(0.01, 20, 0, 0, 0, 0, 1);
+    // Planet C(0.01, 15, 15, 10, 0, 2, 0);
     // Planet A(20, 0, 0, 0, 0, 1, 0);   // corpi allineati sull'asse delle x
     // Planet B(10, 0, 0 , 5, -5, 0, 5);
     // Planet C(10, 0, 0, -5, 5, 0, -5);
 
     // CONFIGURAZIONI BELLE
 
-     Planet A(200, -10, 0, 0, 0, 0, 0); 
-     Planet B(10, 0, 0, 0, 0, 5, 0);
-     Planet C(10, 13, 14, 12, 0, -5, 0);
-
-    //Planet A(100, -10, 10, -11, -3, 0, 0);
-    //Planet B(100, 0, 0, 0, 3, 0, 0);
-    //Planet C(100, 10, 14, 12, 3, 0, 0);
-
-
+    //Planet A(0, -10, 0, 0, 0, -5, 0); 
+    //Planet B(100, 0, 0, 0, 0, 5, 0);
+    //Planet C(100, 13, 14, 12, 0, -5, 0);
 
     double x_A[DIM][3];
     double x_B[DIM][3];
@@ -215,9 +213,9 @@ int main(int argc, char** argv){
     std::ofstream file_angmom_euler("Total_angular_momentum_euler.csv");
     std::ofstream file_angmom_leapfrog("Total_angular_momentum_leapfrog.csv");
     std::ofstream file_angmom_rk4("Total_angular_momentum_rk4.csv");
-    std::ofstream file_omega_euler("omega_euler.csv");
-    std::ofstream file_omega_leapfrog("omega_leapfrog.csv");
-    std::ofstream file_omega_rk4("omega_rk4.csv");
+    std::ofstream file_distance_euler("distance_euler.csv");
+    std::ofstream file_distance_leapfrog("distance_leapfrog.csv");
+    std::ofstream file_distance_rk4("distance_rk4.csv");
     
     output_file_euler<<"xA;yA;zA;xB;yB;zB;xC;yC;zC"<<std::endl;
     file_energy_euler<<"k;g;e"<<std::endl;
@@ -228,9 +226,9 @@ int main(int argc, char** argv){
     output_file_rk4<<"xA;yA;zA;xB;yB;zB;xC;yC;zC"<<std::endl;
     file_energy_rk4<<"k;g;e"<<std::endl;
     file_angmom_rk4<<"Lx;Ly;Lz"<<std::endl;
-    file_omega_euler<<"omega1x;omega1y;omega1z;omega2x;omega2y;omega2z;OMEGAx;OMEGAy;OMEGAz"<<std::endl;
-    file_omega_leapfrog<<"omega1x;omega1y;omega1z;omega2x;omega2y;omega2z;OMEGAx;OMEGAy;OMEGAz"<<std::endl;
-    file_omega_rk4<<"omega1x;omega1y;omega1z;omega2x;omega2y;omega2z;OMEGAx;OMEGAy;OMEGAz"<<std::endl;
+    file_distance_euler<<"d"<<std::endl;
+    file_distance_leapfrog<<"d"<<std::endl;
+    file_distance_rk4<<"d"<<std::endl;
     
     double m1[4][4];
     double k1[4][4];
@@ -282,7 +280,7 @@ for (int i=0; i<N_STEPS-1; i++){
     cm = computeCM(A,B,C);
     file_energy_euler<<A.energy + B.energy + C.energy<<";"<< computeGravitationalEnergy(A, B, C)<<";"<< computeElasticEnergy(B, C) <<std::endl;
     file_angmom_euler<<AngularMomentum(cm, A)[0]+ AngularMomentum(cm, B)[0]+AngularMomentum(cm, C)[0]<<";"<< AngularMomentum(cm, A)[1]+ AngularMomentum(cm, B)[1]+AngularMomentum(cm, C)[1]<<";"<<AngularMomentum(cm, A)[2]+ AngularMomentum(cm, B)[2]+AngularMomentum(cm, C)[2]<<std::endl;
-    file_omega_euler<<computeOmegaSpring(B, C)[0]<<";"<<computeOmegaSpring(B, C)[1]<<";"<<computeOmegaSpring(B, C)[2]<<";"<<computeOmegaSpring(C, B)[0]<<";"<<computeOmegaSpring(C, B)[1]<<";"<<computeOmegaSpring(C, B)[2]<<";"<<computeOmegaRevolution(B, C, A)[0]<<";"<<computeOmegaRevolution(B, C, A)[1]<<";"<<computeOmegaRevolution(B, C, A)[2]<<std::endl;
+    
     // file_angmom<< <<";"<< <<";"<< <<std::endl;
     // file_energy<<A.energy + B.energy + C.energy <<std::endl;
     // file_energy<< computePotentialEnergy(A, B, C)<<std::endl;
@@ -395,7 +393,6 @@ for(int i=0; i<N_STEPS/4-1; i++){
     file_energy_rk4<<A.energy + B.energy + C.energy <<";"<< computeGravitationalEnergy(A, B, C)<<";"<<computeElasticEnergy(B, C)<<std::endl;
     cm=computeCM(A, B, C);
     file_angmom_rk4<<AngularMomentum(cm, A)[0]+ AngularMomentum(cm, B)[0]+AngularMomentum(cm, C)[0]<<";"<< AngularMomentum(cm, A)[1]+ AngularMomentum(cm, B)[1]+AngularMomentum(cm, C)[1]<<";"<<AngularMomentum(cm, A)[2]+ AngularMomentum(cm, B)[2]+AngularMomentum(cm, C)[2]<<std::endl;
-    file_omega_rk4<<computeOmegaSpring(B, C)[0]<<";"<<computeOmegaSpring(B, C)[1]<<";"<<computeOmegaSpring(B, C)[2]<<";"<<computeOmegaSpring(C, B)[0]<<";"<<computeOmegaSpring(C, B)[1]<<";"<<computeOmegaSpring(C, B)[2]<<";"<<computeOmegaRevolution(B, C, A)[0]<<";"<<computeOmegaRevolution(B, C, A)[1]<<";"<<computeOmegaRevolution(B, C, A)[2]<<std::endl;
 }
 
 // ==========================================================
@@ -442,7 +439,6 @@ for (int i=0; i<N_STEPS-1; i++){
     cm = computeCM(A,B,C);
     file_energy_leapfrog<<A.energy + B.energy + C.energy<<";"<< computeGravitationalEnergy(A, B, C)<<";"<<computeElasticEnergy(B, C)<<std::endl;
     file_angmom_leapfrog<<AngularMomentum(cm, A)[0]+ AngularMomentum(cm, B)[0]+AngularMomentum(cm, C)[0]<<";"<< AngularMomentum(cm, A)[1]+ AngularMomentum(cm, B)[1]+AngularMomentum(cm, C)[1]<<";"<<AngularMomentum(cm, A)[2]+ AngularMomentum(cm, B)[2]+AngularMomentum(cm, C)[2]<<std::endl;
-    file_omega_leapfrog<<computeOmegaSpring(B, C)[0]<<";"<<computeOmegaSpring(B, C)[1]<<";"<<computeOmegaSpring(B, C)[2]<<";"<<computeOmegaSpring(C, B)[0]<<";"<<computeOmegaSpring(C, B)[1]<<";"<<computeOmegaSpring(C, B)[2]<<";"<<computeOmegaRevolution(B, C, A)[0]<<";"<<computeOmegaRevolution(B, C, A)[1]<<";"<<computeOmegaRevolution(B, C, A)[2]<<std::endl;
 }
     
 //----------------------------------------------------------------  
@@ -456,9 +452,9 @@ for (int i=0; i<N_STEPS-1; i++){
     output_file_leapfrog.close();
     file_energy_leapfrog.close();
     file_angmom_leapfrog.close();
-    file_omega_euler.close();
-    file_omega_leapfrog.close();
-    file_omega_rk4.close();
+    file_distance_euler.close();
+    file_distance_leapfrog.close();
+    file_distance_rk4.close();
     #ifdef _WIN32
         std::string command1 ="python3.9 plotting.py rk4";
         std::string command2 ="python3.9 plotting.py euler";
