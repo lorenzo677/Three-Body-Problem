@@ -9,14 +9,21 @@ using namespace boost::numeric::odeint;
 // Define the state type as a Boost array of double
 typedef std::array< double , 18 > state_type;
 
+double G = 10.0; // gravitational constant
+double m1 = 20.0, m2 = 1.0, m3 = 1.0; // masses of the three bodies
+double r12, r13, r23; // distance between bodies
+double k = 1.0e4; // spring constant
+double L0 = sqrt(0.8); // rest length of the spring
+
+// Declare the energy variable 
+double energy = 0;
+
+// Set the output file
+ofstream output("output.csv");
+
 // Declare the total energy function
 double total_energy( const state_type &x){
     
-    double G = 10.0; // gravitational constant
-    double m1 = 20.0, m2 = 1.0, m3 = 1.0; // masses of the three bodies
-    double r12, r13, r23; // distance between bodies
-    double k = 1.0e4; // spring constant
-    double L0 = sqrt(8); // rest length of the spring
     double kinetic_energy;
     double potential_energy;
 
@@ -44,11 +51,7 @@ double total_energy( const state_type &x){
 // Declare the force function
 void three_body_force( const state_type &x , state_type &dxdt , double t )
 {
-    double G = 10.0; // gravitational constant
-    double m1 = 20.0, m2 = 1.0, m3 = 1.0; // masses of the three bodies
-    double r12, r13, r23; // distance between bodies
-    double k = 1.0e4; // spring constant
-    double L0 = sqrt(8); // rest length of the spring
+    double beta = 0;
 
     r12 = sqrt( ( x[0] - x[6] ) * ( x[0] - x[6] ) + ( x[1] - x[7] ) * ( x[1] - x[7] ) + ( x[2] - x[8] ) * ( x[2] - x[8] ) );
     r13 = sqrt( ( x[0] - x[12] ) * ( x[0] - x[12] ) + ( x[1] - x[13] ) * ( x[1] - x[13] ) + ( x[2] - x[14] ) * ( x[2] - x[14] ) );
@@ -88,7 +91,11 @@ void three_body_force( const state_type &x , state_type &dxdt , double t )
     double dx = x[6] - x[12];
     double dy = x[7] - x[13];
     double dz = x[8] - x[14];
-    double spring_force = - k * ( sqrt( dx * dx + dy * dy + dz * dz ) - L0 );
+    double dvx = x[9] - x[15];
+    double dvy = x[10] - x[16];
+    double dvz = x[11] - x[17];
+    
+    double spring_force = - k * ( sqrt( dx * dx + dy * dy + dz * dz ) - L0 ) - beta * sqrt( dvx * dvx + dvy * dvy + dvz * dvz);
 
     dxdt[9] += dx * spring_force / r23;
     dxdt[10] += dy * spring_force / r23;
@@ -112,6 +119,24 @@ double distance_from_line(const state_type &x)
     double d = sqrt(a * a + b * b + c * c) / sqrt((y2 - y3) * (y2 - y3) + (z2 - z3) * (z2 - z3) + (x2 - x3) * (x2 - x3));
     return d;
 }
+int i=0;
+template<class Stepper>
+struct observer {
+    Stepper &m_stepper;
+    observer(Stepper &stepper) : m_stepper(stepper) {}
+    void operator()(const state_type &x, double t) {
+        energy = total_energy(x);
+        
+        // Compute the distance of the first body from the line between the second and the third
+        double distance = distance_from_line(x);
+
+        // Write the current state to the file
+         if (i%150==0 || i==0){
+        output  << t << "," << x[0] << "," << x[1] << "," << x[2] << "," << x[3] << "," << x[4] << "," << x[5] << "," << x[6] << "," << x[7] << "," << x[8] << "," << x[9] << "," << x[10] << "," << x[11] << "," << x[12] << "," << x[13] << "," << x[14] << "," << x[15] << "," << x[16] << "," << x[17] << "," << energy << "," << distance <<endl;
+        }
+         i++;
+    }
+};
 
 
 int main()
@@ -121,44 +146,53 @@ int main()
     // state_type x = {{ 10.0 , 0.0 , 2.0 , 0.0 , 0.0 , 0.0 , -10.0 , 0.0 , 0.0 , 0.0 , 0.0 , 0.0, 0.0 , 0.0 , 0.0 , 0.0 , 0.0, 0.0 }};
     // state_type x = {{ 0.0 , 0.0 , 0.0 , 0.0 , 1.0 , 0.0 , -20.0 , 10.0 , 10.0 , 1.0 , 0.0 , 0.0, -20.0 , 12.0 , 12.0 , -1.0 , 0.0, 0.0 }};
     
-    state_type x = {{ 0.0 , 0.0 , 0.0 , 0.0 , 2.0 , 0.0 , -20.0 , 10.0 , 10.0 , 1.0 , 0.0 , 0.0, -20.0 , 12.0 , 12.0 , -1.0 , 0.0, 0.0 }};
+    // state_type x = {{ 0.0 , 0.0 , 0.0 , 0.0 , 2.0 , 0.0 , -20.0 , 10.0 , 10.0 , 1.0 , 0.0 , 0.0, -20.0 , 12.0 , 12.0 , -1.0 , 0.0, 0.0 }};
     // state_type x = {{ 0.0 , 0.0 , 0.0 , 0.0 , 2.0 , 0.0 , -20.0 , 10.0 , 10.0 , 1.0 , 0.0 , 0.0, -24.0 , 12.0 , 12.0 , -1.0 , 0.0, 0.0 }};
-    // Declare the energy variable 
-    double energy = 0;
+    // state_type x = {{ 0.0 , 0.0 , 0.0 , 0.0 , 0.0 , 0.0 , -40.0e9 , 10.0e9 , 40.0e9 , -47.0e3 , 0.0 , 0.0, -40.0e9 , 11.0e9 , 40.0e9 , -47.0e3 , 0.0, 0.0 }}; // vere distanze sole mercurio
+    // state_type x = {{ 0.0 , 0.0 , 0.0 , 0.0 , 0.0 , 2.0 , -20.0 , 30.0 , 10.0 , -1.0 , -1.0 , 1.0, -20.0 , 29.0 , 11.0 , -1.0 , -1.0, 1.0 }}; 
+    
+    // state_type x = {{ 0.0 , 0.0 , 0.0 , 0.0 , 2.0 , 0.0 , -20.0 , 10.0 , 10.0 , 1.0 , 0.0 , 1.0, -20.0 , 10.2 , 10.2 , -1.0 , 0.0, 1.0 }}; // belle orbite ma nn torna
+    state_type x = {{ 0.0 , 0.0 , 0.0 , 0.5 , 0.5 , 0.0 , -20.0 , 10.0 , 10.0 , 1.0 , 0.0 , 2.0, -20.0 , 10.2 , 10.2 , -1.0 , 0.0, 2.0 }}; 
+    //state_type x = {{ 0.0 , 0.0 , 0.0 , 0.0 , 0.0 , 0.0 , -31.0 , 0.0 , 0.0 , -1.0 , -1.0 , 0.0, -31.3 , 0.3 , 0.0 , -1.0 , -1.0, 0.0 }};  belle ma nn torna
+    // // Declare the energy variable 
+    // double energy = 0;
 
-    // Declare the distance variable 
-    double distance = 0;
+    // // Declare the distance variable 
+    // double distance = 0;
 
     // Set the integration time step
-    double dt = 0.0006;
+    double dt = 0.00006;
 
     // Set the end time of the simulation
-    double tend = 200;
+    double tend = 700;
 
-    // Set the output file
-    ofstream output("output.csv");
+    // // Set the output file
+    // ofstream output("output.csv");
 
     // Write the headers to the file
     output << "t,x1,y1,z1,vx1,vy1,vz1,x2,y2,z2,vx2,vy2,vz2,x3,y3,z3,vx3,vy3,vz3,energy,distance" << endl;
 
-    controlled_runge_kutta< runge_kutta_dopri5< state_type > > stepper;
-
+    // scontrolled_runge_kutta< runge_kutta_dopri5< state_type > > stepper;
+    typedef runge_kutta_dopri5< state_type > stepper_type;
+    auto controlled_stepper = make_controlled( 1.0e-6 , 1.0e-6 , stepper_type());
+    observer<decltype(controlled_stepper)> obs(controlled_stepper);
     // Integrate the equations of motion
-    for (double t = 0; t <= tend; t += dt)
-    {
-        // Compute the total energy of the system
-        energy = total_energy(x);
+    // for (double t = 0; t <= tend; t += dt)
+    // {
+    //     // Compute the total energy of the system
+    //     energy = total_energy(x);
         
-        // Compute the distance of the first body from the line between the second and the third
-        distance = distance_from_line(x);
+    //     // Compute the distance of the first body from the line between the second and the third
+    //     double distance = distance_from_line(x);
 
-        // Write the current state to the file
-        output << t << ","  << x[0] << "," << x[1] << "," << x[2] << "," << x[3] << "," << x[4] << "," << x[5] << "," << x[6] << "," << x[7] << "," << x[8] << "," << x[9] << "," << x[10] << "," << x[11] << "," << x[12] << "," << x[13] << "," << x[14] << "," << x[15] << "," << x[16] << "," << x[17] << "," << energy << "," << distance <<endl;
+    //     // Write the current state to the file
+    //     output << t << ","  << x[0] << "," << x[1] << "," << x[2] << "," << x[3] << "," << x[4] << "," << x[5] << "," << x[6] << "," << x[7] << "," << x[8] << "," << x[9] << "," << x[10] << "," << x[11] << "," << x[12] << "," << x[13] << "," << x[14] << "," << x[15] << "," << x[16] << "," << x[17] << "," << energy << "," << distance <<endl;
         
-        integrate_adaptive( stepper, three_body_force, x , 0.0 , dt , dt );
-    
-    }
-
+    //     integrate_adaptive( stepper, three_body_force, x , 0.0 , dt , dt );
+        
+    // }
+   // observer< runge_kutta_dopri5< state_type>> obs(controlled_stepper);
+    integrate_adaptive( controlled_stepper, three_body_force, x , 0.0 , tend , dt, obs );
     // Close the output file
     output.close();
 
