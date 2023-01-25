@@ -9,11 +9,26 @@ using namespace boost::numeric::odeint;
 // Define the state type as a Boost array of double
 typedef std::array< double , 18 > state_type;
 
-double G = 10.0; // gravitational constant
-double m1 = 20.0, m2 = 1.0, m3 = 1.0; // masses of the three bodies
+double G = 6.67e-11; // gravitational constant
+// double m1 = 1.98e30, m2 = 1.62e23, m3 = 1.62e23; // masses of the sun and mercury
+double m1 = 6e24, m2 = 3.671e22, m3 = 3.671e22; // masses of the earth and moon
+
+double RR = 1.496e11; // Normalizing distance in km (= 1 AU)
+double MM = 6e24; // Normalizing mass
+double TT = 365 * 24 * 60 * 60.0; // nomalizing time (1 year)
+
+double FF = (G * MM * MM) / (RR * RR); // Unit force
+double EE = FF * RR; // unit energy   
+
+double GG = (MM*G*TT*TT)/(RR*RR*RR);
+
+double mn1 = m1/MM; // Normalized mass1
+double mn2 = m2/MM; // Normalized mass2 
+double mn3 = m3/MM; // Normalized mass3
+
 double r12, r13, r23; // distance between bodies
-double k = 1.0e4; // spring constant
-double L0 = sqrt(0.8); // rest length of the spring
+double k = 10e4*RR; // spring constant
+double L0 = 0.01e8/RR; // rest length of the spring
 
 // Declare the energy variable 
 double energy = 0;
@@ -32,12 +47,12 @@ double total_energy( const state_type &x){
     r23 = sqrt( ( x[6] - x[12] ) * ( x[6] - x[12] ) + ( x[7] - x[13] ) * ( x[7] - x[13] ) + ( x[8] - x[14] ) * ( x[8] - x[14] ) );
 
     // kinetic energy
-    kinetic_energy = 0.5 * m1 * (x[3] * x[3] + x[4] * x[4] + x[5] * x[5]) +
-                     0.5 * m2 * (x[9] * x[9] + x[10] * x[10] + x[11] * x[11]) +
-                     0.5 * m3 * (x[15] * x[15] + x[16] * x[16] + x[17] * x[17]);
+    kinetic_energy = 0.5 * mn1 * (x[3] * x[3] + x[4] * x[4] + x[5] * x[5]) +
+                     0.5 * mn2 * (x[9] * x[9] + x[10] * x[10] + x[11] * x[11]) +
+                     0.5 * mn3 * (x[15] * x[15] + x[16] * x[16] + x[17] * x[17]);
     
     // gravitational potential energy
-    potential_energy  = -G * m1 * m2 / r12 - G * m1 * m3 / r13 - G * m2 * m3 / r23;
+    potential_energy  = -GG * mn1 * mn2 / r12 - GG * mn1 * mn3 / r13 - GG * mn2 * mn3 / r23;
 
     // elastic potential energy
     double dx = x[6] - x[12];
@@ -51,7 +66,7 @@ double total_energy( const state_type &x){
 // Declare the force function
 void three_body_force( const state_type &x , state_type &dxdt , double t )
 {
-    double beta = 0;
+    double beta = 0.004;
 
     r12 = sqrt( ( x[0] - x[6] ) * ( x[0] - x[6] ) + ( x[1] - x[7] ) * ( x[1] - x[7] ) + ( x[2] - x[8] ) * ( x[2] - x[8] ) );
     r13 = sqrt( ( x[0] - x[12] ) * ( x[0] - x[12] ) + ( x[1] - x[13] ) * ( x[1] - x[13] ) + ( x[2] - x[14] ) * ( x[2] - x[14] ) );
@@ -63,9 +78,9 @@ void three_body_force( const state_type &x , state_type &dxdt , double t )
     dxdt[2] = x[5];
 
     // First body's acceleration
-    dxdt[3] = ( G * m2 * ( x[6] - x[0] ) / ( r12 * r12 * r12 ) ) + ( G * m3 * ( x[12] - x[0] ) / ( r13 * r13 * r13 ) );
-    dxdt[4] = ( G * m2 * ( x[7] - x[1] ) / ( r12 * r12 * r12 ) ) + ( G * m3 * ( x[13] - x[1] ) / ( r13 * r13 * r13 ) );
-    dxdt[5] = ( G * m2 * ( x[8] - x[2] ) / ( r12 * r12 * r12 ) ) + ( G * m3 * ( x[14] - x[2] ) / ( r13 * r13 * r13 ) );
+    dxdt[3] = ( GG * mn2 * ( x[6] - x[0] ) / ( r12 * r12 * r12 ) ) + ( GG * mn3 * ( x[12] - x[0] ) / ( r13 * r13 * r13 ) );
+    dxdt[4] = ( GG * mn2 * ( x[7] - x[1] ) / ( r12 * r12 * r12 ) ) + ( GG * mn3 * ( x[13] - x[1] ) / ( r13 * r13 * r13 ) );
+    dxdt[5] = ( GG * mn2 * ( x[8] - x[2] ) / ( r12 * r12 * r12 ) ) + ( GG * mn3 * ( x[14] - x[2] ) / ( r13 * r13 * r13 ) );
 
     // Second body's position and velocity
     dxdt[6] = x[9];
@@ -73,9 +88,9 @@ void three_body_force( const state_type &x , state_type &dxdt , double t )
     dxdt[8] = x[11];
 
     // Second body's acceleration
-    dxdt[9] = ( G * m1 * ( x[0] - x[6] ) / ( r12 * r12 * r12 ) ) + ( G * m3 * ( x[12] - x[6] ) / ( r23 * r23 * r23 ) );
-    dxdt[10] = ( G * m1 * ( x[1] - x[7] ) / ( r12 * r12 * r12 ) ) + ( G * m3 * ( x[13] - x[7] ) / ( r23 * r23 * r23 ) );
-    dxdt[11] = ( G * m1 * ( x[2] - x[8] ) / ( r12 * r12 * r12 ) ) + ( G * m3 * ( x[14] - x[8] ) / ( r23 * r23 * r23 ) );
+    dxdt[9] = ( GG* mn1 * ( x[0] - x[6] ) / ( r12 * r12 * r12 ) ) + ( GG * mn3 * ( x[12] - x[6] ) / ( r23 * r23 * r23 ) );
+    dxdt[10] = ( GG * mn1 * ( x[1] - x[7] ) / ( r12 * r12 * r12 ) ) + ( GG * mn3 * ( x[13] - x[7] ) / ( r23 * r23 * r23 ) );
+    dxdt[11] = ( GG * mn1 * ( x[2] - x[8] ) / ( r12 * r12 * r12 ) ) + ( GG * mn3 * ( x[14] - x[8] ) / ( r23 * r23 * r23 ) );
 
     // Third body's position and velocity
     dxdt[12] = x[15];
@@ -83,26 +98,23 @@ void three_body_force( const state_type &x , state_type &dxdt , double t )
     dxdt[14] = x[17];
 
     // Third body's acceleration
-    dxdt[15] = ( G * m1 * ( x[0] - x[12] ) / ( r13 * r13 * r13 ) ) + ( G * m2 * ( x[6] - x[12] ) / ( r23 * r23 * r23 ) );
-    dxdt[16] = ( G * m1 * ( x[1] - x[13] ) / ( r13 * r13 * r13 ) ) + ( G * m2 * ( x[7] - x[13] ) / ( r23 * r23 * r23 ) );
-    dxdt[17] = ( G * m1 * ( x[2] - x[14] ) / ( r13 * r13 * r13 ) ) + ( G * m2 * ( x[8] - x[14] ) / ( r23 * r23 * r23 ) );
+    dxdt[15] = ( GG * mn1 * ( x[0] - x[12] ) / ( r13 * r13 * r13 ) ) + ( GG * mn2 * ( x[6] - x[12] ) / ( r23 * r23 * r23 ) );
+    dxdt[16] = ( GG * mn1 * ( x[1] - x[13] ) / ( r13 * r13 * r13 ) ) + ( GG * mn2 * ( x[7] - x[13] ) / ( r23 * r23 * r23 ) );
+    dxdt[17] = ( GG * mn1 * ( x[2] - x[14] ) / ( r13 * r13 * r13 ) ) + ( GG * mn2 * ( x[8] - x[14] ) / ( r23 * r23 * r23 ) );
 
     // Spring force between second and third bodies
     double dx = x[6] - x[12];
     double dy = x[7] - x[13];
     double dz = x[8] - x[14];
-    double dvx = x[9] - x[15];
-    double dvy = x[10] - x[16];
-    double dvz = x[11] - x[17];
     
-    double spring_force = - k * ( sqrt( dx * dx + dy * dy + dz * dz ) - L0 ) - beta * sqrt( dvx * dvx + dvy * dvy + dvz * dvz);
+    double spring_force = - k * ( sqrt( dx * dx + dy * dy + dz * dz ) - L0 );
 
-    dxdt[9] += dx * spring_force / r23;
-    dxdt[10] += dy * spring_force / r23;
-    dxdt[11] += dz * spring_force / r23;
-    dxdt[15] += -dx * spring_force / r23;
-    dxdt[16] += -dy * spring_force / r23;
-    dxdt[17] += -dz * spring_force / r23;
+    dxdt[9] += dx * spring_force / r23 - beta * x[9];
+    dxdt[10] += dy * spring_force / r23 - beta * x[10];
+    dxdt[11] += dz * spring_force / r23 - beta * x[11];
+    dxdt[15] += -dx * spring_force / r23 - beta * x[15];
+    dxdt[16] += -dy * spring_force / r23 - beta * x[16];
+    dxdt[17] += -dz * spring_force / r23 - beta * x[17];
 
 }
 
@@ -131,10 +143,10 @@ struct observer {
         double distance = distance_from_line(x);
 
         // Write the current state to the file
-         if (i%150==0 || i==0){
+        if (i%40000==0|| i==0){
         output  << t << "," << x[0] << "," << x[1] << "," << x[2] << "," << x[3] << "," << x[4] << "," << x[5] << "," << x[6] << "," << x[7] << "," << x[8] << "," << x[9] << "," << x[10] << "," << x[11] << "," << x[12] << "," << x[13] << "," << x[14] << "," << x[15] << "," << x[16] << "," << x[17] << "," << energy << "," << distance <<endl;
         }
-         i++;
+        i++;
     }
 };
 
@@ -146,14 +158,16 @@ int main()
     // state_type x = {{ 10.0 , 0.0 , 2.0 , 0.0 , 0.0 , 0.0 , -10.0 , 0.0 , 0.0 , 0.0 , 0.0 , 0.0, 0.0 , 0.0 , 0.0 , 0.0 , 0.0, 0.0 }};
     // state_type x = {{ 0.0 , 0.0 , 0.0 , 0.0 , 1.0 , 0.0 , -20.0 , 10.0 , 10.0 , 1.0 , 0.0 , 0.0, -20.0 , 12.0 , 12.0 , -1.0 , 0.0, 0.0 }};
     
-    // state_type x = {{ 0.0 , 0.0 , 0.0 , 0.0 , 2.0 , 0.0 , -20.0 , 10.0 , 10.0 , 1.0 , 0.0 , 0.0, -20.0 , 12.0 , 12.0 , -1.0 , 0.0, 0.0 }};
+    // state_type x = {{ 0.0 , 0.0 , 0.0 , 0.0 , 2.0 , 0.0 , -20.0 , 10.0 , 10.0 , 1.0 , 0.1 , 0.5, -20.0 , 12.0 , 12.0 , 1.0 , 0.1, 0.1 }};
     // state_type x = {{ 0.0 , 0.0 , 0.0 , 0.0 , 2.0 , 0.0 , -20.0 , 10.0 , 10.0 , 1.0 , 0.0 , 0.0, -24.0 , 12.0 , 12.0 , -1.0 , 0.0, 0.0 }};
-    // state_type x = {{ 0.0 , 0.0 , 0.0 , 0.0 , 0.0 , 0.0 , -40.0e9 , 10.0e9 , 40.0e9 , -47.0e3 , 0.0 , 0.0, -40.0e9 , 11.0e9 , 40.0e9 , -47.0e3 , 0.0, 0.0 }}; // vere distanze sole mercurio
+    // state_type x = {{ 0.0 , 0.0 , 0.0 , 0.0 , 0.0 , 0.0 , -40.0e9/RR , 10.0e9/RR , 40.0e9/RR , -47.0e3*TT/RR , 0.0 , 5.0e3*TT/RR, -40.0e9/RR , 10.5e9/RR , 40.0e9/RR , 47.0e3*TT/RR , 0.0, 0.0 }}; // vere distanze sole mercurio
+    // state_type x = {{ 0.0 , 0.0 , 0.0 , 0.0 , 0.0 , 0.0 , -6.982e10/RR , 0.0/RR , 0.0 , 0.0 , (-38.86e3-3.0256)*TT/RR , 0.0, -6.981e10/RR , 0.0 , 0.0 , 0.0 , (-38.86e3+3.0256)*TT/RR, 0.0 }}; // vere distanze sole mercurio
+    state_type x = {{ 0.0 , 0.0 , 0.0 , 0.0 , 0.0001 , 0.0 , -4.055e8/RR , 0.0 , 0.0 , 0.0 , (-1076)*TT/RR , 0.0, -4.065e8/RR , 0.0 , 0.0 , 0.0 , (-1077)*TT/RR, 0.0 }}; // vere distanze terra luna
     // state_type x = {{ 0.0 , 0.0 , 0.0 , 0.0 , 0.0 , 2.0 , -20.0 , 30.0 , 10.0 , -1.0 , -1.0 , 1.0, -20.0 , 29.0 , 11.0 , -1.0 , -1.0, 1.0 }}; 
     
     // state_type x = {{ 0.0 , 0.0 , 0.0 , 0.0 , 2.0 , 0.0 , -20.0 , 10.0 , 10.0 , 1.0 , 0.0 , 1.0, -20.0 , 10.2 , 10.2 , -1.0 , 0.0, 1.0 }}; // belle orbite ma nn torna
-    state_type x = {{ 0.0 , 0.0 , 0.0 , 0.5 , 0.5 , 0.0 , -20.0 , 10.0 , 10.0 , 1.0 , 0.0 , 2.0, -20.0 , 10.2 , 10.2 , -1.0 , 0.0, 2.0 }}; 
-    //state_type x = {{ 0.0 , 0.0 , 0.0 , 0.0 , 0.0 , 0.0 , -31.0 , 0.0 , 0.0 , -1.0 , -1.0 , 0.0, -31.3 , 0.3 , 0.0 , -1.0 , -1.0, 0.0 }};  belle ma nn torna
+    // state_type x = {{ 0.0 , 0.0 , 0.0 , 0.5 , 0.5 , 0.0 , -20.0 , 10.0 , 10.0 , 1.0 , 0.0 , 2.0, -20.0 , 10.2 , 10.2 , -1.0 , 0.0, 2.0 }}; 
+    // state_type x = {{ 0.0 , 0.0 , 0.0 , 0.0 , 0.0 , 0.0 , -31.0 , 0.0 , 0.0 , -1.0 , -1.0 , 0.0, -31.3 , 0.3 , 0.0 , -1.0 , -1.0, 0.0 }};  //belle ma nn torna
     // // Declare the energy variable 
     // double energy = 0;
 
@@ -161,10 +175,10 @@ int main()
     // double distance = 0;
 
     // Set the integration time step
-    double dt = 0.00006;
+    double dt = 0.06;
 
     // Set the end time of the simulation
-    double tend = 700;
+    double tend = 100;
 
     // // Set the output file
     // ofstream output("output.csv");
@@ -176,6 +190,7 @@ int main()
     typedef runge_kutta_dopri5< state_type > stepper_type;
     auto controlled_stepper = make_controlled( 1.0e-6 , 1.0e-6 , stepper_type());
     observer<decltype(controlled_stepper)> obs(controlled_stepper);
+
     // Integrate the equations of motion
     // for (double t = 0; t <= tend; t += dt)
     // {

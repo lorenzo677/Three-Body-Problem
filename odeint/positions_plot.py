@@ -7,9 +7,9 @@ import numpy as np
 
 #%%
 
-file_positions = pd.read_csv("/odeint/output.csv")
+file_positions = pd.read_csv("output.csv")
 
-t = range(0, len(file_positions.x1))
+t = file_positions.t
 
 x1, y1, z1 = file_positions.x1, file_positions.y1, file_positions.z1
 x2, y2, z2 = file_positions.x2, file_positions.y2, file_positions.z2
@@ -21,7 +21,7 @@ dataSetC = np.array([x3, y3, z3])
 numDataPoints = len(t)
 #%%
 def animate_func(num):
-    x = 200 #x as speed multiplier
+    x = 1000 #x as speed multiplier
     num =  num*x
    
     if num < len(file_positions.x1):
@@ -54,7 +54,7 @@ def animate_func(num):
 #     ax.set_zlim3d([-40, 20])
 
     # Adding Figure Labels
-    ax.set_title('Trajectory')
+    ax.set_title(f'Trajectory - {t[num]} y')
     ax.set_xlabel('x')
     ax.set_ylabel('y')
     ax.set_zlabel('z')
