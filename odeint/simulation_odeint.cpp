@@ -10,8 +10,9 @@ using namespace boost::numeric::odeint;
 typedef std::array< double , 18 > state_type;
 
 double G = 6.67e-11; // gravitational constant
+double m1 = 1.8981e27, m2 = 2.40e22, m3 = 2.40e22; // masses of the giove and europa
 // double m1 = 1.98e30, m2 = 1.62e23, m3 = 1.62e23; // masses of the sun and mercury
-double m1 = 6e24, m2 = 3.671e22, m3 = 3.671e22; // masses of the earth and moon
+// double m1 = 6e24, m2 = 3.671e22, m3 = 3.671e22; // masses of the earth and moon
 
 double RR = 1.496e11; // Normalizing distance in km (= 1 AU)
 double MM = 6e24; // Normalizing mass
@@ -28,13 +29,13 @@ double mn3 = m3/MM; // Normalized mass3
 
 double r12, r13, r23; // distance between bodies
 double k = 10e4*RR; // spring constant
-double L0 = 0.01e8/RR; // rest length of the spring
+double L0 = 1e6/RR; // rest length of the spring
 
 // Declare the energy variable 
 double energy = 0;
 
 // Set the output file
-ofstream output("output.csv");
+ofstream output("output_europa_beta_0.04_final.csv");
 
 // Declare the total energy function
 double total_energy( const state_type &x){
@@ -107,14 +108,18 @@ void three_body_force( const state_type &x , state_type &dxdt , double t )
     double dy = x[7] - x[13];
     double dz = x[8] - x[14];
     
-    double spring_force = - k * ( sqrt( dx * dx + dy * dy + dz * dz ) - L0 );
+    double dvx = x[9] - x[15];
+    double dvy = x[10] - x[16];
+    double dvz = x[11] - x[17];
+    
+    double spring_force = - k * ( sqrt( dx * dx + dy * dy + dz * dz ) - L0 ) - beta * sqrt(dvx * dvx + dvy * dvy + dvz * dvz);
 
-    dxdt[9] += dx * spring_force / r23 - beta * x[9];
-    dxdt[10] += dy * spring_force / r23 - beta * x[10];
-    dxdt[11] += dz * spring_force / r23 - beta * x[11];
-    dxdt[15] += -dx * spring_force / r23 - beta * x[15];
-    dxdt[16] += -dy * spring_force / r23 - beta * x[16];
-    dxdt[17] += -dz * spring_force / r23 - beta * x[17];
+    dxdt[9] += dx * spring_force / r23;  // - beta * x[9];
+    dxdt[10] += dy * spring_force / r23; // - beta * x[10];
+    dxdt[11] += dz * spring_force / r23; // - beta * x[11];
+    dxdt[15] += -dx * spring_force / r23; // - beta * x[15];
+    dxdt[16] += -dy * spring_force / r23; // - beta * x[16];
+    dxdt[17] += -dz * spring_force / r23; // - beta * x[17];
 
 }
 
@@ -143,7 +148,7 @@ struct observer {
         double distance = distance_from_line(x);
 
         // Write the current state to the file
-        if (i%40000==0|| i==0){
+        if (i%5000000==0|| i==0){
         output  << t << "," << x[0] << "," << x[1] << "," << x[2] << "," << x[3] << "," << x[4] << "," << x[5] << "," << x[6] << "," << x[7] << "," << x[8] << "," << x[9] << "," << x[10] << "," << x[11] << "," << x[12] << "," << x[13] << "," << x[14] << "," << x[15] << "," << x[16] << "," << x[17] << "," << energy << "," << distance <<endl;
         }
         i++;
@@ -162,7 +167,8 @@ int main()
     // state_type x = {{ 0.0 , 0.0 , 0.0 , 0.0 , 2.0 , 0.0 , -20.0 , 10.0 , 10.0 , 1.0 , 0.0 , 0.0, -24.0 , 12.0 , 12.0 , -1.0 , 0.0, 0.0 }};
     // state_type x = {{ 0.0 , 0.0 , 0.0 , 0.0 , 0.0 , 0.0 , -40.0e9/RR , 10.0e9/RR , 40.0e9/RR , -47.0e3*TT/RR , 0.0 , 5.0e3*TT/RR, -40.0e9/RR , 10.5e9/RR , 40.0e9/RR , 47.0e3*TT/RR , 0.0, 0.0 }}; // vere distanze sole mercurio
     // state_type x = {{ 0.0 , 0.0 , 0.0 , 0.0 , 0.0 , 0.0 , -6.982e10/RR , 0.0/RR , 0.0 , 0.0 , (-38.86e3-3.0256)*TT/RR , 0.0, -6.981e10/RR , 0.0 , 0.0 , 0.0 , (-38.86e3+3.0256)*TT/RR, 0.0 }}; // vere distanze sole mercurio
-    state_type x = {{ 0.0 , 0.0 , 0.0 , 0.0 , 0.0001 , 0.0 , -4.055e8/RR , 0.0 , 0.0 , 0.0 , (-1076)*TT/RR , 0.0, -4.065e8/RR , 0.0 , 0.0 , 0.0 , (-1077)*TT/RR, 0.0 }}; // vere distanze terra luna
+    // state_type x = {{ 0.0 , 0.0 , 0.0 , 0.0 , 0.0001 , 0.0 , -4.055e8/RR , 0.0 , 0.0 , 0.0 , (-1076)*TT/RR , 0.0, -4.065e8/RR , 0.0 , 0.0 , 0.0 , (-1077)*TT/RR, 0.0 }}; // vere distanze terra luna
+    state_type x = {{ 0.0 , 0.0 , 0.0 , 0.0 , 0.0 , 0.0 , -6.647e8/RR , 0.0 , 0.0 , 0.0 , (-13871)*TT/RR , 0.0, -6.657e8/RR , 0.0 , 0.0 , 0.0 , (-13872)*TT/RR, 0.0 }}; // vere distanze giove europa
     // state_type x = {{ 0.0 , 0.0 , 0.0 , 0.0 , 0.0 , 2.0 , -20.0 , 30.0 , 10.0 , -1.0 , -1.0 , 1.0, -20.0 , 29.0 , 11.0 , -1.0 , -1.0, 1.0 }}; 
     
     // state_type x = {{ 0.0 , 0.0 , 0.0 , 0.0 , 2.0 , 0.0 , -20.0 , 10.0 , 10.0 , 1.0 , 0.0 , 1.0, -20.0 , 10.2 , 10.2 , -1.0 , 0.0, 1.0 }}; // belle orbite ma nn torna
@@ -178,7 +184,7 @@ int main()
     double dt = 0.06;
 
     // Set the end time of the simulation
-    double tend = 100;
+    double tend = 50;
 
     // // Set the output file
     // ofstream output("output.csv");
