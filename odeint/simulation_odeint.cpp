@@ -67,7 +67,7 @@ double total_energy( const state_type &x){
 // Declare the force function
 void three_body_force( const state_type &x , state_type &dxdt , double t )
 {
-    double beta = 0.004;
+    double beta = 0.4;
 
     r12 = sqrt( ( x[0] - x[6] ) * ( x[0] - x[6] ) + ( x[1] - x[7] ) * ( x[1] - x[7] ) + ( x[2] - x[8] ) * ( x[2] - x[8] ) );
     r13 = sqrt( ( x[0] - x[12] ) * ( x[0] - x[12] ) + ( x[1] - x[13] ) * ( x[1] - x[13] ) + ( x[2] - x[14] ) * ( x[2] - x[14] ) );
