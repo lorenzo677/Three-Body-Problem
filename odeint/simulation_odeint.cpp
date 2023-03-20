@@ -2,6 +2,7 @@
 #include <fstream>
 #include <boost/array.hpp>
 #include <boost/numeric/odeint.hpp>
+#include <omp.h>
 
 using namespace std;
 using namespace boost::numeric::odeint;
@@ -35,7 +36,7 @@ double L0 = 1e6/RR; // rest length of the spring
 double energy = 0;
 
 // Set the output file
-ofstream output("output_europa_beta_0.04_final.csv");
+ofstream output("final_beta10.csv");
 
 // Declare the total energy function
 double total_energy( const state_type &x){
@@ -67,7 +68,7 @@ double total_energy( const state_type &x){
 // Declare the force function
 void three_body_force( const state_type &x , state_type &dxdt , double t )
 {
-    double beta = 0.4;
+    double beta = 10.0;
 
     r12 = sqrt( ( x[0] - x[6] ) * ( x[0] - x[6] ) + ( x[1] - x[7] ) * ( x[1] - x[7] ) + ( x[2] - x[8] ) * ( x[2] - x[8] ) );
     r13 = sqrt( ( x[0] - x[12] ) * ( x[0] - x[12] ) + ( x[1] - x[13] ) * ( x[1] - x[13] ) + ( x[2] - x[14] ) * ( x[2] - x[14] ) );
@@ -148,9 +149,14 @@ struct observer {
         double distance = distance_from_line(x);
 
         // Write the current state to the file
-        if (i%7000000==0|| i==0){
-        output  << t << "," << x[0] << "," << x[1] << "," << x[2] << "," << x[3] << "," << x[4] << "," << x[5] << "," << x[6] << "," << x[7] << "," << x[8] << "," << x[9] << "," << x[10] << "," << x[11] << "," << x[12] << "," << x[13] << "," << x[14] << "," << x[15] << "," << x[16] << "," << x[17] << "," << energy << "," << distance <<endl;
+        if (i%7000000==0 || i==0){
+            output  << t << ",";
+            #pragma omp parallel for
+            for(int j=0, j < 18; j++){
+                output  << x[j] << ",";
+            }
         }
+        output << energy << "," << distance <<endl;
         i++;
     }
 };
@@ -184,7 +190,7 @@ int main()
     double dt = 0.06;
 
     // Set the end time of the simulation
-    double tend = 50;
+    double tend = 10000;
 
     // // Set the output file
     // ofstream output("output.csv");
@@ -193,8 +199,8 @@ int main()
     output << "t,x1,y1,z1,vx1,vy1,vz1,x2,y2,z2,vx2,vy2,vz2,x3,y3,z3,vx3,vy3,vz3,energy,distance" << endl;
 
     // scontrolled_runge_kutta< runge_kutta_dopri5< state_type > > stepper;
-    typedef runge_kutta_dopri5< state_type > stepper_type;
-    auto controlled_stepper = make_controlled( 1.0e-6 , 1.0e-6 , stepper_type());
+    typedef runge_kutta_fehlberg78< state_type > stepper_type;
+    auto controlled_stepper = make_controlled( 1.0e-6, 1.0e-6, stepper_type());
     observer<decltype(controlled_stepper)> obs(controlled_stepper);
 
     // Integrate the equations of motion
