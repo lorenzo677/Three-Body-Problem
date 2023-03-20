@@ -149,12 +149,10 @@ struct observer {
 
         // Write the current state to the file
         if (i%7000000==0 || i==0){
-            output  << t << ",";
-            for(int j=0; j < 18; j++){
-                output  << x[j] << ",";
-            }
+            output  << t << "," << x[0] << "," << x[1] << ","<< x[2] << ","<< x[3] << ","<< x[4] << ","<< x[5] << ","<< x[6] << ","<< x[7] << ","<< x[8] << ","<< x[9] << "," << x[10] << "," << x[11] << "," << x[12] << "," << x[13] << "," << x[14] << "," << x[15] << "," << x[16] << "," << x[17] << "," << energy << "," << distance <<endl;;
+            
         }
-        output << energy << "," << distance <<endl;
+        
         i++;
     }
 };
