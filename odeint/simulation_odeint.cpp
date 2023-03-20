@@ -2,7 +2,6 @@
 #include <fstream>
 #include <boost/array.hpp>
 #include <boost/numeric/odeint.hpp>
-#include <omp.h>
 
 using namespace std;
 using namespace boost::numeric::odeint;
@@ -151,7 +150,6 @@ struct observer {
         // Write the current state to the file
         if (i%7000000==0 || i==0){
             output  << t << ",";
-            #pragma omp parallel for
             for(int j=0, j < 18; j++){
                 output  << x[j] << ",";
             }
