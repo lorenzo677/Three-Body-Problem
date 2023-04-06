@@ -7,7 +7,7 @@ import numpy as np
 
 #%%
 
-file_positions = pd.read_csv("output.csv")
+file_positions = pd.read_csv("output_europa_beta0.04.csv")
 
 t = file_positions.t
 
@@ -21,33 +21,24 @@ dataSetC = np.array([x3, y3, z3])
 numDataPoints = len(t)
 #%%
 def animate_func(num):
-    x = 1000 #x as speed multiplier
+    x = 1 #x as speed multiplier
     num =  num*x
    
     if num < len(file_positions.x1):
         ax.clear()  # Clears the figure to update the line, point,   
                     # title, and axes
         # Updating Trajectory Line (num+1 due to Python indexing)
-        ax.plot3D(dataSetA[0, :num+1], dataSetA[1, :num+1], 
-                dataSetA[2, :num+1], c='blue', label='A')
-        ax.plot3D(dataSetB[0, :num+1], dataSetB[1, :num+1], 
-                dataSetB[2, :num+1], c='green', label='B')
-        ax.plot3D(dataSetC[0, :num+1], dataSetC[1, :num+1], 
-                dataSetC[2, :num+1], c='red', label='C')
+        ax.plot3D(dataSetA[0, :num+1], dataSetA[1, :num+1], dataSetA[2, :num+1], c='blue', label='A', linewidth=1)
+        ax.plot3D(dataSetB[0, :num+1], dataSetB[1, :num+1], dataSetB[2, :num+1], c='green', label='B', linewidth=1)
+        ax.plot3D(dataSetC[0, :num+1], dataSetC[1, :num+1], dataSetC[2, :num+1], c='red', label='C', linewidth=1)
         # Updating Point Location 
-        ax.scatter(dataSetA[0, num], dataSetA[1, num], dataSetA[2, num], 
-                c='blue', marker='o')
-        ax.scatter(dataSetB[0, num], dataSetB[1, num], dataSetB[2, num], 
-                c='green', marker='o')
-        ax.scatter(dataSetC[0, num], dataSetC[1, num], dataSetC[2, num], 
-                c='red', marker='o')
+        ax.scatter(dataSetA[0, num], dataSetA[1, num], dataSetA[2, num], c='blue', marker='o', s=700)
+        ax.scatter(dataSetB[0, num], dataSetB[1, num], dataSetB[2, num], c='green', marker='o', s=10)
+        ax.scatter(dataSetC[0, num], dataSetC[1, num], dataSetC[2, num], c='red', marker='o', s=10)
         # Adding Constant Origin
-        ax.plot3D(dataSetA[0, 0], dataSetA[1, 0], dataSetA[2, 0],     
-                c='black', marker='o')
-        ax.plot3D(dataSetB[0, 0], dataSetB[1, 0], dataSetB[2, 0],     
-                c='black', marker='o')
-        ax.plot3D(dataSetC[0, 0], dataSetC[1, 0], dataSetC[2, 0],     
-                c='black', marker='o')
+        ax.plot3D(dataSetA[0, 0], dataSetA[1, 0], dataSetA[2, 0], c='black', marker='o')
+        ax.plot3D(dataSetB[0, 0], dataSetB[1, 0], dataSetB[2, 0], c='black', marker='o')
+        ax.plot3D(dataSetC[0, 0], dataSetC[1, 0], dataSetC[2, 0], c='black', marker='o')
     # Setting Axes Limits
 #     ax.set_xlim3d([-100, 20])
 #     ax.set_ylim3d([-20, 30])
@@ -110,13 +101,13 @@ writergif = PillowWriter(fps=120)
 
 # %%
 ### TO SAVE A SCREENSHOT OF THE TRAJECTORIES
-# num = 100000
+# num = 100
 # fig = plt.figure()
 # ax = plt.axes(projection='3d')
 
-# ax.plot3D(dataSetA[0, :num+1], dataSetA[1, :num+1], dataSetA[2, :num+1], c='blue', label='A')
-# ax.plot3D(dataSetB[0, :num+1], dataSetB[1, :num+1], dataSetB[2, :num+1], c='green', label='B')
-# ax.plot3D(dataSetC[0, :num+1], dataSetC[1, :num+1], dataSetC[2, :num+1], c='red', label='C')
+# ax.plot3D(dataSetA[0, :num+1], dataSetA[1, :num+1], dataSetA[2, :num+1], c='blue', label='Earth')
+# ax.plot3D(dataSetB[0, :num+1], dataSetB[1, :num+1], dataSetB[2, :num+1], c='green', label='Moon 1')
+# ax.plot3D(dataSetC[0, :num+1], dataSetC[1, :num+1], dataSetC[2, :num+1], c='red', label='Moon 2')
 # # Updating Point Location 
 # ax.plot3D(dataSetA[0, num], dataSetA[1, num], dataSetA[2, num], c='blue', marker='o', markersize=9)
 # ax.plot3D(dataSetB[0, num], dataSetB[1, num], dataSetB[2, num], c='green', marker='o')
@@ -129,6 +120,7 @@ writergif = PillowWriter(fps=120)
 # ax.set_xlabel('x')
 # ax.set_ylabel('y')
 # ax.set_zlabel('z')
+# plt.legend()
 # plt.savefig('/Users/lorenzo/Desktop/traj.pdf', dpi=400)
 # plt.show()
 # %%
